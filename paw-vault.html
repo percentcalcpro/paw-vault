@@ -1,0 +1,1888 @@
+以下係完整嘅 HTML，所有修改已經做好晒，你直接複製就得：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>PetArchive HK | 寵物病歷記錄</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: system-ui, -apple-system, 'Inter', sans-serif; background: linear-gradient(135deg, #fef7e8 0%, #ffffff 50%, #f0f9f4 100%); min-height: 100vh; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; z-index: 1000; padding: 1rem; }
+        .modal.show { display: flex; }
+        .modal-content { background: white; border-radius: 2rem; max-width: 520px; width: 100%; padding: 1.8rem; max-height: 85vh; overflow-y: auto; }
+        .modal-content-wide { max-width: 960px; }
+        .modal-content-medical { max-width: 800px; }
+        .modal-content-payment { max-width: 500px; }
+        button:active { transform: scale(0.97); }
+        .pet-card { transition: all 0.2s ease; cursor: pointer; }
+        .pet-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -12px rgba(0,0,0,0.15); }
+        .report-item { transition: 0.1s; cursor: pointer; }
+        .report-item:hover { background-color: #fdf2e9; border-color: #f9a8d4; }
+        .medical-report-box { background: #fefaf5; border-radius: 1.5rem; padding: 2rem; font-family: 'Courier New', monospace; font-size: 0.9rem; line-height: 1.8; max-height: 500px; overflow-y: auto; border: 1px solid #f0e0ce; }
+        .medical-report-box .report-title { text-align: center; font-size: 1.3rem; font-weight: 700; color: #000; letter-spacing: 2px; border-bottom: 2px dashed #f0e0ce; padding-bottom: 0.8rem; margin-bottom: 0.8rem; }
+        .medical-report-box .section-title { font-weight: 700; color: #000; margin-top: 0.8rem; border-bottom: 1px solid #f0e0ce; padding-bottom: 0.3rem; }
+        .medical-report-box .pet-info { background: white; padding: 0.8rem 1rem; border-radius: 0.8rem; margin: 0.5rem 0; border-left: 4px solid #f9a8d4; color: #000; }
+        .medical-report-box .pet-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.2rem 1rem; padding: 0.5rem 0; }
+        .medical-report-box .pet-info-grid .item { display: flex; gap: 0.5rem; }
+        .medical-report-box .pet-info-grid .label { font-weight: 600; color: #6b7280; min-width: 3rem; }
+        .medical-report-box .pet-info-grid .value { color: #000; }
+        .medical-report-box .report-entry { background: white; padding: 0.8rem 1rem; border-radius: 0.8rem; margin: 0.5rem 0; border-left: 4px solid #fbbf24; color: #000; }
+        .medical-report-box .report-entry .entry-title { font-weight: 700; color: #000; }
+        .medical-report-box .report-entry .entry-date { color: #000; font-size: 0.85rem; font-weight: 600; }
+        .medical-report-box .report-entry .entry-desc { color: #000; margin-top: 0.3rem; }
+        .medical-report-box .footer { text-align: center; font-size: 0.8rem; color: #6b7280; border-top: 1px solid #f0e0ce; padding-top: 0.8rem; margin-top: 0.8rem; }
+        .medical-report-box .demo-watermark { text-align: center; font-size: 0.9rem; color: #dc2626; font-weight: 700; margin-top: 1rem; padding: 0.5rem; background: #fef2f2; border-radius: 0.5rem; border: 1px solid #fca5a5; }
+        .demo-notice { background: #fef3c7; border: 2px solid #f59e0b; border-radius: 1rem; padding: 0.7rem 1.2rem; }
+        .plan-indicator { background: white; border-radius: 1rem; padding: 0.8rem 1.2rem; border: 1px solid #f0e0ce; }
+        .current-plan-badge { display: inline-block; padding: 0.15rem 0.8rem; border-radius: 30px; font-size: 0.7rem; font-weight: 700; }
+        .badge-standard { background: #fce7f3; color: #be185d; }
+        .badge-longterm { background: #fef3c7; color: #b45309; }
+        .badge-pro { background: #e0e7ff; color: #4338ca; }
+        .add-pet-btn-large { background: linear-gradient(135deg, #fdf2e9, #ffffff); border: 2px dashed #f9a8d4; border-radius: 1.5rem; padding: 1rem 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s; }
+        .add-pet-btn-large:hover { border-color: #ec4899; background: #fdf2e9; }
+        .feature-section { background: white; border-radius: 2rem; padding: 3rem 2rem; border: 1px solid #f0e0ce; }
+        .feature-icon { font-size: 2.5rem; margin-bottom: 0.8rem; }
+        .feature-title { font-size: 1.1rem; font-weight: 700; color: #1f2937; margin-bottom: 0.4rem; }
+        .feature-desc { font-size: 0.9rem; color: #6b7280; line-height: 1.6; }
+        .plan-switch-dropdown { position: relative; display: inline-block; }
+        .plan-switch-dropdown .dropdown-menu { display: none; position: absolute; right: 0; top: 110%; background: white; min-width: 180px; border-radius: 1rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15); border: 1px solid #f0e0ce; overflow: hidden; z-index: 60; }
+        .plan-switch-dropdown .dropdown-menu.show { display: block; }
+        .plan-switch-dropdown .dropdown-item { display: block; width: 100%; padding: 0.7rem 1.2rem; text-align: left; font-size: 0.85rem; font-weight: 500; color: #374151; border: none; background: white; cursor: pointer; transition: 0.1s; }
+        .plan-switch-dropdown .dropdown-item:hover { background: #fdf2e9; }
+        .plan-switch-dropdown .dropdown-item.active { background: #fce7f3; color: #be185d; }
+        .plan-switch-dropdown .dropdown-item .badge { float: right; font-size: 0.6rem; padding: 0.1rem 0.5rem; border-radius: 30px; background: #f3f4f6; color: #6b7280; }
+        .btn-full-report { background: #dbeafe; color: #1d4ed8; border: none; padding: 0.3rem 0.8rem; border-radius: 30px; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: 0.15s; }
+        .btn-full-report:hover { background: #bfdbfe; transform: scale(1.02); }
+        .drop-zone { border: 2px dashed #d1d5db; border-radius: 1rem; padding: 2rem 1rem; text-align: center; cursor: pointer; transition: 0.2s; background: #fafafa; }
+        .drop-zone:hover, .drop-zone.dragover { border-color: #ec4899; background: #fdf2f8; }
+        .drop-zone .icon { font-size: 2rem; color: #9ca3af; }
+        .drop-zone .text { font-size: 0.85rem; color: #6b7280; }
+        .drop-zone .sub { font-size: 0.7rem; color: #9ca3af; }
+        .member-area { background: white; border-radius: 1.5rem; padding: 1.5rem; border: 1px solid #f0e0ce; }
+        .member-avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #fce7f3, #fbcfe8); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; cursor: pointer; transition: 0.15s; }
+        .member-avatar:hover { transform: scale(1.02); }
+        .plan-tag { display: inline-block; padding: 0.15rem 0.8rem; border-radius: 30px; font-size: 0.65rem; font-weight: 700; }
+        .plan-tag-standard { background: #fce7f3; color: #be185d; }
+        .plan-tag-longterm { background: #fef3c7; color: #b45309; }
+        .plan-tag-pro { background: #e0e7ff; color: #4338ca; }
+        .file-icon { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.3rem 0.7rem; background: #f3f4f6; border-radius: 30px; font-size: 0.75rem; color: #374151; cursor: pointer; transition: 0.15s; border: 1px solid #e5e7eb; }
+        .file-icon:hover { background: #e5e7eb; transform: scale(1.03); }
+        .file-icon .fa-file-pdf { color: #dc2626; font-size: 1rem; }
+        .file-icon .fa-file-image { color: #16a34a; font-size: 1rem; }
+        .member-dashboard { display: none; background: white; border-radius: 2rem; padding: 2rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05); border: 1px solid #f0e0ce; }
+        .member-dashboard.show { display: block; }
+        .main-content.hidden { display: none; }
+        .trial-notice { background: linear-gradient(135deg, #dbeafe, #eff6ff); border: 1px solid #93c5fd; border-radius: 1rem; padding: 0.6rem 1.2rem; display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
+        .trial-notice .days { background: #2563eb; color: white; padding: 0.1rem 0.6rem; border-radius: 30px; font-size: 0.7rem; font-weight: 700; }
+        .edit-name-btn { font-size: 0.6rem; color: #6b7280; cursor: pointer; background: none; border: none; padding: 0.1rem 0.4rem; border-radius: 30px; transition: 0.1s; }
+        .edit-name-btn:hover { background: #f3f4f6; }
+        .user-dropdown { position: relative; display: inline-block; }
+        .user-dropdown .dropdown-menu { display: none; position: absolute; right: 0; top: 110%; background: white; min-width: 200px; border-radius: 1rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15); border: 1px solid #f0e0ce; overflow: hidden; z-index: 60; }
+        .user-dropdown .dropdown-menu.show { display: block; }
+        .user-dropdown .dropdown-item { display: block; width: 100%; padding: 0.7rem 1.2rem; text-align: left; font-size: 0.85rem; font-weight: 500; color: #374151; border: none; background: white; cursor: pointer; transition: 0.1s; display: flex; align-items: center; gap: 0.6rem; }
+        .user-dropdown .dropdown-item:hover { background: #fdf2e9; }
+        .user-dropdown .dropdown-item i { width: 1.2rem; color: #6b7280; }
+        .user-dropdown .dropdown-item.logout { color: #dc2626; }
+        .user-dropdown .dropdown-item.logout i { color: #dc2626; }
+        .report-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: #ec4899; margin-right: 0.5rem; }
+        .select-all-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: #ec4899; margin-right: 0.5rem; }
+        .report-select-mode { background: #fef3c7; border-radius: 1rem; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; display: none !important; }
+        .report-select-mode.show { display: flex !important; }
+        .limit-warning { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 1rem; padding: 0.8rem 1.2rem; display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
+        .limit-warning .icon { color: #dc2626; font-size: 1.2rem; }
+        .limit-warning .text { font-size: 0.85rem; color: #7f1d1d; }
+        .limit-warning .btn-upgrade { background: #dc2626; color: white; padding: 0.2rem 1rem; border-radius: 30px; font-size: 0.7rem; font-weight: 600; border: none; cursor: pointer; transition: 0.15s; }
+        .nav-auth-btn { padding: 0.5rem 1.2rem; border: 1px solid #f9a8d4; border-radius: 9999px; font-weight: 500; color: #be185d; transition: 0.15s; cursor: pointer; font-size: 0.875rem; background: transparent; }
+        .nav-auth-btn:hover { background: #fdf2f8; }
+        .nav-user-btn { padding: 0.5rem 1.2rem; border: 1px solid #f9a8d4; border-radius: 9999px; font-weight: 500; color: #be185d; transition: 0.15s; cursor: pointer; font-size: 0.875rem; background: transparent; display: flex; align-items: center; gap: 0.3rem; }
+        .nav-user-btn:hover { background: #fdf2f8; }
+        .nav-pricing-btn { padding: 0.5rem 1.5rem; background: linear-gradient(to right, #ec4899, #fb923c); color: white; border-radius: 9999px; font-weight: 500; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); transition: 0.15s; cursor: pointer; border: none; font-size: 0.875rem; }
+        .nav-pricing-btn:hover { opacity: 0.9; }
+        .nav-badge { background: #fce7f3; color: #be185d; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+        .pricing-card { border: 2px solid #e5e7eb; transition: all 0.2s; cursor: pointer; border-radius: 1.5rem; padding: 1.5rem; text-align: center; background: white; }
+        .pricing-card:hover { border-color: #ec4899; transform: translateY(-4px); box-shadow: 0 12px 20px -8px rgba(0,0,0,0.1); }
+        .pricing-card.selected { border-color: #ec4899; background: #fdf2f8; }
+        .pricing-card .popular { background: #f43f5e; color: white; font-size: 0.6rem; padding: 0.15rem 0.8rem; border-radius: 30px; display: inline-block; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .pricing-card .price { font-size: 1.8rem; font-weight: 700; color: #1f2937; }
+        .pricing-card .price span { font-size: 0.9rem; font-weight: 400; color: #6b7280; }
+        .pricing-card .features { text-align: left; margin-top: 0.8rem; font-size: 0.85rem; color: #4b5563; }
+        .pricing-card .features li { padding: 0.2rem 0; display: flex; align-items: center; gap: 0.5rem; }
+        .pricing-card .features .check { color: #10b981; font-weight: 700; }
+        .btn-start { padding: 0.7rem 3rem; background: linear-gradient(to right, #ec4899, #fb923c); color: white; border-radius: 9999px; font-weight: 600; border: none; cursor: pointer; transition: 0.15s; font-size: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .btn-start:hover { opacity: 0.9; transform: scale(1.02); }
+        .btn-start:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+        .btn-start.purchased { opacity: 0.6; cursor: not-allowed; background: #9ca3af; }
+        .payment-card { border: 1px solid #e5e7eb; border-radius: 1rem; padding: 1.2rem; margin-bottom: 1rem; background: #fafafa; cursor: pointer; }
+        .payment-card:hover { border-color: #ec4899; }
+        .payment-card.selected { border-color: #ec4899; background: #fdf2f8; }
+        .payment-option { display: flex; align-items: center; gap: 1rem; cursor: pointer; }
+        .plan-purchased-info { background: #f0fdf4; border: 2px solid #86efac; border-radius: 1.5rem; padding: 1.5rem; text-align: center; margin-bottom: 1.5rem; }
+        .plan-purchased-info .icon { font-size: 3rem; }
+        .plan-purchased-info .name { font-size: 1.5rem; font-weight: 700; color: #065f46; }
+        .plan-purchased-info .price { font-size: 1.2rem; color: #374151; }
+        .plan-purchased-info .status { display: inline-block; background: #86efac; color: #065f46; padding: 0.15rem 1rem; border-radius: 30px; font-size: 0.75rem; font-weight: 700; }
+        .report-item-with-checkbox { display: flex; align-items: center; gap: 0.5rem; width: 100%; }
+        .report-item-with-checkbox .report-checkbox { flex-shrink: 0; }
+        .report-item-with-checkbox .report-content { flex: 1; cursor: pointer; }
+        .report-item-with-checkbox .report-actions { flex-shrink: 0; display: flex; gap: 0.25rem; }
+        #memberToggleSelectModeBtn { border: 1px solid #d1d5db; background: white; padding: 0.3rem 0.8rem; border-radius: 30px; font-size: 0.75rem; transition: 0.15s; cursor: pointer; }
+        #memberToggleSelectModeBtn:hover { background: #f3f4f6; }
+        .plan-btn-purchased { background: #d1fae5 !important; color: #065f46 !important; border-color: #86efac !important; cursor: default; opacity: 0.8; }
+        .plan-btn-purchased:hover { background: #d1fae5 !important; }
+        .report-detail-content { background: #fefaf5; border-radius: 1.5rem; padding: 1.5rem; margin: 1rem 0; }
+        .report-detail-content .label { font-weight: 600; color: #7f6b58; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .image-preview-modal .modal-content { max-width: 700px; }
+        .image-preview-modal img { max-width: 100%; max-height: 70vh; border-radius: 1rem; }
+        .modal-content-report { max-width: 700px; }
+        .limit-warning.hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <!-- ===== NAV ===== -->
+    <nav class="border-b bg-white/90 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center flex-wrap gap-3">
+            <div class="flex items-center gap-3">
+                <span class="text-4xl">🐾</span>
+                <h1 class="text-3xl font-bold bg-gradient-to-r from-pink-500 to-orange-400 bg-clip-text text-transparent">PetArchive HK</h1>
+            </div>
+            <div class="flex items-center gap-3 flex-wrap" id="navRightSection">
+                <span id="navPlanBadge" class="nav-badge">📋 標準</span>
+                <button onclick="openPricingModal()" class="nav-pricing-btn">定價</button>
+                <div id="authSection">
+                    <button onclick="openAuthModal()" class="nav-auth-btn">🚀 立即開始</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ===== 主內容（訪客體驗） ===== -->
+    <div id="mainContent" class="main-content">
+        <div class="max-w-6xl mx-auto px-6 pt-10 pb-4 text-center">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800">🐕 為你的毛孩建立一生健康檔案</h1>
+            <div class="demo-notice mt-4 max-w-2xl mx-auto text-left">
+                <div class="flex items-start gap-3 text-sm">
+                    <span class="text-xl mt-0.5">🔍</span>
+                    <div>
+                        <p class="font-bold text-amber-800">🐾 示範體驗模式</p>
+                        <ul class="text-amber-700 space-y-0.5 mt-0.5">
+                            <li>• 完整操作所有功能，了解流程與介面</li>
+                            <li>• 此模式 <strong>不會真正儲存</strong> 病歷報告資料</li>
+                            <li>• 按「立即開始」註冊後，即可 <strong>真正儲存</strong> 毛孩健康紀錄</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="max-w-6xl mx-auto px-6 pb-4">
+            <div class="plan-indicator flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <span class="text-lg">📋</span>
+                    <div>
+                        <p class="text-xs text-gray-500">你目前正在體驗：</p>
+                        <p id="currentPlanDisplay" class="text-base font-bold text-pink-600">標準方案 (HK$48/每月)</p>
+                    </div>
+                    <span id="currentPlanBadge" class="current-plan-badge badge-standard">標準</span>
+                </div>
+                <div class="flex items-center gap-3 text-xs text-gray-500">
+                    <span id="planFeatureDisplay">🐾 1-4 隻寵物 · 10 份報告 · 8 份醫療報告</span>
+                    <div class="plan-switch-dropdown">
+                        <button onclick="togglePlanDropdown()" class="px-4 py-1.5 border border-pink-300 hover:bg-pink-50 rounded-full text-pink-600 text-sm font-medium transition flex items-center gap-1">
+                            🔄 切換方案 <i class="fa-solid fa-chevron-down text-[0.6rem]"></i>
+                        </button>
+                        <div id="planDropdownMenu" class="dropdown-menu">
+                            <button onclick="quickSwitchPlan('standard')" class="dropdown-item active" data-plan="standard">📋 標準 <span class="badge">HK$48</span></button>
+                            <button onclick="quickSwitchPlan('longterm')" class="dropdown-item" data-plan="longterm">🏥 長期照護 <span class="badge">HK$68</span></button>
+                            <button onclick="quickSwitchPlan('pro')" class="dropdown-item" data-plan="pro">🦸 專業 <span class="badge">HK$98</span></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="addPetBtn" class="add-pet-btn-large mt-3">
+                <div class="flex items-center justify-center gap-3">
+                    <span class="text-3xl">➕</span>
+                    <div class="text-left">
+                        <p class="font-medium text-pink-600 text-sm">新增寵物</p>
+                        <p class="text-xs text-gray-400">加入你的毛孩，開始記錄健康檔案</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 寵物列表 & 報告列表 -->
+        <div class="max-w-6xl mx-auto px-6 pb-8">
+            <div class="bg-white rounded-3xl shadow-xl overflow-hidden">
+                <div class="p-6 border-b">
+                    <div class="flex justify-between items-center flex-wrap gap-3 mb-4">
+                        <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-paw text-pink-500 mr-2"></i>我的毛孩</h2>
+                    </div>
+                    <div id="petList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                </div>
+                <div class="p-6 bg-gradient-to-r from-pink-50/30 to-white">
+                    <div class="flex flex-wrap justify-between items-center mb-4 gap-3">
+                        <h3 class="text-lg font-bold text-gray-700"><i class="fa-regular fa-folder-open text-pink-500 mr-2"></i><span id="selectedPetNameDisplay">病歷報告</span></h3>
+                        <div class="flex gap-2 flex-wrap">
+                            <button id="uploadReportBtn" class="bg-pink-100 hover:bg-pink-200 text-pink-700 px-4 py-1.5 rounded-full text-sm font-medium transition"><i class="fa-solid fa-upload mr-1"></i>上傳報告</button>
+                            <button id="refreshReportBtn" class="border border-gray-300 hover:bg-gray-50 px-4 py-1.5 rounded-full text-sm font-medium transition"><i class="fa-solid fa-rotate-right mr-1"></i>重新整理</button>
+                            <button id="toggleSelectModeBtn" onclick="toggleSelectMode()" class="border border-gray-300 hover:bg-gray-50 px-4 py-1.5 rounded-full text-sm font-medium transition">☑️ 選擇報告</button>
+                        </div>
+                    </div>
+                    <!-- 黃色 Bar：默認隱藏 -->
+                    <div id="reportSelectMode" class="report-select-mode mb-3">
+                        <label class="flex items-center text-sm font-medium text-gray-700">
+                            <input type="checkbox" id="selectAllReports" class="select-all-checkbox" onchange="toggleSelectAllReports()"> 全選
+                        </label>
+                        <span class="info" id="selectedCountDisplay">已選 0 份報告</span>
+                        <button onclick="generateSelectedReports()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-1 rounded-full text-sm font-medium transition">📤 輸出所選報告</button>
+                        <button onclick="exitSelectMode()" class="text-gray-400 hover:text-gray-600 text-sm">取消</button>
+                    </div>
+                    <div id="reportListContainer" class="space-y-2 max-h-[400px] overflow-y-auto pr-1"></div>
+                    <div id="reportLimitHint" class="text-xs text-gray-400 mt-2 text-center"></div>
+                    <div id="monthlyUsage" class="text-xs text-gray-400 mt-1 text-center"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="max-w-6xl mx-auto px-6 pb-8">
+            <div class="feature-section">
+                <h2 class="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-8">📌 使用步驟</h2>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="text-center"><div class="feature-icon">①</div><div class="feature-title">按「立即開始」</div><div class="feature-desc">註冊成為會員，開始你的健康旅程</div></div>
+                    <div class="text-center"><div class="feature-icon">②</div><div class="feature-title">選擇適合方案</div><div class="feature-desc">標準、長期照護或專業方案</div></div>
+                    <div class="text-center"><div class="feature-icon">③</div><div class="feature-title">付款啟用</div><div class="feature-desc">完成付款後正式啟用所選方案</div></div>
+                </div>
+                <div class="text-center mt-8">
+                    <button onclick="openAuthModal()" class="px-10 py-3 bg-gradient-to-r from-pink-500 to-orange-400 text-white rounded-full font-bold shadow-lg hover:opacity-90 transition text-base">🚀 立即開始</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 會員專區主頁 ===== -->
+    <div id="memberDashboard" class="member-dashboard max-w-6xl mx-auto px-6 pb-8">
+        <div id="trialNotice" class="trial-notice mb-6" style="display:none;">
+            <span class="text-lg">🎁</span>
+            <span class="text-sm font-medium text-blue-700">你已開始 <span class="days">14 天</span> 專業方案免費試用</span>
+            <span class="text-xs text-blue-500">試用期結束後不會自動扣款</span>
+            <span class="text-xs text-blue-400 ml-auto" id="trialDaysLeft">剩餘 13 天</span>
+        </div>
+
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-pink-600">👤 我的會員專區</h2>
+        </div>
+        <div class="member-area">
+            <div class="flex flex-wrap items-center gap-6">
+                <div class="member-avatar" onclick="openEditNameModal()" title="點擊更改頭像">🐾</div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h3 id="memberName" class="text-xl font-bold text-gray-800">寵物主人</h3>
+                        <button onclick="openEditNameModal()" class="edit-name-btn" title="編輯名稱"><i class="fa-regular fa-pen-to-square"></i></button>
+                    </div>
+                    <p id="memberEmail" class="text-sm text-gray-500">petlover@email.com</p>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        <span id="memberPlanTag" class="plan-tag plan-tag-standard">📋 標準方案</span>
+                        <span class="text-xs text-gray-400">會員編號: #HK20260001</span>
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-100">
+                <div class="text-center p-3 bg-pink-50 rounded-xl">
+                    <div class="text-2xl font-bold text-pink-600" id="memberPetCount">1</div>
+                    <div class="text-xs text-gray-500">寵物數量</div>
+                </div>
+                <div class="text-center p-3 bg-pink-50 rounded-xl">
+                    <div class="text-2xl font-bold text-pink-600" id="memberReportCount">3</div>
+                    <div class="text-xs text-gray-500">報告總數</div>
+                </div>
+                <div class="text-center p-3 bg-pink-50 rounded-xl">
+                    <div class="text-2xl font-bold text-pink-600" id="memberMedicalCount">0</div>
+                    <div class="text-xs text-gray-500">醫療報告生成</div>
+                </div>
+            </div>
+            <div class="mt-4 flex flex-wrap gap-3">
+                <button onclick="showMemberPets()" class="px-6 py-2 border border-pink-300 text-pink-600 rounded-full text-sm hover:bg-pink-50 transition">📋 我的毛孩</button>
+                <button onclick="openPricingModal(false)" class="px-6 py-2 border border-pink-300 text-pink-600 rounded-full text-sm hover:bg-pink-50 transition">📊 方案管理</button>
+                <button onclick="openEditNameModal()" class="px-6 py-2 border border-gray-300 text-gray-600 rounded-full text-sm hover:bg-gray-50 transition">⚙️ 設定</button>
+                <button onclick="handleLogout()" class="px-6 py-2 border border-red-300 text-red-600 rounded-full text-sm hover:bg-red-50 transition">🚪 登出</button>
+            </div>
+        </div>
+
+        <div id="memberPetsSection" class="mt-6 bg-white rounded-3xl shadow-xl overflow-hidden">
+            <div class="p-6 border-b">
+                <div class="flex justify-between items-center flex-wrap gap-3 mb-4">
+                    <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-paw text-pink-500 mr-2"></i>我的毛孩</h2>
+                </div>
+                <div id="memberPetList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            </div>
+            <div class="px-6 pb-4">
+                <button onclick="openAddPetModal()" class="w-full border-2 border-dashed border-pink-300 hover:border-pink-400 bg-white/70 rounded-2xl py-3 text-center cursor-pointer transition-all text-sm text-pink-600 font-medium">
+                    ➕ 新增寵物
+                </button>
+            </div>
+            <div class="p-6 bg-gradient-to-r from-pink-50/30 to-white">
+                <div class="flex flex-wrap justify-between items-center mb-4 gap-3">
+                    <h3 class="text-lg font-bold text-gray-700"><i class="fa-regular fa-folder-open text-pink-500 mr-2"></i><span id="memberSelectedPetName">病歷報告</span></h3>
+                    <div class="flex gap-2 flex-wrap">
+                        <button onclick="openUploadModal()" class="bg-pink-100 hover:bg-pink-200 text-pink-700 px-4 py-1.5 rounded-full text-sm font-medium transition"><i class="fa-solid fa-upload mr-1"></i>上傳報告</button>
+                        <button onclick="renderMemberReports()" class="border border-gray-300 hover:bg-gray-50 px-4 py-1.5 rounded-full text-sm font-medium transition"><i class="fa-solid fa-rotate-right mr-1"></i>重新整理</button>
+                        <button id="memberToggleSelectModeBtn" onclick="toggleMemberSelectMode()" class="border border-gray-300 hover:bg-gray-50 px-4 py-1.5 rounded-full text-sm font-medium transition">☑️ 選擇報告</button>
+                    </div>
+                </div>
+                <!-- 會員專區黃色 Bar：默認隱藏 -->
+                <div id="memberReportSelectMode" class="report-select-mode mb-3">
+                    <label class="flex items-center text-sm font-medium text-gray-700">
+                        <input type="checkbox" id="memberSelectAllReports" class="select-all-checkbox" onchange="toggleMemberSelectAllReports()"> 全選
+                    </label>
+                    <span class="info" id="memberSelectedCountDisplay">已選 0 份報告</span>
+                    <button onclick="generateMemberSelectedReports()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-1 rounded-full text-sm font-medium transition">📤 輸出所選報告</button>
+                    <button onclick="exitMemberSelectMode()" class="text-gray-400 hover:text-gray-600 text-sm">取消</button>
+                </div>
+                <div id="memberReportListContainer" class="space-y-2 max-h-[400px] overflow-y-auto pr-1"></div>
+                <div id="memberReportLimitHint" class="text-xs text-gray-400 mt-2 text-center"></div>
+                <div id="limitWarning" class="limit-warning mt-3 hidden">
+                    <span class="icon">⚠️</span>
+                    <span class="text" id="limitWarningText">已達方案上限</span>
+                    <button class="btn-upgrade" onclick="openPricingModal(false)">升級方案</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODALS ===== -->
+    <!-- 定價 Modal -->
+    <div id="pricingModal" class="modal">
+        <div class="modal-content modal-content-wide fade-in">
+            <div class="flex justify-between items-center mb-5">
+                <h2 class="text-2xl font-bold text-gray-800">📋 選擇你的方案</h2>
+                <i onclick="closePricingModal()" class="fa-solid fa-xmark text-2xl cursor-pointer text-gray-400 hover:text-gray-600"></i>
+            </div>
+
+            <div id="pricingTrialStatus" class="mb-4 text-center text-sm bg-gradient-to-r from-pink-50 to-rose-50 rounded-xl p-3 border border-pink-200">
+                <i class="fa-regular fa-gem text-pink-500 mr-1"></i>
+                <span id="pricingTrialText">🎁 所有方案均享 14 天免費試用</span>
+            </div>
+
+            <!-- 已購買會員提示 -->
+            <div id="purchasedPlanDisplay" style="display:none;" class="plan-purchased-info">
+                <div class="icon">✅</div>
+                <div class="name" id="purchasedPlanName">標準方案</div>
+                <div class="price" id="purchasedPlanPrice">HK$48 / 每月</div>
+                <div class="status">已購買</div>
+                <p class="text-sm text-gray-500 mt-2">你已購買此方案</p>
+            </div>
+
+            <!-- 三個方案卡片 -->
+            <div class="grid md:grid-cols-3 gap-4 mb-6" id="pricingCardsContainer">
+                <div class="pricing-card selected" id="cardStandard" onclick="selectPricingCard('standard')">
+                    <div class="text-2xl">📋</div>
+                    <h3 class="text-lg font-bold text-gray-800 mt-1">標準</h3>
+                    <div class="price">HK$48 <span>/ 每月</span></div>
+                    <ul class="features">
+                        <li><span class="check">✓</span> 1-4 隻寵物</li>
+                        <li><span class="check">✓</span> 每月 10 份報告</li>
+                        <li><span class="check">✓</span> 每月 8 份醫療報告</li>
+                        <li><span class="check">✓</span> 永久儲存</li>
+                    </ul>
+                </div>
+                <div class="pricing-card" id="cardLongterm" onclick="selectPricingCard('longterm')">
+                    <div class="text-2xl">🏥</div>
+                    <h3 class="text-lg font-bold text-gray-800 mt-1">長期照護</h3>
+                    <div class="price">HK$68 <span>/ 每月</span></div>
+                    <div class="popular">🔥 熱門</div>
+                    <ul class="features">
+                        <li><span class="check">✓</span> 無限寵物</li>
+                        <li><span class="check">✓</span> 每月 20 份報告</li>
+                        <li><span class="check">✓</span> 每月 30 份醫療報告</li>
+                        <li><span class="check">✓</span> 永久儲存</li>
+                    </ul>
+                </div>
+                <div class="pricing-card" id="cardPro" onclick="selectPricingCard('pro')">
+                    <div class="text-2xl">🦸</div>
+                    <h3 class="text-lg font-bold text-gray-800 mt-1">專業</h3>
+                    <div class="price">HK$98 <span>/ 每月</span></div>
+                    <ul class="features">
+                        <li><span class="check">✓</span> 無限寵物</li>
+                        <li><span class="check">✓</span> 無限報告</li>
+                        <li><span class="check">✓</span> 無限醫療報告</li>
+                        <li><span class="check">✓</span> 永久儲存</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button id="btnStartPlan" class="btn-start" onclick="goToPayment()">
+                    💳 立即開始
+                </button>
+                <p class="text-xs text-gray-400 mt-2" id="pricingHintText">選擇方案後按「立即開始」前往付款</p>
+            </div>
+            <button onclick="closePricingModal()" class="block mx-auto mt-4 px-6 py-1.5 border border-gray-300 rounded-full text-gray-500 text-sm hover:bg-gray-50 transition">返回</button>
+        </div>
+    </div>
+
+    <!-- 付款 Modal -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content modal-content-payment fade-in">
+            <div class="flex justify-between items-center mb-5">
+                <h2 class="text-2xl font-bold text-pink-600">💳 付款</h2>
+                <i onclick="closePaymentModal()" class="fa-solid fa-xmark text-2xl cursor-pointer text-gray-400 hover:text-gray-600"></i>
+            </div>
+            <div class="mb-4 p-3 bg-pink-50 rounded-xl text-center">
+                <p class="text-sm font-medium text-gray-700">你選擇了：<span id="paymentPlanName" class="text-pink-600 font-bold">標準方案</span></p>
+                <p class="text-lg font-bold text-gray-800" id="paymentPlanPrice">HK$48 <span class="text-sm font-normal text-gray-400">/ 每月</span></p>
+                <p class="text-xs text-green-600">🎁 14天免費試用，試用期後才開始收費</p>
+            </div>
+            <div class="payment-card selected" onclick="selectPaymentMethod('card')">
+                <div class="payment-option">
+                    <input type="radio" name="payment" value="card" checked class="w-4 h-4 accent-pink-500">
+                    <div class="flex-1"><p class="font-medium text-gray-800">💳 信用卡 / 扣賬卡</p><p class="text-xs text-gray-400">Visa · Mastercard · American Express</p></div>
+                    <span class="text-xl">💳</span>
+                </div>
+            </div>
+            <div class="payment-card" onclick="selectPaymentMethod('fps')">
+                <div class="payment-option">
+                    <input type="radio" name="payment" value="fps" class="w-4 h-4 accent-pink-500">
+                    <div class="flex-1"><p class="font-medium text-gray-800">🏦 轉數快 FPS</p><p class="text-xs text-gray-400">即時轉賬，快速啟用</p></div>
+                    <span class="text-xl">🏦</span>
+                </div>
+            </div>
+            <div class="payment-card" onclick="selectPaymentMethod('alipay')">
+                <div class="payment-option">
+                    <input type="radio" name="payment" value="alipay" class="w-4 h-4 accent-pink-500">
+                    <div class="flex-1"><p class="font-medium text-gray-800">📱 AlipayHK</p><p class="text-xs text-gray-400">支付寶香港</p></div>
+                    <span class="text-xl">📱</span>
+                </div>
+            </div>
+            <div class="payment-card" onclick="selectPaymentMethod('payme')">
+                <div class="payment-option">
+                    <input type="radio" name="payment" value="payme" class="w-4 h-4 accent-pink-500">
+                    <div class="flex-1"><p class="font-medium text-gray-800">📱 PayMe</p><p class="text-xs text-gray-400">滙豐 PayMe 快速付款</p></div>
+                    <span class="text-xl">📱</span>
+                </div>
+            </div>
+            <button onclick="processPayment()" class="w-full py-3 bg-gradient-to-r from-pink-500 to-orange-400 text-white rounded-2xl font-semibold shadow-md hover:opacity-90 transition text-base mt-4">
+                ✅ 確認付款 HK$<span id="paymentConfirmPrice">48</span>
+            </button>
+            <button onclick="closePaymentModal()" class="w-full mt-2 py-2 border border-gray-300 rounded-2xl text-gray-500 text-sm hover:bg-gray-50 transition">取消</button>
+        </div>
+    </div>
+
+    <!-- 編輯名稱 Modal -->
+    <div id="editNameModal" class="modal">
+        <div class="modal-content fade-in">
+            <h3 class="text-xl font-bold text-pink-600 mb-4">✏️ 編輯名稱</h3>
+            <p class="text-sm text-gray-500 mb-3">更改你的顯示名稱</p>
+            <input id="editNameInput" type="text" placeholder="請輸入新名稱" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-300">
+            <div class="flex gap-2.5">
+                <button onclick="closeEditNameModal()" class="flex-1 py-2.5 border border-gray-300 rounded-2xl text-sm hover:bg-gray-50 transition">取消</button>
+                <button onclick="saveNameChange()" class="flex-1 py-2.5 bg-pink-500 text-white rounded-2xl font-medium text-sm hover:bg-pink-600 transition">儲存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增/編輯寵物 Modal -->
+    <div id="petModal" class="modal">
+        <div class="modal-content fade-in">
+            <h3 id="petModalTitle" class="text-xl font-bold text-pink-600 mb-4">新增寵物</h3>
+            <input id="petName" type="text" placeholder="寵物名字 *" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-300">
+            <input id="petSpecies" type="text" placeholder="種類 (狗狗/貓咪/其他)" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-300">
+            <input id="petBreed" type="text" placeholder="品種 (選填)" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-300">
+            <div class="grid grid-cols-2 gap-2.5 mb-2.5">
+                <select id="petGender" class="px-4 py-2.5 border border-gray-200 rounded-2xl text-sm"><option value="">性別</option><option value="男">男</option><option value="女">女</option></select>
+                <input id="petAge" type="text" placeholder="年齡" class="px-4 py-2.5 border border-gray-200 rounded-2xl text-sm">
+            </div>
+            <div class="grid grid-cols-2 gap-2.5 mb-3">
+                <select id="petNeutered" class="px-4 py-2.5 border border-gray-200 rounded-2xl text-sm"><option value="否">未絕育</option><option value="是">已絕育</option></select>
+                <input id="petChronic" type="text" placeholder="長期病 (選填)" class="px-4 py-2.5 border border-gray-200 rounded-2xl text-sm">
+            </div>
+            <div class="flex gap-2.5">
+                <button onclick="closePetModal()" class="flex-1 py-2.5 border border-gray-300 rounded-2xl text-sm hover:bg-gray-50 transition">取消</button>
+                <button id="savePetBtnAction" class="flex-1 py-2.5 bg-pink-500 text-white rounded-2xl font-medium text-sm hover:bg-pink-600 transition">儲存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 上傳報告 Modal -->
+    <div id="uploadModal" class="modal">
+        <div class="modal-content fade-in">
+            <h3 class="text-lg font-bold text-gray-800 mb-3">📄 新增病歷報告</h3>
+            <input id="reportTitle" type="text" placeholder="標題 *" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-300">
+            <input id="reportDate" type="date" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-300">
+            <textarea id="reportDesc" rows="3" placeholder="詳細備註" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-300"></textarea>
+            <div id="dropZone" class="drop-zone mb-3">
+                <div class="icon">📎</div>
+                <div class="text">將檔案拖放到這裡，或點擊選擇檔案</div>
+                <div class="sub">支援 PDF / JPEG / PNG</div>
+                <input type="file" id="fileInput" class="hidden" accept=".pdf,.jpg,.jpeg,.png" multiple>
+            </div>
+            <div id="fileList" class="text-xs text-gray-500 mb-3"></div>
+            <div class="flex gap-2.5">
+                <button onclick="closeUploadModal()" class="flex-1 py-2.5 border border-gray-300 rounded-2xl text-sm hover:bg-gray-50 transition">取消</button>
+                <button id="confirmUpload" class="flex-1 py-2.5 bg-pink-500 text-white rounded-2xl text-sm hover:bg-pink-600 transition">儲存報告</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 編輯報告 Modal -->
+    <div id="editReportModal" class="modal">
+        <div class="modal-content fade-in">
+            <h3 class="text-lg font-bold text-gray-800 mb-3">✏️ 編輯報告</h3>
+            <input id="editReportTitle" type="text" placeholder="標題" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-300">
+            <input id="editReportDate" type="date" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-300">
+            <textarea id="editReportDesc" rows="4" placeholder="詳細備註" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-300"></textarea>
+            <div class="flex gap-2.5">
+                <button onclick="closeEditModal()" class="flex-1 py-2.5 border border-gray-300 rounded-2xl text-sm hover:bg-gray-50 transition">取消</button>
+                <button id="saveEditReportBtn" class="flex-1 py-2.5 bg-pink-500 text-white rounded-2xl text-sm hover:bg-pink-600 transition">儲存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 報告詳情 Modal -->
+    <div id="reportDetailModal" class="modal report-detail-modal">
+        <div class="modal-content modal-content-report fade-in">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-pink-600">📄 報告詳情</h3>
+                <i onclick="closeReportDetailModal()" class="fa-solid fa-xmark text-2xl cursor-pointer text-gray-400 hover:text-gray-600"></i>
+            </div>
+            <div id="reportDetailContent" class="report-detail-content"></div>
+            <div class="flex flex-wrap gap-2.5 mt-4">
+                <button id="detailEditBtn" class="flex-1 min-w-[80px] py-2.5 border border-blue-400 text-blue-600 rounded-2xl font-medium text-sm hover:bg-blue-50 transition"><i class="fa-regular fa-pen-to-square mr-1"></i>編輯</button>
+                <button id="detailCopyBtn" class="flex-1 min-w-[80px] py-2.5 border border-gray-400 text-gray-600 rounded-2xl font-medium text-sm hover:bg-gray-50 transition"><i class="fa-regular fa-copy mr-1"></i>複製</button>
+                <button id="detailGenerateMedicalBtn" class="flex-1 min-w-[100px] py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-2xl font-medium text-sm transition"><i class="fa-regular fa-file-lines mr-1"></i>輸出此報告</button>
+            </div>
+            <button onclick="closeReportDetailModal()" class="block mx-auto mt-3 px-6 py-1.5 border border-gray-300 rounded-full text-gray-500 text-sm hover:bg-gray-50 transition">關閉</button>
+        </div>
+    </div>
+
+    <!-- 圖片預覽 Modal -->
+    <div id="imagePreviewModal" class="modal image-preview-modal">
+        <div class="modal-content fade-in text-center">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">📷 圖片預覽</h3>
+                <i onclick="closeImagePreview()" class="fa-solid fa-xmark text-2xl cursor-pointer text-gray-400 hover:text-gray-600"></i>
+            </div>
+            <div id="imagePreviewContainer"></div>
+            <button onclick="closeImagePreview()" class="block mx-auto mt-4 px-6 py-1.5 border border-gray-300 rounded-full text-gray-500 text-sm hover:bg-gray-50 transition">關閉</button>
+        </div>
+    </div>
+
+    <!-- 醫療報告顯示 Modal -->
+    <div id="medicalReportModal" class="modal">
+        <div class="modal-content modal-content-medical fade-in">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-pink-600">🏥 生成醫療報告</h3>
+                <i onclick="closeMedicalModal()" class="fa-solid fa-xmark text-2xl cursor-pointer text-gray-400 hover:text-gray-600"></i>
+            </div>
+            <div id="medicalReportDisplay" class="medical-report-box"></div>
+            <div class="flex gap-3 mt-4">
+                <button id="copyMedicalBtn" class="flex-1 py-2.5 bg-gray-600 hover:bg-gray-700 text-white rounded-2xl font-medium text-sm transition"><i class="fa-regular fa-copy mr-1"></i>複製文字</button>
+                <button id="downloadPdfBtn" class="flex-1 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-2xl font-medium text-sm transition"><i class="fa-regular fa-file-pdf mr-1"></i>下載 PDF</button>
+            </div>
+            <button onclick="closeMedicalModal()" class="block mx-auto mt-3 px-6 py-1.5 border border-gray-300 rounded-full text-gray-500 text-sm hover:bg-gray-50 transition">關閉</button>
+        </div>
+    </div>
+
+    <!-- 登入/註冊 Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal-content fade-in">
+            <h3 id="authTitle" class="text-xl font-bold text-center text-pink-600 mb-4">🔐 會員專區</h3>
+            <p id="authSubtitle" class="text-center text-xs text-gray-500 mb-3">註冊即享 <strong class="text-pink-500">14 天 所有方案 免費試用</strong></p>
+            <input id="authEmail" type="email" placeholder="電郵地址" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-300">
+            <input id="authPassword" type="password" placeholder="請輸入密碼 (最少6個字)" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-300">
+            <input id="authName" type="text" placeholder="顯示名稱 (選填)" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-300 hidden">
+            <div class="flex gap-2.5 mt-3">
+                <button id="registerBtn" class="flex-1 py-2.5 bg-black text-white rounded-2xl text-sm font-medium hover:bg-gray-800 transition">立即註冊</button>
+                <button id="loginBtn" class="flex-1 py-2.5 border border-pink-300 rounded-2xl text-sm font-medium hover:bg-pink-50 transition">登入</button>
+            </div>
+            <button onclick="closeAuthModal()" class="w-full mt-2.5 text-gray-400 text-xs hover:text-gray-600 transition">取消</button>
+        </div>
+    </div>
+
+    <script>
+        // ================================================================
+        //  全域狀態
+        // ================================================================
+        let currentPlan = 'standard';
+        let selectedPricingPlan = 'standard';
+        let pets = [];
+        let selectedPetId = null;
+        let petReports = {};
+        let editingReportMeta = null;
+        let editingPetId = null;
+        let monthlyMedicalCount = 0;
+        let isLoggedIn = false;
+        // ✅ 從 localStorage 讀取 hasPaid
+        let hasPaid = localStorage.getItem('petArchive_hasPaid') === 'true' ? true : false;
+        let currentUser = { name: '寵物主人', email: 'petlover@email.com' };
+        let uploadedFiles = [];
+        let memberSelectedPetId = null;
+        let selectedReports = new Set();
+        let isSelectMode = false;
+        let memberSelectedReports = new Set();
+        let isMemberSelectMode = false;
+        let isTrialActive = false;
+        let trialDaysLeft = 13;
+        let selectedPaymentMethod = 'card';
+
+        const PLAN_LIMITS = {
+            standard: { petLimit: 4, monthlyReportLimit: 10, medicalReportLimit: 8, label: '標準', price: 'HK$48',
+                navBadge: '📋 標準', badgeClass: 'badge-standard',
+                feature: '🐾 1-4 隻寵物 · 10 份報告 · 8 份醫療報告',
+                allowFullReport: true },
+            longterm: { petLimit: Infinity, monthlyReportLimit: 20, medicalReportLimit: 30, label: '長期照護',
+                price: 'HK$68', navBadge: '🏥 長期照護', badgeClass: 'badge-longterm',
+                feature: '🐾 無限寵物 · 20 份報告 · 30 份醫療報告',
+                allowFullReport: true },
+            pro: { petLimit: Infinity, monthlyReportLimit: Infinity, medicalReportLimit: Infinity, label: '專業',
+                price: 'HK$98', navBadge: '🦸 專業', badgeClass: 'badge-pro',
+                feature: '🐾 無限寵物 · 無限報告 · 無限醫療報告',
+                allowFullReport: true }
+        };
+
+        function getPlanLimits() { return PLAN_LIMITS[currentPlan]; }
+
+        function generateId() { return Date.now() + '-' + Math.random().toString(36).substr(2, 6); }
+
+        function getTotalReports() { let total = 0; for (var petId in petReports) { total += (petReports[petId] || []).length; }
+            return total; }
+
+        // ================================================================
+        //  示範資料
+        // ================================================================
+        function initDemoData() {
+            var demoId = 'pet_demo_1';
+            pets = [{ id: demoId, name: '查查', species: '米克斯犬', breed: '混種犬', gender: '男', age: '4歲', neutered: '是',
+                chronic: '無' }];
+            petReports[demoId] = [
+                { id: 'r1', title: '🏥 年度疫苗接種', date: '2025-03-10',
+                    description: '施打十合一疫苗、狂犬病疫苗。體溫正常，精神食慾良好。', files: ['vaccine_report.pdf'] },
+                { id: 'r2', title: '🩺 皮膚過敏診斷', date: '2025-06-22',
+                    description: '因搔癢脫毛就診，診斷環境過敏。開立口服藥物，建議低敏飼料。', files: ['allergy_report.pdf',
+                        'skin_photo.jpg'
+                    ] },
+                { id: 'r3', title: '🦷 健康體檢+洗牙', date: '2025-10-05',
+                    description: '血液檢查（CBC, 生化）皆正常，牙結石輕微，洗牙後復原良好。', files: ['dental_check.jpg'] }
+            ];
+            selectedPetId = demoId;
+            memberSelectedPetId = demoId;
+            updatePlanDisplay();
+        }
+
+        // ================================================================
+        //  工具函數
+        // ================================================================
+        function updatePlanDisplay() {
+            var limits = getPlanLimits();
+            document.getElementById('currentPlanDisplay').textContent = limits.label + '方案 (' + limits.price + '/每月)';
+            var badge = document.getElementById('currentPlanBadge');
+            badge.textContent = limits.label;
+            badge.className = 'current-plan-badge ' + limits.badgeClass;
+            document.getElementById('planFeatureDisplay').textContent = limits.feature;
+            document.getElementById('navPlanBadge').innerHTML = limits.navBadge;
+            var tag = document.getElementById('memberPlanTag');
+            if (tag) {
+                tag.textContent = '📋 ' + limits.label + '方案';
+                tag.className = 'plan-tag plan-tag-' + (limits.label === '標準' ? 'standard' : limits.label === '長期照護' ?
+                    'longterm' : 'pro');
+            }
+            document.getElementById('memberPetCount').textContent = pets.length;
+            document.getElementById('memberReportCount').textContent = getTotalReports();
+            document.getElementById('memberMedicalCount').textContent = monthlyMedicalCount;
+        }
+
+        function showToast(msg) {
+            var t = document.querySelector('.toast-message');
+            if (t) t.remove();
+            var div = document.createElement('div');
+            div.className =
+                'toast-message fixed bottom-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full text-sm shadow-lg z-[200] transition-all duration-300';
+            div.textContent = msg;
+            document.body.appendChild(div);
+            setTimeout(function() { div.style.opacity = '0';
+                setTimeout(function() { div.remove(); }, 300); }, 2500);
+        }
+
+        // ================================================================
+        //  NAV 更新
+        // ================================================================
+        function updateNav() {
+            var authSection = document.getElementById('authSection');
+            if (isLoggedIn) {
+                // 已登入：顯示「我的帳戶 ▼」下拉選單
+                authSection.innerHTML = `
+                    <div class="user-dropdown">
+                        <button onclick="toggleUserDropdown()" class="nav-user-btn">
+                            👤 我的帳戶 <i class="fa-solid fa-chevron-down text-[0.6rem]"></i>
+                        </button>
+                        <div id="userDropdownMenu" class="dropdown-menu">
+                            <button onclick="handleUserMenuClick('account')" class="dropdown-item"><i class="fa-regular fa-user"></i> 會員專區</button>
+                            <hr class="my-1 border-gray-100">
+                            <button onclick="handleLogout()" class="dropdown-item logout"><i class="fa-solid fa-right-from-bracket"></i> 登出</button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // 未登入：顯示「立即開始」按鈕
+                authSection.innerHTML = `
+                    <button onclick="openAuthModal()" class="nav-auth-btn">🚀 立即開始</button>
+                `;
+            }
+        }
+
+        function toggleUserDropdown() {
+            var menu = document.getElementById('userDropdownMenu');
+            if (menu) menu.classList.toggle('show');
+        }
+
+        function handleUserMenuClick(action) {
+            var menu = document.getElementById('userDropdownMenu');
+            if (menu) menu.classList.remove('show');
+            if (!isLoggedIn) { alert('請先登入會員'); return; }
+            if (action === 'account') {
+                showMemberPets(); // 跳到會員專區
+            }
+        }
+
+        // ================================================================
+        //  方案切換下拉
+        // ================================================================
+        function togglePlanDropdown() {
+            document.getElementById('planDropdownMenu').classList.toggle('show');
+        }
+        document.addEventListener('click', function(e) {
+            var dd = document.querySelector('.plan-switch-dropdown');
+            if (dd && !dd.contains(e.target)) {
+                document.getElementById('planDropdownMenu').classList.remove('show');
+            }
+            var ud = document.querySelector('.user-dropdown');
+            if (ud && !ud.contains(e.target)) {
+                var menu = document.getElementById('userDropdownMenu');
+                if (menu) menu.classList.remove('show');
+            }
+        });
+
+        function quickSwitchPlan(plan) {
+            var limits = PLAN_LIMITS[plan];
+            currentPlan = plan;
+            document.querySelectorAll('.dropdown-item').forEach(function(item) {
+                item.classList.remove('active');
+                if (item.getAttribute('data-plan') === plan) item.classList.add('active');
+            });
+            document.getElementById('planDropdownMenu').classList.remove('show');
+            renderPets();
+            renderReports();
+            updatePlanDisplay();
+            if (!isLoggedIn || !hasPaid) {
+                showToast('🔍 示範模式：已切換至「' + limits.label + '方案」體驗');
+            } else {
+                showToast('✅ 已切換至「' + limits.label + '方案」');
+            }
+        }
+
+        // ================================================================
+        //  核心渲染
+        // ================================================================
+        function renderPets() {
+            var container = document.getElementById('petList');
+            if (!pets.length) {
+                container.innerHTML =
+                    '<div class="col-span-full text-center py-8 text-gray-400 text-sm">🐾 還沒有毛孩，點擊上方「新增寵物」</div>';
+                return;
+            }
+            var limits = getPlanLimits();
+            container.innerHTML = pets.map(function(pet) {
+                return `
+                    <div class="bg-white rounded-2xl shadow-md p-4 pet-card border ${selectedPetId === pet.id ? 'ring-2 ring-pink-400' : 'border-gray-100'}" onclick="selectPet('${pet.id}')">
+                        <div class="flex gap-3">
+                            <div class="text-4xl">${pet.gender === '男' ? '🐕' : '🐩'}</div>
+                            <div class="flex-1">
+                                <div class="flex justify-between items-start">
+                                    <h3 class="text-lg font-bold text-pink-600">${pet.name}</h3>
+                                    <span class="text-xs bg-gray-100 px-2 py-0.5 rounded-full">${pet.species || '寵物'}</span>
+                                </div>
+                                <p class="text-gray-500 text-xs">${pet.breed || '品種未填'} • ${pet.age || '年齡未填'} ${pet.gender ? '• '+pet.gender : ''}</p>
+                                <p class="text-xs text-gray-400">絕育:${pet.neutered} 長期病:${pet.chronic || '無'}</p>
+                                <div class="flex items-center justify-between mt-2">
+                                    <p class="text-pink-500 text-sm">📄 ${(petReports[pet.id] || []).length} 份報告</p>
+                                    <button onclick="event.stopPropagation(); generateMedicalForPet('${pet.id}')" class="btn-full-report"><i class="fa-regular fa-file-lines"></i>生成醫療報告</button>
+                                </div>
+                                <div class="mt-2 flex gap-2 flex-wrap">
+                                    <button onclick="event.stopPropagation(); openAddPetModal('${pet.id}')" class="text-xs border border-gray-300 hover:border-pink-300 px-2.5 py-1 rounded-full transition">✏️ 編輯</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            renderMemberPets();
+            updatePlanDisplay();
+        }
+
+        function selectPet(petId) {
+            selectedPetId = petId;
+            memberSelectedPetId = petId;
+            renderPets();
+            renderReports();
+            var pet = pets.find(function(p) { return p.id === petId; });
+            document.getElementById('selectedPetNameDisplay').innerHTML = pet ? pet.name + ' 的病歷報告' : '病歷報告';
+            document.getElementById('memberSelectedPetName').innerHTML = pet ? pet.name + ' 的病歷報告' : '病歷報告';
+            renderMemberReports();
+        }
+
+        function renderReports() {
+            if (!selectedPetId) {
+                document.getElementById('reportListContainer').innerHTML =
+                    '<div class="text-center py-6 text-gray-400 text-sm">請先選擇一隻寵物</div>';
+                return;
+            }
+            var reports = petReports[selectedPetId] || [];
+            var container = document.getElementById('reportListContainer');
+            if (reports.length === 0) {
+                container.innerHTML =
+                    '<div class="text-center py-6 text-gray-400 text-sm">📭 尚無病歷報告，點擊「上傳報告」</div>';
+                return;
+            }
+            var isInSelectMode = isSelectMode;
+            container.innerHTML = reports.map(function(r) {
+                return `
+                    <div class="bg-white rounded-xl p-3 shadow-sm border border-gray-100 report-item">
+                        <div class="report-item-with-checkbox">
+                            ${isInSelectMode ? `<input type="checkbox" class="report-checkbox" data-report-id="${r.id}" ${selectedReports.has(r.id) ? 'checked' : ''} onchange="toggleReportSelection('${r.id}')">` : ''}
+                            <div class="report-content" onclick="${isInSelectMode ? '' : `openReportDetailModal('${selectedPetId}','${r.id}')`}">
+                                <div class="font-bold text-sm">${r.title}</div>
+                                <div class="text-xs font-semibold text-black">${r.date}</div>
+                                <div class="text-xs text-gray-600">${r.description.substring(0, 80)}${r.description.length > 80 ? '...' : ''}</div>
+                            </div>
+                            <div class="report-actions" onclick="event.stopPropagation();">
+                                <button onclick="openEditReportModal('${selectedPetId}','${r.id}')" class="text-blue-500 hover:text-blue-700 px-1.5 text-sm transition" title="編輯"><i class="fa-regular fa-pen-to-square"></i></button>
+                                <button onclick="deleteReport('${selectedPetId}','${r.id}')" class="text-gray-400 hover:text-red-500 px-1.5 text-sm transition" title="刪除"><i class="fa-regular fa-trash-can"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            var totalReports = getTotalReports();
+            var limits = getPlanLimits();
+            var hint = document.getElementById('reportLimitHint');
+            if (limits.monthlyReportLimit === Infinity) {
+                hint.innerHTML = '✨ 無限儲存報告';
+            } else {
+                var remaining = limits.monthlyReportLimit - totalReports;
+                if (remaining <= 0) {
+                    hint.innerHTML =
+                        '⚠️ 已達每月 ' + limits.monthlyReportLimit + ' 份報告上限，請<a href="javascript:void(0)" onclick="openPricingModal()" class="text-pink-500 underline">升級方案</a>';
+                    document.getElementById('limitWarning').classList.remove('hidden');
+                    document.getElementById('limitWarningText').textContent = '報告數量已達上限 (' + limits.monthlyReportLimit +
+                    ' 份)';
+                } else {
+                    hint.innerHTML = '📌 本月已使用 ' + totalReports + ' / ' + limits.monthlyReportLimit + ' 份，還可新增 ' +
+                        remaining + ' 份';
+                    document.getElementById('limitWarning').classList.add('hidden');
+                }
+            }
+            var usage = document.getElementById('monthlyUsage');
+            var ml = limits.medicalReportLimit;
+            if (ml === Infinity) usage.innerHTML = '🔄 醫療報告生成：無限';
+            else if (ml === 0) usage.innerHTML = '🔄 醫療報告生成：免費方案不支援';
+            else usage.innerHTML =
+                '🔄 本月已生成 ' + monthlyMedicalCount + ' / ' + ml + ' 份醫療報告，剩餘 ' + (ml - monthlyMedicalCount) + ' 份';
+        }
+
+        // ================================================================
+        //  會員專區渲染
+        // ================================================================
+        function renderMemberPets() {
+            var container = document.getElementById('memberPetList');
+            if (!pets.length) {
+                container.innerHTML =
+                    '<div class="col-span-full text-center py-8 text-gray-400 text-sm">🐾 還沒有毛孩，點擊下方「新增寵物」</div>';
+                return;
+            }
+            container.innerHTML = pets.map(function(pet) {
+                return `
+                    <div class="bg-white rounded-2xl shadow-md p-4 pet-card border ${memberSelectedPetId === pet.id ? 'ring-2 ring-pink-400' : 'border-gray-100'}" onclick="selectMemberPet('${pet.id}')">
+                        <div class="flex gap-3">
+                            <div class="text-4xl">${pet.gender === '男' ? '🐕' : '🐩'}</div>
+                            <div class="flex-1">
+                                <div class="flex justify-between items-start">
+                                    <h3 class="text-lg font-bold text-pink-600">${pet.name}</h3>
+                                    <span class="text-xs bg-gray-100 px-2 py-0.5 rounded-full">${pet.species || '寵物'}</span>
+                                </div>
+                                <p class="text-gray-500 text-xs">${pet.breed || '品種未填'} • ${pet.age || '年齡未填'} ${pet.gender ? '• '+pet.gender : ''}</p>
+                                <p class="text-xs text-gray-400">絕育:${pet.neutered} 長期病:${pet.chronic || '無'}</p>
+                                <div class="flex items-center justify-between mt-2">
+                                    <p class="text-pink-500 text-sm">📄 ${(petReports[pet.id] || []).length} 份報告</p>
+                                    <button onclick="event.stopPropagation(); generateMemberMedicalForPet('${pet.id}')" class="btn-full-report"><i class="fa-regular fa-file-lines"></i>生成醫療報告</button>
+                                </div>
+                                <button onclick="event.stopPropagation(); openAddPetModal('${pet.id}')" class="text-xs border border-gray-300 hover:border-pink-300 px-2.5 py-1 rounded-full transition mt-1">✏️ 編輯</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectMemberPet(petId) {
+            memberSelectedPetId = petId;
+            selectedPetId = petId;
+            renderMemberPets();
+            renderMemberReports();
+            var pet = pets.find(function(p) { return p.id === petId; });
+            document.getElementById('memberSelectedPetName').innerHTML = pet ? pet.name + ' 的病歷報告' : '病歷報告';
+            renderPets();
+            renderReports();
+            document.getElementById('selectedPetNameDisplay').innerHTML = pet ? pet.name + ' 的病歷報告' : '病歷報告';
+            exitMemberSelectMode();
+        }
+
+        function renderMemberReports() {
+            if (!memberSelectedPetId) {
+                document.getElementById('memberReportListContainer').innerHTML =
+                    '<div class="text-center py-6 text-gray-400 text-sm">請先選擇一隻寵物</div>';
+                return;
+            }
+            var reports = petReports[memberSelectedPetId] || [];
+            var container = document.getElementById('memberReportListContainer');
+            if (reports.length === 0) {
+                container.innerHTML =
+                    '<div class="text-center py-6 text-gray-400 text-sm">📭 尚無病歷報告，點擊「上傳報告」</div>';
+                return;
+            }
+            var isInSelectMode = isMemberSelectMode;
+            container.innerHTML = reports.map(function(r) {
+                return `
+                    <div class="bg-white rounded-xl p-3 shadow-sm border border-gray-100 report-item">
+                        <div class="report-item-with-checkbox">
+                            ${isInSelectMode ? `<input type="checkbox" class="report-checkbox" data-report-id="${r.id}" ${memberSelectedReports.has(r.id) ? 'checked' : ''} onchange="toggleMemberReportSelection('${r.id}')">` : ''}
+                            <div class="report-content" onclick="${isInSelectMode ? '' : `openReportDetailModal('${memberSelectedPetId}','${r.id}')`}">
+                                <div class="font-bold text-sm">${r.title}</div>
+                                <div class="text-xs font-semibold text-black">${r.date}</div>
+                                <div class="text-xs text-gray-600">${r.description.substring(0, 80)}${r.description.length > 80 ? '...' : ''}</div>
+                            </div>
+                            <div class="report-actions" onclick="event.stopPropagation();">
+                                <button onclick="openEditReportModal('${memberSelectedPetId}','${r.id}')" class="text-blue-500 hover:text-blue-700 px-1.5 text-sm transition" title="編輯"><i class="fa-regular fa-pen-to-square"></i></button>
+                                <button onclick="deleteReport('${memberSelectedPetId}','${r.id}')" class="text-gray-400 hover:text-red-500 px-1.5 text-sm transition" title="刪除"><i class="fa-regular fa-trash-can"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            var totalReports = getTotalReports();
+            var limits = getPlanLimits();
+            var hint = document.getElementById('memberReportLimitHint');
+            if (limits.monthlyReportLimit === Infinity) {
+                hint.innerHTML = '✨ 無限儲存報告';
+            } else {
+                var remaining = limits.monthlyReportLimit - totalReports;
+                if (remaining <= 0) {
+                    hint.innerHTML =
+                        '⚠️ 已達每月 ' + limits.monthlyReportLimit + ' 份報告上限，請<a href="javascript:void(0)" onclick="openPricingModal()" class="text-pink-500 underline">升級方案</a>';
+                    document.getElementById('limitWarning').classList.remove('hidden');
+                    document.getElementById('limitWarningText').textContent = '報告數量已達上限 (' + limits.monthlyReportLimit +
+                    ' 份)';
+                } else {
+                    hint.innerHTML = '📌 本月已使用 ' + totalReports + ' / ' + limits.monthlyReportLimit + ' 份，還可新增 ' +
+                        remaining + ' 份';
+                    document.getElementById('limitWarning').classList.add('hidden');
+                }
+            }
+            updateMemberSelectedCount();
+        }
+
+        // ================================================================
+        //  選擇報告模式（主頁）- 黃色 Bar 默認隱藏
+        // ================================================================
+        function toggleSelectMode() {
+            isSelectMode = !isSelectMode;
+            var bar = document.getElementById('reportSelectMode');
+            var btn = document.getElementById('toggleSelectModeBtn');
+            if (isSelectMode) {
+                selectedReports.clear();
+                bar.classList.add('show');
+                bar.classList.remove('hidden');
+                btn.textContent = '❌ 取消選擇';
+            } else {
+                bar.classList.remove('show');
+                bar.classList.add('hidden');
+                selectedReports.clear();
+                btn.textContent = '☑️ 選擇報告';
+            }
+            renderReports();
+            updateSelectedCount();
+        }
+
+        function toggleReportSelection(reportId) {
+            if (selectedReports.has(reportId)) selectedReports.delete(reportId);
+            else selectedReports.add(reportId);
+            updateSelectedCount();
+            var reports = petReports[selectedPetId] || [];
+            var selectAll = document.getElementById('selectAllReports');
+            if (selectAll) selectAll.checked = selectedReports.size === reports.length && reports.length > 0;
+            renderReports();
+        }
+
+        function toggleSelectAllReports() {
+            var reports = petReports[selectedPetId] || [];
+            var selectAll = document.getElementById('selectAllReports');
+            if (selectAll.checked) reports.forEach(function(r) { selectedReports.add(r.id); });
+            else selectedReports.clear();
+            renderReports();
+            updateSelectedCount();
+        }
+
+        function updateSelectedCount() {
+            document.getElementById('selectedCountDisplay').textContent = '已選 ' + selectedReports.size + ' 份報告';
+        }
+
+        function exitSelectMode() {
+            isSelectMode = false;
+            selectedReports.clear();
+            var bar = document.getElementById('reportSelectMode');
+            var btn = document.getElementById('toggleSelectModeBtn');
+            bar.classList.remove('show');
+            bar.classList.add('hidden');
+            btn.textContent = '☑️ 選擇報告';
+            renderReports();
+        }
+
+        // ================================================================
+        //  生成醫療報告（核心）
+        // ================================================================
+        function generateMedicalReportContent(pet, selectedData, allReports, isPaidUser) {
+            var html = '<div class="report-title">🏥 生成醫療報告 (已選 ' + selectedData.length + ' 份)</div>';
+            html += '<div class="section-title">📌 寵物基本資料</div>';
+            html += '<div class="pet-info"><div class="pet-info-grid">';
+            html += '<div class="item"><span class="label">名字</span><span class="value">' + pet.name + '</span></div>';
+            html += '<div class="item"><span class="label">種類</span><span class="value">' + (pet.species || '-') +
+                '</span></div>';
+            html += '<div class="item"><span class="label">品種</span><span class="value">' + (pet.breed || '-') +
+                '</span></div>';
+            html += '<div class="item"><span class="label">性別</span><span class="value">' + (pet.gender || '-') +
+                '</span></div>';
+            html += '<div class="item"><span class="label">年齡</span><span class="value">' + (pet.age || '-') +
+                '</span></div>';
+            html += '<div class="item"><span class="label">已絕育</span><span class="value">' + pet.neutered + '</span></div>';
+            html += '<div class="item"><span class="label">長期病</span><span class="value">' + (pet.chronic || '無') +
+                '</span></div>';
+            html += '</div></div>';
+
+            if (isPaidUser) {
+                html += '<div class="section-title">📋 所選病歷報告 (共 ' + selectedData.length + ' 份)</div>';
+                selectedData.forEach(function(r, idx) {
+                    html +=
+                        '<div class="report-entry"><div class="entry-title">[' + (idx + 1) + '] ' + r.title +
+                        '</div><div class="entry-date">' + r.date + '</div><div class="entry-desc">' + r
+                        .description + '</div></div>';
+                });
+                html += '<div class="section-title">📝 總結</div>';
+                html += '<div class="pet-info">• 寵物「' + pet.name + '」共 ' + allReports.length +
+                    ' 份病歷\n• 本次輸出 ' + selectedData.length + ' 份報告</div>';
+                html += '<div class="footer">生成日期：' + new Date().toLocaleString('zh-HK') +
+                    '<br>報告由 PetArchive HK 會員生成 · 僅供獸醫參考</div>';
+            } else {
+                var demoContent = selectedData.map(function(r, idx) {
+                    var descLines = r.description.split(/[。，、\n]/);
+                    var partialDesc = descLines.slice(0, Math.max(1, Math.ceil(descLines.length / 3))).join(
+                        '。') + (descLines.length > 3 ? '……' : '');
+                    return '<div class="report-entry"><div class="entry-title">[' + (idx + 1) + '] ' + r.title +
+                        '</div><div class="entry-date">' + r.date + '</div><div class="entry-desc">' +
+                        partialDesc + '</div></div>';
+                }).join('');
+                html += '<div class="section-title">📋 所選病歷報告 (共 ' + selectedData.length + ' 份)</div>';
+                html += demoContent;
+                html +=
+                    '<div class="demo-watermark">🔒 此為示範模式，只顯示部分內容。<br>成為付費會員即可查看完整報告及使用全部功能。</div>';
+                html += '<div class="footer">生成日期：' + new Date().toLocaleString('zh-HK') + '</div>';
+            }
+            return html;
+        }
+
+        function showMedicalReport(pet, selectedData, allReports, isPaidUser) {
+            var html = generateMedicalReportContent(pet, selectedData, allReports, isPaidUser);
+            var display = document.getElementById('medicalReportDisplay');
+            display.innerHTML = html;
+            document.getElementById('medicalReportModal').classList.add('show');
+
+            document.getElementById('copyMedicalBtn').onclick = function() {
+                var text = display.innerText;
+                if (!isPaidUser) {
+                    navigator.clipboard.writeText(text).then(function() {
+                        showToast('🔒 示範模式已複製部分內容，成為付費會員可複製完整報告');
+                    }).catch(function() {
+                        var ta = document.createElement('textarea');
+                        ta.value = text;
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(ta);
+                        showToast('🔒 示範模式已複製部分內容，成為付費會員可複製完整報告');
+                    });
+                    return;
+                }
+                navigator.clipboard.writeText(text).then(function() { alert('✅ 已複製到剪貼簿！'); }).catch(function() {
+                    var ta = document.createElement('textarea');
+                    ta.value = text;
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                    alert('✅ 已複製到剪貼簿！');
+                });
+            };
+
+            document.getElementById('downloadPdfBtn').onclick = function() {
+                var element = display;
+                var filename = isPaidUser ?
+                    '醫療報告_' + pet.name + '_' + Date.now().toString().slice(0, 10) + '.pdf' :
+                    '醫療報告_示範模式_' + pet.name + '_' + Date.now().toString().slice(0, 10) + '.pdf';
+                var opt = {
+                    margin: [10, 10, 10, 10],
+                    filename: filename,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+                };
+                html2pdf().set(opt).from(element).save();
+                if (!isPaidUser) showToast('🔒 示範模式已下載部分內容，成為付費會員可下載完整報告');
+            };
+        }
+
+        // ================================================================
+        //  生成所選報告（主頁）
+        // ================================================================
+        function generateSelectedReports() {
+            var isPaidUser = isLoggedIn && hasPaid;
+            if (selectedReports.size === 0) { alert('請至少選擇一份報告'); return; }
+            var pet = pets.find(function(p) { return p.id === selectedPetId; });
+            if (!pet) return;
+            var limits = getPlanLimits();
+            if (limits.medicalReportLimit === 0) {
+                alert('免費方案不支援生成醫療報告，請升級方案');
+                return;
+            }
+            if (isPaidUser && limits.medicalReportLimit !== Infinity && monthlyMedicalCount + selectedReports.size > limits
+                .medicalReportLimit) {
+                alert('每月醫療報告生成上限為 ' + limits.medicalReportLimit + ' 份，已使用 ' + monthlyMedicalCount + ' 份');
+                return;
+            }
+            var selectedData = petReports[selectedPetId].filter(function(r) { return selectedReports.has(r.id); });
+            var allReports = petReports[selectedPetId] || [];
+            showMedicalReport(pet, selectedData, allReports, isPaidUser);
+            if (isPaidUser) {
+                monthlyMedicalCount += selectedData.length;
+                document.getElementById('memberMedicalCount').textContent = monthlyMedicalCount;
+            }
+            exitSelectMode();
+            renderReports();
+            renderMemberReports();
+        }
+
+        function generateMedicalForPet(petId) {
+            var pet = pets.find(function(p) { return p.id === petId; });
+            var reports = petReports[petId] || [];
+            if (reports.length === 0) { alert('此寵物尚無病歷報告'); return; }
+            selectedReports.clear();
+            reports.forEach(function(r) { selectedReports.add(r.id); });
+            isSelectMode = true;
+            var bar = document.getElementById('reportSelectMode');
+            var btn = document.getElementById('toggleSelectModeBtn');
+            bar.classList.add('show');
+            bar.classList.remove('hidden');
+            btn.textContent = '❌ 取消選擇';
+            renderReports();
+            generateSelectedReports();
+        }
+
+        // ================================================================
+        //  會員專區選擇報告模式（黃色 Bar 默認隱藏）
+        // ================================================================
+        function toggleMemberSelectMode() {
+            isMemberSelectMode = !isMemberSelectMode;
+            var bar = document.getElementById('memberReportSelectMode');
+            var btn = document.getElementById('memberToggleSelectModeBtn');
+            if (isMemberSelectMode) {
+                memberSelectedReports.clear();
+                bar.classList.add('show');
+                bar.classList.remove('hidden');
+                btn.textContent = '❌ 取消選擇';
+            } else {
+                bar.classList.remove('show');
+                bar.classList.add('hidden');
+                memberSelectedReports.clear();
+                btn.textContent = '☑️ 選擇報告';
+            }
+            renderMemberReports();
+            updateMemberSelectedCount();
+        }
+
+        function toggleMemberReportSelection(reportId) {
+            if (memberSelectedReports.has(reportId)) memberSelectedReports.delete(reportId);
+            else memberSelectedReports.add(reportId);
+            updateMemberSelectedCount();
+            var reports = petReports[memberSelectedPetId] || [];
+            var selectAll = document.getElementById('memberSelectAllReports');
+            if (selectAll) selectAll.checked = memberSelectedReports.size === reports.length && reports.length > 0;
+            renderMemberReports();
+        }
+
+        function toggleMemberSelectAllReports() {
+            var reports = petReports[memberSelectedPetId] || [];
+            var selectAll = document.getElementById('memberSelectAllReports');
+            if (selectAll.checked) reports.forEach(function(r) { memberSelectedReports.add(r.id); });
+            else memberSelectedReports.clear();
+            renderMemberReports();
+            updateMemberSelectedCount();
+        }
+
+        function updateMemberSelectedCount() {
+            document.getElementById('memberSelectedCountDisplay').textContent = '已選 ' + memberSelectedReports.size +
+                ' 份報告';
+        }
+
+        function exitMemberSelectMode() {
+            isMemberSelectMode = false;
+            memberSelectedReports.clear();
+            var bar = document.getElementById('memberReportSelectMode');
+            var btn = document.getElementById('memberToggleSelectModeBtn');
+            bar.classList.remove('show');
+            bar.classList.add('hidden');
+            btn.textContent = '☑️ 選擇報告';
+            renderMemberReports();
+        }
+
+        function generateMemberSelectedReports() {
+            var isPaidUser = isLoggedIn && hasPaid;
+            if (memberSelectedReports.size === 0) { alert('請至少選擇一份報告'); return; }
+            var pet = pets.find(function(p) { return p.id === memberSelectedPetId; });
+            if (!pet) return;
+            var limits = getPlanLimits();
+            if (limits.medicalReportLimit === 0) {
+                alert('免費方案不支援生成醫療報告，請升級方案');
+                return;
+            }
+            if (isPaidUser && limits.medicalReportLimit !== Infinity && monthlyMedicalCount + memberSelectedReports.size >
+                limits.medicalReportLimit) {
+                alert('每月醫療報告生成上限為 ' + limits.medicalReportLimit + ' 份，已使用 ' + monthlyMedicalCount + ' 份');
+                return;
+            }
+            var selectedData = petReports[memberSelectedPetId].filter(function(r) { return memberSelectedReports.has(r
+                .id); });
+            var allReports = petReports[memberSelectedPetId] || [];
+            showMedicalReport(pet, selectedData, allReports, isPaidUser);
+            if (isPaidUser) {
+                monthlyMedicalCount += selectedData.length;
+                document.getElementById('memberMedicalCount').textContent = monthlyMedicalCount;
+            }
+            exitMemberSelectMode();
+            renderReports();
+            renderMemberReports();
+        }
+
+        function generateMemberMedicalForPet(petId) {
+            var pet = pets.find(function(p) { return p.id === petId; });
+            var reports = petReports[petId] || [];
+            if (reports.length === 0) { alert('此寵物尚無病歷報告'); return; }
+            memberSelectedReports.clear();
+            reports.forEach(function(r) { memberSelectedReports.add(r.id); });
+            isMemberSelectMode = true;
+            var bar = document.getElementById('memberReportSelectMode');
+            var btn = document.getElementById('memberToggleSelectModeBtn');
+            bar.classList.add('show');
+            bar.classList.remove('hidden');
+            btn.textContent = '❌ 取消選擇';
+            renderMemberReports();
+            generateMemberSelectedReports();
+        }
+
+        // ================================================================
+        //  報告詳情 Modal
+        // ================================================================
+        function openReportDetailModal(petId, reportId) {
+            var report = petReports[petId]?.find(function(r) { return r.id === reportId; });
+            if (!report) return;
+            var pet = pets.find(function(p) { return p.id === petId; });
+            var isPaidUser = isLoggedIn && hasPaid;
+            var displayDesc = isPaidUser ? report.description : report.description.substring(0, Math.floor(report
+                .description.length / 3)) + '……';
+            var filesHtml = '';
+            if (report.files && report.files.length > 0) {
+                filesHtml = report.files.map(function(f) {
+                    var isPdf = f.toLowerCase().endsWith('.pdf');
+                    var isImage = f.toLowerCase().endsWith('.jpg') || f.toLowerCase().endsWith('.jpeg') || f
+                        .toLowerCase().endsWith('.png');
+                    var icon = isPdf ? 'fa-file-pdf' : (isImage ? 'fa-file-image' : 'fa-file');
+                    return '<span class="file-icon" onclick="previewFile(\'' + f + '\', ' + isImage +
+                        ')"><i class="fa-regular ' + icon + '"></i> ' + f + '</span>';
+                }).join(' ');
+            } else {
+                filesHtml = '<span class="text-gray-400 text-sm">無附件</span>';
+            }
+            document.getElementById('reportDetailContent').innerHTML = `
+                <div class="mb-3"><span class="label">標題</span><div class="text-base font-bold text-gray-800 mt-1">${report.title}</div></div>
+                <div class="mb-3"><span class="label">日期</span><div class="text-sm font-semibold text-black mt-1">${report.date}</div></div>
+                <div class="mb-3"><span class="label">寵物</span><div class="text-sm text-gray-700 mt-1">${pet?.name || '未知'} ${pet?.species ? '· '+pet.species : ''}</div></div>
+                <div><span class="label">詳細內容</span><div class="text-sm text-gray-700 mt-1 bg-white p-3 rounded-xl border border-gray-100">${displayDesc}</div></div>
+                ${!isPaidUser ? '<div class="text-xs text-red-500 mt-1">🔒 示範模式只顯示部分內容</div>' : ''}
+                <div class="mt-3"><span class="label">附件</span><div class="flex flex-wrap gap-2 mt-1">${filesHtml}</div></div>
+            `;
+            document.getElementById('reportDetailModal').classList.add('show');
+
+            document.getElementById('detailEditBtn').onclick = function() { closeReportDetailModal();
+                openEditReportModal(petId, reportId); };
+            document.getElementById('detailCopyBtn').onclick = function() {
+                if (!isPaidUser) {
+                    var text =
+                        '📄 ' + report.title + '\n📅 ' + report.date + '\n🐾 ' + (pet?.name || '未知') + '\n\n📝 ' +
+                        report.description.substring(0, Math.floor(report.description.length / 3)) +
+                        '...\n\n🔒 示範模式只顯示部分內容';
+                    navigator.clipboard.writeText(text).then(function() { showToast(
+                        '🔒 示範模式已複製部分內容，成為付費會員可複製完整報告'); }).catch(function() {
+                        var ta = document.createElement('textarea');
+                        ta.value = text;
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(ta);
+                        showToast('🔒 示範模式已複製部分內容，成為付費會員可複製完整報告');
+                    });
+                    return;
+                }
+                var text =
+                    '📄 ' + report.title + '\n📅 ' + report.date + '\n🐾 ' + (pet?.name || '未知') + '\n\n📝 ' +
+                    report.description + '\n\n📎 附件: ' + (report.files || []).join(', ');
+                navigator.clipboard.writeText(text).then(function() { alert('✅ 報告內容已複製到剪貼簿！'); });
+            };
+            document.getElementById('detailGenerateMedicalBtn').onclick = function() {
+                closeReportDetailModal();
+                selectedReports.clear();
+                selectedReports.add(reportId);
+                isSelectMode = true;
+                var bar = document.getElementById('reportSelectMode');
+                var btn = document.getElementById('toggleSelectModeBtn');
+                bar.classList.add('show');
+                bar.classList.remove('hidden');
+                btn.textContent = '❌ 取消選擇';
+                renderReports();
+                generateSelectedReports();
+            };
+        }
+
+        function closeReportDetailModal() {
+            document.getElementById('reportDetailModal').classList.remove('show');
+        }
+
+        function previewFile(filename, isImage) {
+            if (isImage) {
+                document.getElementById('imagePreviewContainer').innerHTML =
+                    '<div class="bg-gray-100 rounded-xl p-8 text-center"><div class="text-6xl mb-4">🖼️</div><p class="text-gray-500">模擬圖片預覽</p><p class="text-sm text-gray-400">' +
+                    filename + '</p><div class="mt-4 bg-pink-100 p-4 rounded-lg text-xs text-gray-600">（示範模式）</div></div>';
+                document.getElementById('imagePreviewModal').classList.add('show');
+            } else {
+                alert('📄 檔案: ' + filename + '\n（示範模式）');
+            }
+        }
+
+        function closeImagePreview() { document.getElementById('imagePreviewModal').classList.remove('show'); }
+
+        // ================================================================
+        //  報告 CRUD
+        // ================================================================
+        function deleteReport(petId, reportId) {
+            if (confirm('確定刪除這份報告嗎？此動作無法復原。')) {
+                petReports[petId] = petReports[petId].filter(function(r) { return r.id !== reportId; });
+                renderReports();
+                renderPets();
+                renderMemberReports();
+                renderMemberPets();
+            }
+        }
+
+        function openEditReportModal(petId, reportId) {
+            var r = petReports[petId]?.find(function(x) { return x.id === reportId; });
+            if (r) {
+                editingReportMeta = { petId: petId, reportId: reportId };
+                document.getElementById('editReportTitle').value = r.title;
+                document.getElementById('editReportDate').value = r.date;
+                document.getElementById('editReportDesc').value = r.description;
+                document.getElementById('editReportModal').classList.add('show');
+            }
+        }
+
+        function closeEditModal() {
+            document.getElementById('editReportModal').classList.remove('show');
+            editingReportMeta = null;
+        }
+
+        function saveEditedReport() {
+            if (!editingReportMeta) return;
+            var newTitle = document.getElementById('editReportTitle').value.trim();
+            if (!newTitle) { alert('請輸入標題'); return; }
+            var reports = petReports[editingReportMeta.petId];
+            var idx = reports.findIndex(function(r) { return r.id === editingReportMeta.reportId; });
+            if (idx !== -1) {
+                reports[idx].title = newTitle;
+                reports[idx].date = document.getElementById('editReportDate').value;
+                reports[idx].description = document.getElementById('editReportDesc').value.trim() || '無內容';
+            }
+            renderReports();
+            renderPets();
+            renderMemberReports();
+            renderMemberPets();
+            closeEditModal();
+        }
+
+        // ================================================================
+        //  寵物 CRUD
+        // ================================================================
+        function openAddPetModal(petId) {
+            petId = petId || null;
+            var limits = getPlanLimits();
+            if (pets.length >= limits.petLimit && limits.petLimit !== Infinity && petId === null) {
+                alert('目前方案最多 ' + limits.petLimit + ' 隻寵物，請升級方案');
+                return;
+            }
+            editingPetId = petId;
+            document.getElementById('petModalTitle').innerText = petId ? '編輯寵物' : '新增寵物';
+            if (petId) {
+                var pet = pets.find(function(p) { return p.id === petId; });
+                if (pet) {
+                    document.getElementById('petName').value = pet.name;
+                    document.getElementById('petSpecies').value = pet.species || '';
+                    document.getElementById('petBreed').value = pet.breed || '';
+                    document.getElementById('petGender').value = pet.gender || '';
+                    document.getElementById('petAge').value = pet.age || '';
+                    document.getElementById('petNeutered').value = pet.neutered || '否';
+                    document.getElementById('petChronic').value = pet.chronic || '';
+                }
+            } else {
+                ['petName', 'petSpecies', 'petBreed', 'petAge', 'petChronic'].forEach(function(id) { document
+                        .getElementById(id).value = ''; });
+                document.getElementById('petGender').value = '';
+                document.getElementById('petNeutered').value = '否';
+            }
+            document.getElementById('petModal').classList.add('show');
+        }
+
+        function closePetModal() {
+            document.getElementById('petModal').classList.remove('show');
+            editingPetId = null;
+        }
+
+        function savePet() {
+            var name = document.getElementById('petName').value.trim();
+            if (!name) { alert('請填寫寵物名字'); return; }
+            var newPetData = {
+                name: name,
+                species: document.getElementById('petSpecies').value.trim(),
+                breed: document.getElementById('petBreed').value.trim(),
+                gender: document.getElementById('petGender').value,
+                age: document.getElementById('petAge').value.trim(),
+                neutered: document.getElementById('petNeutered').value,
+                chronic: document.getElementById('petChronic').value.trim() || '無'
+            };
+            if (editingPetId) {
+                var idx = pets.findIndex(function(p) { return p.id === editingPetId; });
+                if (idx !== -1) pets[idx] = { ...pets[idx], ...newPetData, id: editingPetId };
+            } else {
+                var newId = generateId();
+                pets.push({ id: newId, ...newPetData });
+                petReports[newId] = [];
+                selectedPetId = newId;
+                memberSelectedPetId = newId;
+            }
+            closePetModal();
+            renderPets();
+            renderMemberPets();
+            if (selectedPetId) renderReports();
+            if (memberSelectedPetId) renderMemberReports();
+        }
+
+        // ================================================================
+        //  上傳報告
+        // ================================================================
+        function openUploadModal() {
+            var target = selectedPetId || memberSelectedPetId;
+            if (!target) { alert('請先選擇一隻寵物'); return; }
+            var limits = getPlanLimits();
+            if (getTotalReports() >= limits.monthlyReportLimit && limits.monthlyReportLimit !== Infinity) {
+                alert('已達每月 ' + limits.monthlyReportLimit + ' 份報告上限，請升級方案');
+                return;
+            }
+            uploadedFiles = [];
+            document.getElementById('fileList').innerHTML = '';
+            document.getElementById('fileInput').value = '';
+            document.getElementById('uploadModal').classList.add('show');
+        }
+
+        function closeUploadModal() {
+            document.getElementById('uploadModal').classList.remove('show');
+        }
+
+        function confirmUpload() {
+            var target = selectedPetId || memberSelectedPetId;
+            if (!target) return;
+            var title = document.getElementById('reportTitle').value.trim();
+            if (!title) { alert('請輸入報告標題'); return; }
+            var date = document.getElementById('reportDate').value || new Date().toISOString().slice(0, 10);
+            var desc = document.getElementById('reportDesc').value.trim() || '無詳細紀錄';
+            var limits = getPlanLimits();
+            if (getTotalReports() >= limits.monthlyReportLimit && limits.monthlyReportLimit !== Infinity) {
+                alert('已達每月 ' + limits.monthlyReportLimit + ' 份報告上限，請升級方案');
+                return;
+            }
+            var fileNames = uploadedFiles.length > 0 ? uploadedFiles.map(function(f) { return f.name; }) :
+                ['上傳檔案(模擬).pdf'];
+            var newReport = { id: generateId(), title: title, date: date, description: desc, files: fileNames };
+            petReports[target] = [...(petReports[target] || []), newReport];
+            renderReports();
+            renderPets();
+            renderMemberReports();
+            renderMemberPets();
+            closeUploadModal();
+            document.getElementById('reportTitle').value = '';
+            document.getElementById('reportDesc').value = '';
+            document.getElementById('reportDate').value = '';
+            uploadedFiles = [];
+            document.getElementById('fileList').innerHTML = '';
+        }
+
+        // ================================================================
+        //  拖拉上傳
+        // ================================================================
+        function setupDropZone() {
+            var dz = document.getElementById('dropZone');
+            var fi = document.getElementById('fileInput');
+            if (!dz) return;
+            dz.addEventListener('click', function() { fi.click(); });
+            dz.addEventListener('dragover', function(e) { e.preventDefault();
+                dz.classList.add('dragover'); });
+            dz.addEventListener('dragleave', function() { dz.classList.remove('dragover'); });
+            dz.addEventListener('drop', function(e) {
+                e.preventDefault();
+                dz.classList.remove('dragover');
+                handleFiles(e.dataTransfer.files);
+            });
+            fi.addEventListener('change', function(e) { handleFiles(e.target.files); });
+        }
+
+        function handleFiles(files) {
+            var list = document.getElementById('fileList');
+            for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+                if (file.type === 'application/pdf' || file.type.startsWith('image/')) {
+                    uploadedFiles.push(file);
+                    var div = document.createElement('div');
+                    div.className = 'flex items-center gap-2 py-1';
+                    div.innerHTML =
+                        '<span class="text-green-500">✅</span> ' + file.name + ' <span class="text-gray-400">(' +
+                        (file.size / 1024).toFixed(1) + ' KB)</span>';
+                    list.appendChild(div);
+                } else {
+                    var div = document.createElement('div');
+                    div.className = 'flex items-center gap-2 py-1';
+                    div.innerHTML =
+                        '<span class="text-red-500">❌</span> ' + file.name +
+                        ' <span class="text-gray-400">(不支援的檔案類型)</span>';
+                    list.appendChild(div);
+                }
+            }
+        }
+
+        // ================================================================
+        //  定價與付款
+        // ================================================================
+        function selectPricingCard(plan) {
+            selectedPricingPlan = plan;
+            document.querySelectorAll('.pricing-card').forEach(function(c) { c.classList.remove('selected'); });
+            var map = { standard: 'cardStandard', longterm: 'cardLongterm', pro: 'cardPro' };
+            document.getElementById(map[plan]).classList.add('selected');
+            var isPurchased = (hasPaid && currentPlan === plan);
+            var btn = document.getElementById('btnStartPlan');
+            if (isPurchased) {
+                btn.disabled = true;
+                btn.textContent = '✅ 已購買';
+                btn.className = 'btn-start purchased';
+                document.getElementById('pricingHintText').textContent = '你已購買此方案';
+            } else {
+                btn.disabled = false;
+                btn.textContent = '💳 立即開始';
+                btn.className = 'btn-start';
+                document.getElementById('pricingHintText').textContent = '選擇方案後按「立即開始」前往付款';
+            }
+        }
+
+        function goToPayment() {
+            if (isLoggedIn && hasPaid && currentPlan === selectedPricingPlan) {
+                showToast('📋 你已購買此方案，無需重複付款');
+                return;
+            }
+            if (!isLoggedIn) {
+                closePricingModal();
+                openAuthModal();
+                return;
+            }
+            if (!selectedPricingPlan) { alert('請先選擇一個方案'); return; }
+            var plan = PLAN_LIMITS[selectedPricingPlan];
+            document.getElementById('paymentPlanName').textContent = plan.label + '方案';
+            document.getElementById('paymentPlanPrice').innerHTML = plan.price +
+                ' <span class="text-sm font-normal text-gray-400">/ 每月</span>';
+            document.getElementById('paymentConfirmPrice').textContent = plan.price.replace('HK$', '');
+            document.getElementById('paymentModal').classList.add('show');
+        }
+
+        function selectPaymentMethod(method) {
+            selectedPaymentMethod = method;
+            document.querySelectorAll('.payment-card').forEach(function(c) { c.classList.remove('selected'); });
+            document.querySelectorAll('.payment-card input[type="radio"]').forEach(function(r) {
+                if (r.value === method) { r.checked = true;
+                    r.closest('.payment-card').classList.add('selected'); }
+            });
+        }
+
+        // ✅ 付款成功時記錄 hasPaid 到 localStorage
+        function processPayment() {
+            var plan = PLAN_LIMITS[selectedPricingPlan];
+            hasPaid = true;
+            localStorage.setItem('petArchive_hasPaid', 'true');   // 👈 記錄已付款
+            currentPlan = selectedPricingPlan;
+            if (selectedPricingPlan === 'pro') {
+                isTrialActive = true;
+                trialDaysLeft = 14;
+                document.getElementById('trialNotice').style.display = 'flex';
+                document.getElementById('trialDaysLeft').textContent = '剩餘 ' + trialDaysLeft + ' 天';
+            } else {
+                isTrialActive = false;
+                document.getElementById('trialNotice').style.display = 'none';
+            }
+            closePaymentModal();
+            closePricingModal();
+            renderPets();
+            renderReports();
+            renderMemberPets();
+            renderMemberReports();
+            updatePlanDisplay();
+            updateNav();
+            showMemberPets();
+            showToast('✅ 付款成功！已啟用「' + plan.label + '方案」');
+        }
+
+        function closePaymentModal() { document.getElementById('paymentModal').classList.remove('show'); }
+
+        // ================================================================
+        //  會員專區功能
+        // ================================================================
+        function showMemberPets() {
+            document.getElementById('mainContent').classList.add('hidden');
+            document.getElementById('memberDashboard').classList.add('show');
+            renderMemberPets();
+            renderMemberReports();
+            if (memberSelectedPetId) {
+                var pet = pets.find(function(p) { return p.id === memberSelectedPetId; });
+                document.getElementById('memberSelectedPetName').innerHTML = pet ? pet.name + ' 的病歷報告' : '病歷報告';
+            }
+        }
+
+        // ✅ 登出時保留 hasPaid（唔好清除 localStorage）
+        function handleLogout() {
+            isLoggedIn = false;
+            // ❌ 唔好清除 hasPaid
+            // ✅ 保留 localStorage 入面嘅 hasPaid
+            document.getElementById('memberDashboard').classList.remove('show');
+            document.getElementById('mainContent').classList.remove('hidden');
+            document.getElementById('trialNotice').style.display = 'none';
+            currentPlan = 'standard';
+            renderPets();
+            renderReports();
+            updatePlanDisplay();
+            updateNav();
+            exitSelectMode();
+            exitMemberSelectMode();
+            showToast('👋 已成功登出');
+        }
+
+        // ================================================================
+        //  編輯名稱
+        // ================================================================
+        function openEditNameModal() {
+            if (!isLoggedIn) { alert('請先登入會員'); return; }
+            document.getElementById('editNameInput').value = currentUser.name || '';
+            document.getElementById('editNameModal').classList.add('show');
+        }
+
+        function closeEditNameModal() { document.getElementById('editNameModal').classList.remove('show'); }
+
+        function saveNameChange() {
+            var newName = document.getElementById('editNameInput').value.trim();
+            if (newName) {
+                currentUser.name = newName;
+                document.getElementById('memberName').textContent = newName;
+                updateNav();
+                closeEditNameModal();
+                showToast('✅ 名稱已更新！');
+            } else { alert('請輸入有效名稱'); }
+        }
+
+        // ================================================================
+        //  登入 / 註冊
+        // ================================================================
+        function openAuthModal() {
+            document.getElementById('authModal').classList.add('show');
+            document.getElementById('authTitle').textContent = '🔐 會員專區';
+            document.getElementById('authSubtitle').textContent = '註冊即享 14 天 所有方案 免費試用';
+            document.getElementById('authName').classList.add('hidden');
+            document.getElementById('registerBtn').textContent = '立即註冊';
+        }
+
+        function closeAuthModal() { document.getElementById('authModal').classList.remove('show'); }
+
+        function handleRegister() {
+            var email = document.getElementById('authEmail').value.trim();
+            var password = document.getElementById('authPassword').value.trim();
+            var name = document.getElementById('authName').value.trim() || '寵物主人';
+            if (!email) { alert('請輸入電郵地址'); return; }
+            if (!password || password.length < 6) { alert('密碼至少6個字元'); return; }
+            isLoggedIn = true;
+            hasPaid = false;   // 新註冊未購買
+            currentUser = { name: name, email: email };
+            document.getElementById('memberName').textContent = name;
+            document.getElementById('memberEmail').textContent = email;
+            closeAuthModal();
+            // ✅ 已登入但未購買 → 跳到定價頁選擇方案
+            showToast('🎉 你已成功成為會員！請選擇你的方案');
+            openPricingModal();
+            updateNav();
+        }
+
+        // ✅ 登入時檢查 hasPaid
+        function handleLogin() {
+            var email = document.getElementById('authEmail').value.trim();
+            var password = document.getElementById('authPassword').value.trim();
+            if (!email) { alert('請輸入電郵地址'); return; }
+            if (!password) { alert('請輸入密碼'); return; }
+            isLoggedIn = true;
+            currentUser = { name: '寵物主人', email: email };
+            document.getElementById('memberName').textContent = '寵物主人';
+            document.getElementById('memberEmail').textContent = email;
+            closeAuthModal();
+
+            if (hasPaid) {
+                // ✅ 已購買 → 直接入會員專區
+                renderPets();
+                renderReports();
+                renderMemberPets();
+                renderMemberReports();
+                updatePlanDisplay();
+                updateNav();
+                showMemberPets();
+                showToast('👋 登入成功，歡迎回來！');
+            } else {
+                // ✅ 已登入但未購買 → 跳到定價頁選擇方案
+                openPricingModal();
+                updateNav();
+                showToast('👋 請選擇你的方案');
+            }
+        }
+
+        // ================================================================
+        //  定價 Modal
+        // ================================================================
+        function openPricingModal(showPlanCards) {
+            // showPlanCards 默認 true（來自定價按鈕），false 來自方案管理按鈕
+            showPlanCards = (showPlanCards !== undefined) ? showPlanCards : true;
+
+            document.getElementById('pricingModal').classList.add('show');
+
+            if (isLoggedIn && hasPaid && !showPlanCards) {
+                // 已購買會員 + 來自方案管理按鈕 → 只顯示已購買方案資訊
+                var limits = getPlanLimits();
+                document.getElementById('pricingTrialText').textContent = '✅ 你已購買「' + limits.label + '方案」';
+                document.getElementById('pricingTrialStatus').className =
+                    'mb-4 text-center text-sm bg-green-50 rounded-xl p-3 border border-green-200';
+                document.getElementById('purchasedPlanDisplay').style.display = 'block';
+                document.getElementById('purchasedPlanName').textContent = limits.label + '方案';
+                document.getElementById('purchasedPlanPrice').textContent = limits.price + ' / 每月';
+                document.getElementById('pricingCardsContainer').style.display = 'none';
+                document.getElementById('btnStartPlan').style.display = 'none';
+                document.getElementById('pricingHintText').textContent = '你已購買此方案，如需升級請聯絡我們';
+            } else {
+                // 訪客 / 未登入 / 未購買 / 來自定價按鈕 → 顯示三個方案卡片
+                document.getElementById('purchasedPlanDisplay').style.display = 'none';
+                document.getElementById('pricingCardsContainer').style.display = 'grid';
+                document.getElementById('btnStartPlan').style.display = 'block';
+
+                if (isLoggedIn && !hasPaid) {
+                    document.getElementById('pricingTrialText').textContent = '📋 請選擇你的方案';
+                    document.getElementById('pricingTrialStatus').className =
+                        'mb-4 text-center text-sm bg-blue-50 rounded-xl p-3 border border-blue-200';
+                } else {
+                    document.getElementById('pricingTrialText').textContent = '🎁 所有方案均享 14 天免費試用';
+                    document.getElementById('pricingTrialStatus').className =
+                        'mb-4 text-center text-sm bg-gradient-to-r from-pink-50 to-rose-50 rounded-xl p-3 border border-pink-200';
+                }
+                document.getElementById('pricingHintText').textContent = '選擇方案後按「立即開始」前往付款';
+            }
+            selectPricingCard(selectedPricingPlan);
+        }
+
+        function closePricingModal() { document.getElementById('pricingModal').classList.remove('show'); }
+
+        // ================================================================
+        //  ESC 關閉 Modal
+        // ================================================================
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.show').forEach(function(m) { m.classList.remove('show'); });
+                document.getElementById('planDropdownMenu').classList.remove('show');
+                var ud = document.getElementById('userDropdownMenu');
+                if (ud) ud.classList.remove('show');
+            }
+        });
+        document.querySelectorAll('.modal').forEach(function(m) {
+            m.addEventListener('click', function(e) {
+                if (e.target === this) this.classList.remove('show');
+            });
+        });
+
+        // ================================================================
+        //  啟動
+        // ================================================================
+        window.onload = function() {
+            initDemoData();
+            renderPets();
+            renderReports();
+            renderMemberPets();
+            renderMemberReports();
+            updatePlanDisplay();
+            updateNav();
+            document.getElementById('selectedPetNameDisplay').innerHTML = '查查 的病歷報告';
+            document.getElementById('memberSelectedPetName').innerHTML = '查查 的病歷報告';
+
+            document.getElementById('addPetBtn').onclick = function() { openAddPetModal(); };
+            document.getElementById('uploadReportBtn').onclick = openUploadModal;
+            document.getElementById('refreshReportBtn').onclick = function() { renderReports(); };
+            document.getElementById('confirmUpload').onclick = confirmUpload;
+            document.getElementById('savePetBtnAction').onclick = savePet;
+            document.getElementById('saveEditReportBtn').onclick = saveEditedReport;
+            document.getElementById('registerBtn').onclick = handleRegister;
+            document.getElementById('loginBtn').onclick = handleLogin;
+
+            document.getElementById('trialNotice').style.display = 'none';
+            document.getElementById('reportSelectMode').classList.add('hidden');
+            document.getElementById('memberReportSelectMode').classList.add('hidden');
+
+            setupDropZone();
+        };
+    </script>
+
+</body>
+</html>
+```

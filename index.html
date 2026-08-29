@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>PetArchive HK | 寵物病歷記錄</title>
+    <title>Paw Vault | 寵物健康雲端病歷庫</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
@@ -85,6 +85,9 @@
         .nav-link:hover { color: #2d8f6f; background: #e8f5ef; }
         .nav-link-primary { padding: 0.6rem 1.8rem; font-size: 0.95rem; font-weight: 600; color: white; background: #3da881; border-radius: 9999px; transition: 0.15s; cursor: pointer; border: none; box-shadow: 0 4px 12px rgba(61,168,129,0.3); }
         .nav-link-primary:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(61,168,129,0.4); }
+        .nav-link-b2b { padding: 0.45rem 0.9rem; font-size: 0.82rem; font-weight: 600; color: #1d4ed8; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 9999px; cursor: pointer; }
+        .nav-link-b2b:hover { background: #dbeafe; }
+        .clinic-verified-badge { display: inline-flex; align-items: center; gap: 0.3rem; background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 12px; }
 
         .btn-hero { padding: 1rem 3rem; font-size: 1.1rem; font-weight: 600; color: white; background: #3da881; border-radius: 9999px; transition: 0.15s; cursor: pointer; border: none; box-shadow: 0 8px 24px rgba(61,168,129,0.35); }
         .btn-hero:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 12px 32px rgba(61,168,129,0.45); }
@@ -226,9 +229,11 @@
     <nav class="border-b bg-white/90 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
         <div class="max-w-6xl mx-auto px-6 py-3 flex justify-between items-center flex-wrap gap-3">
             <a href="#" onclick="goHome()" class="flex items-center gap-2 cursor-pointer">
-                <span class="logo-text">PetArchive HK</span>
+                <span class="logo-text">Paw Vault</span>
+                <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-semibold hidden sm:inline">寵物病歷庫</span>
             </a>
             <div class="flex items-center gap-2 flex-wrap" id="navRightSection">
+                <button onclick="openClinicPartnerModal()" class="nav-link-b2b"><i class="fa-solid fa-user-doctor mr-1"></i>機構合作</button>
                 <button onclick="openPricingModal()" class="nav-link">定價</button>
                 <button onclick="openFaqModal()" class="nav-link">常見問題</button>
                 <button onclick="openContactModal()" class="nav-link">查詢</button>
@@ -246,14 +251,51 @@
         <!-- Hero 區域 -->
         <div class="hero-gradient">
             <div class="max-w-6xl mx-auto px-6 pt-16 pb-12 text-center">
-                <div class="inline-block bg-[#d4ede2] text-[#2d7a5e] px-4 py-1 rounded-full text-sm font-medium mb-4">🐾 寵物健康管理</div>
-                <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-800 leading-tight">為你的毛孩<br><span class="text-[#2d8f6f]">建立一生健康檔案</span></h1>
-                <p class="text-lg text-gray-500 mt-4 max-w-2xl mx-auto">免費試用 14 天 · 無需付款 · 隨時取消</p>
+                <div class="inline-block bg-[#d4ede2] text-[#2d7a5e] px-4 py-1 rounded-full text-sm font-medium mb-4">機構帶入新主人 · 病歷一齊交</div>
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-800 leading-tight">B2B2C 寵物病歷網絡<br><span class="text-[#2d8f6f]">由機構交到新主人手上</span></h1>
+                <p class="text-lg text-gray-500 mt-4 max-w-2xl mx-auto">救援／領養機構、診所一次整理毛孩檔案；領養或覆診時一鍵交給新主人。主人端可免費開始，機構可批量帶客。</p>
                 <div class="flex flex-wrap justify-center gap-3 mt-6">
-                    <button onclick="openSignupModal()" class="btn-hero">立即開始</button>
-                    <button onclick="openPricingModal()" class="btn-outline">查看方案</button>
+                    <button onclick="openSignupModal()" class="btn-hero">我是寵物主人</button>
+                    <button onclick="openClinicPartnerModal()" class="btn-outline">我是機構／診所</button>
                 </div>
             </div>
+        </div>
+
+        <!-- B2B2C 策略說明 -->
+        <div class="max-w-6xl mx-auto px-6 pb-10">
+            <div class="grid md:grid-cols-3 gap-4">
+                <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+                    <p class="text-xs font-semibold text-[#2d8f6f] mb-1">一、機構端</p>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">批量管理毛孩檔案</h3>
+                    <ul class="text-sm text-gray-600 space-y-1.5">
+                        <li>· 多寵物看板</li>
+                        <li>· 同事一齊睇／一齊補資料</li>
+                        <li>· 一鍵生成交檔摘要</li>
+                        <li>· 機構免費或極低價起步</li>
+                    </ul>
+                </div>
+                <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+                    <p class="text-xs font-semibold text-[#2d8f6f] mb-1">二、轉折點</p>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">領養／轉院一刻交檔</h3>
+                    <ul class="text-sm text-gray-600 space-y-1.5">
+                        <li>· 一鍵權限交給新主人</li>
+                        <li>· 疫苗、絕育、化驗原檔一齊走</li>
+                        <li>· 新主人即時收到連結</li>
+                        <li>· 減少「檔案散落 WhatsApp」</li>
+                    </ul>
+                </div>
+                <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+                    <p class="text-xs font-semibold text-[#2d8f6f] mb-1">三、新主人端</p>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">免費開始，繼續用落去</h3>
+                    <ul class="text-sm text-gray-600 space-y-1.5">
+                        <li>· 新主人免費接收檔案</li>
+                        <li>· 基礎版可繼續上載原檔</li>
+                        <li>· 需要更多寵物／份數再升級</li>
+                        <li>· 之後覆診自己補病歷</li>
+                    </ul>
+                </div>
+            </div>
+            <p class="text-center text-xs text-gray-400 mt-4">機構批量功能同「一鍵交檔」正開放合作試用；網站而家已可給主人自行建檔、上載原檔。</p>
         </div>
 
         <!-- 體驗版 - 毛孩與報告 -->
@@ -263,8 +305,8 @@
                 <div class="p-6 border-b">
                     <div class="demo-mode-banner mb-4">
                         <span class="icon">🔍</span>
-                        <span class="text">你正在使用 <span class="highlight">示範體驗模式</span></span>
-                        <span class="text">功能與付費會員相同 · 註冊後可真正儲存</span>
+                        <span class="text"><span class="highlight">示範體驗（假資料）</span>　豆豆／咪咪及以下報告只供試用，不是真實病歷，亦不是公開會員資料。</span>
+                        <span class="text">註冊登入後，只有你自己睇到自己嘅檔案</span>
                     </div>
                     <div class="flex justify-between items-center flex-wrap gap-3 mb-4">
                         <div>
@@ -766,6 +808,34 @@
         </div>
     </div>
 
+    <!-- 診所合作申請 -->
+    <div id="clinicPartnerModal" class="modal">
+        <div class="modal-content modal-content-wide fade-in">
+            <div class="flex justify-between items-center mb-5">
+                <h2 class="text-xl font-bold text-blue-900"><i class="fa-solid fa-hospital-user text-blue-600 mr-2"></i>機構／診所合作</h2>
+                <i onclick="closeClinicPartnerModal()" class="fa-solid fa-xmark text-2xl cursor-pointer text-gray-400 hover:text-gray-600"></i>
+            </div>
+            <p class="text-sm text-gray-500 mb-4">適合救援會、領養機構、診所。機構可批量整理毛孩檔案，領養時交給新主人。而家先收合作意向；一鍵交檔同多成員協作會按合作進度開放。</p>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-blue-50 p-5 rounded-2xl border border-blue-100 space-y-3">
+                    <h3 class="text-base font-bold text-blue-900">診所可考慮嘅方向</h3>
+                    <ul class="space-y-2 text-sm text-gray-700">
+                        <li class="flex items-start gap-2"><i class="fa-solid fa-check text-blue-600 mt-1"></i><span>客人自行保存化驗單、X 光、PDF 原檔</span></li>
+                        <li class="flex items-start gap-2"><i class="fa-solid fa-check text-blue-600 mt-1"></i><span>轉院時由主人出示／下載原檔</span></li>
+                        <li class="flex items-start gap-2"><i class="fa-solid fa-check text-blue-600 mt-1"></i><span>有合作意向可留低資料，我們再聯絡</span></li>
+                    </ul>
+                </div>
+                <div class="space-y-3">
+                    <input id="clinicAppName" type="text" placeholder="機構／診所名稱 *" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm">
+                    <input id="clinicAppEmail" type="email" placeholder="診所電郵 *" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm">
+                    <input id="clinicAppPhone" type="tel" placeholder="聯絡電話" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm">
+                    <textarea id="clinicAppMsg" rows="3" placeholder="留言或期望合作模式" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm"></textarea>
+                    <button onclick="submitClinicApp()" class="w-full py-3 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700">提交查詢</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 查詢 -->
     <div id="contactModal" class="modal">
         <div class="modal-content fade-in" style="max-width:440px;">
@@ -1233,7 +1303,7 @@
         var demoSelectedPetId = 'all';  // ✅ 預設顯示全部
         var demoPets = [
             { id: 'demo1', name: '豆豆', species: '貴賓犬', age: '3', gender: '男', neutered: '是', chronic: '', chip: '900123456789012', allergy: '', blood: '', careNote: '', vaccineName: '五合一+狂犬', vaccineNext: '2027-05-20' },
-            { id: 'demo2', name: '咪咪', species: '英國短毛貓', age: '2', gender: '女', neutered: '是', chronic: '', chip: '', allergy: '雞肉', blood: '', careNote: '驚風筒', vaccineName: '三合一', vaccineNext: '2026-11-01' }
+            { id: 'demo2', name: '咪咪', species: '英國短毛貓', age: '2', gender: '女', neutered: '是', chronic: '', chip: '', allergy: '雞肉', blood: '', careNote: '怕吹风机', vaccineName: '貓三联', vaccineNext: '2026-11-01' }
         ];
         var demoReportsData = [
             { id: 'demo_r1', petId: 'demo1', title: '年度健康檢查報告', date: '2026-06-15', desc: '體重 5.2kg · 心臟正常 · 牙齒健康 · 建議每年檢查一次', files: ['report.pdf', 'checkup.jpg'] },
@@ -1725,10 +1795,52 @@
         // ================================================================
         // NAV 更新
         // ================================================================
+
+        function openClinicPartnerModal() {
+            var m = document.getElementById('clinicPartnerModal');
+            if (m) m.classList.add('show');
+        }
+        function closeClinicPartnerModal() {
+            var m = document.getElementById('clinicPartnerModal');
+            if (m) m.classList.remove('show');
+        }
+        function submitClinicApp() {
+            var name = (document.getElementById('clinicAppName') && document.getElementById('clinicAppName').value.trim()) || '';
+            var email = (document.getElementById('clinicAppEmail') && document.getElementById('clinicAppEmail').value.trim()) || '';
+            var phone = (document.getElementById('clinicAppPhone') && document.getElementById('clinicAppPhone').value.trim()) || '';
+            var msg = (document.getElementById('clinicAppMsg') && document.getElementById('clinicAppMsg').value.trim()) || '';
+            if (!name || !email) { alert('請填寫機構／診所名稱及電郵'); return; }
+            var payload = {
+                type: 'clinic',
+                name: name,
+                email: email,
+                phone: phone,
+                message: msg,
+                status: 'open',
+                createdAt: new Date()
+            };
+            if (typeof db !== 'undefined' && db.collection) {
+                db.collection('inquiries').add(payload).then(function() {
+                    showToast('已收到機構查詢，我們會稍後聯絡', 'success');
+                    closeClinicPartnerModal();
+                    document.getElementById('clinicAppName').value = '';
+                    document.getElementById('clinicAppEmail').value = '';
+                    document.getElementById('clinicAppPhone').value = '';
+                    document.getElementById('clinicAppMsg').value = '';
+                }).catch(function(err) {
+                    showToast('提交失敗：' + (err.message || err), 'error');
+                });
+            } else {
+                alert('感謝申請，我們會稍後聯絡。');
+                closeClinicPartnerModal();
+            }
+        }
+
         function updateNav() {
             var navRight = document.getElementById('navRightSection');
             if (isLoggedIn) {
                 navRight.innerHTML = `
+                    <button onclick="openClinicPartnerModal()" class="nav-link-b2b">機構合作</button>
                     <button onclick="openPricingModal()" class="nav-link">定價</button>
                     <button onclick="openFaqModal()" class="nav-link">常見問題</button>
                     <button onclick="openContactModal()" class="nav-link">查詢</button>
@@ -1747,6 +1859,7 @@
                 `;
             } else {
                 navRight.innerHTML = `
+                    <button onclick="openClinicPartnerModal()" class="nav-link-b2b">機構合作</button>
                     <button onclick="openPricingModal()" class="nav-link">定價</button>
                     <button onclick="openFaqModal()" class="nav-link">常見問題</button>
                     <button onclick="openContactModal()" class="nav-link">查詢</button>

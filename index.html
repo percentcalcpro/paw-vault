@@ -285,6 +285,7 @@
                 <div class="inline-block bg-[#d4ede2] text-[#2d7a5e] px-4 py-1 rounded-full text-sm font-medium mb-4">Paw Vault</div>
                 <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-800 leading-tight">毛孩的終身<br><span class="text-[#2d8f6f]">健康電子檔案庫</span></h1>
                 <p class="text-lg text-gray-500 mt-4 max-w-xl mx-auto">打針紀錄、化驗單、覆診病歷一拍照即存。隨身帶住，睇醫生不再手忙腳亂。</p>
+                <div></div>
                 <div class="flex flex-wrap justify-center gap-3 mt-7">
                     <button onclick="openSignupModal()" class="btn-hero">免費建立毛孩檔案</button>
                 </div>
@@ -477,11 +478,15 @@
                     </div>
                     <div class="faq-item">
                         <div class="question" onclick="toggleFaq(this)"><span>過期未付款，資料會保留多久？</span><i class="fa-solid fa-chevron-down text-gray-400"></i></div>
-                        <div class="answer">試用期或每月會籍到期後，寵物資料與病歷會保留 30 天。30 天內付款即可繼續使用原有記錄。超過 30 天仍未付款，我們或會清除該帳戶資料。</div>
+                        <div class="answer">試用期或每月會籍到期後，帳戶資料會保留 30 天。另外，用戶誤刪的病歷或檔案會暫存於戶口回收桶內保留 30 天，期間可隨時還原；30 天後系統將自動清理。後台客服備份最多再保留 180 天。</div>
                     </div>
                     <div class="faq-item">
                         <div class="question" onclick="toggleFaq(this)"><span>遲交月費還可以用嗎？</span><i class="fa-solid fa-chevron-down text-gray-400"></i></div>
                         <div class="answer">到期後仍有 3 天寬限期可以登入使用。寬限期過後需付款才能繼續操作。資料仍會由到期日起計保留 30 天。</div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="question" onclick="toggleFaq(this)"><span>誤刪病歷可以救回嗎？</span><i class="fa-solid fa-chevron-down text-gray-400"></i></div>
+                        <div class="answer">用戶誤刪的病歷或檔案將暫存於戶口回收桶內保留 30 天，期間可隨時還原；30 天後系統將自動清理。如有需要可聯絡我們由後台協助救援。</div>
                     </div>
                     <div class="faq-item">
                         <div class="question" onclick="toggleFaq(this)"><span>有哪些付款方式？</span><i class="fa-solid fa-chevron-down text-gray-400"></i></div>
@@ -549,26 +554,13 @@
         </div>
         <div class="member-area">
             <div class="flex flex-wrap items-center gap-6">
-                <div class="member-avatar" aria-hidden="true" style="cursor:default;">
-                    <svg viewBox="0 0 80 80" width="80" height="80" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="40" cy="40" r="40" fill="#dbeafe"/>
-                        <ellipse cx="28" cy="28" rx="10" ry="13" fill="#60a5fa"/>
-                        <ellipse cx="52" cy="28" rx="10" ry="13" fill="#60a5fa"/>
-                        <circle cx="40" cy="46" r="18" fill="#93c5fd"/>
-                        <circle cx="33" cy="44" r="3" fill="#1e3a8a"/>
-                        <circle cx="47" cy="44" r="3" fill="#1e3a8a"/>
-                        <ellipse cx="40" cy="52" rx="4" ry="3" fill="#1d4ed8"/>
-                    </svg>
-                </div>
                 <div>
                     <div class="flex items-center gap-2">
                         <h3 id="memberName" class="text-xl font-bold text-gray-800">寵物主人</h3>
                         <button onclick="openEditNameModal()" class="edit-name-btn"><i class="fa-regular fa-pen-to-square"></i></button>
                     </div>
                     <p id="memberEmail" class="text-sm text-gray-500">petlover@email.com</p>
-                    <div class="mt-2 flex flex-wrap gap-2">
-                        <span id="memberPlanTag" class="plan-tag plan-tag-standard">基礎版</span>
-                    </div>
+                    <span id="memberPlanTag" class="hidden"></span>
                     <p id="memberPendingPlanNote" class="text-xs text-indigo-700 mt-1 hidden"></p>
                 </div>
             </div>
@@ -620,7 +612,10 @@
             <div class="p-6 border-b">
                 <div class="flex justify-between items-center flex-wrap gap-3 mb-2">
                     <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-paw text-[#3da881] mr-2"></i>我的毛孩</h2>
+                    <div class="flex gap-2">
+                    <button type="button" onclick="openMemberTrash()" class="px-3 py-1.5 border border-gray-300 rounded-full text-sm">回收桶</button>
                     <button id="memberAddPetBtn" onclick="openAddPetModal()" class="add-pet-btn-small">＋新增毛孩</button>
+                    </div>
                 </div>
                 <p id="memberPetCapacity" class="hidden"></p>
                 <p id="memberPetCapacityHint" class="hidden text-xs text-amber-700 mb-3">已達目前方案毛孩上限，如需新增請進行加購或聯繫客服。</p>
@@ -631,7 +626,9 @@
                     <h3 class="text-lg font-bold text-gray-700"><i class="fa-regular fa-folder-open text-[#3da881] mr-2"></i><span id="memberSelectedPetName">病歷報告</span></h3>
                     <span id="memberReportCapacity" class="hidden"></span>
                     <div class="flex gap-2 flex-wrap">
+                        <button type="button" id="memberReportSortBtn" onclick="toggleMemberReportSort()" class="border border-gray-300 hover:bg-gray-50 px-4 py-1.5 rounded-full text-sm font-medium transition">按日期：最新 ⇅</button>
                         <button onclick="exportMedicalHistoryPdf()" class="bg-white hover:bg-[#f0faf5] border border-[#3da881] text-[#2d8f6f] px-4 py-1.5 rounded-full text-sm font-medium transition"><i class="fa-regular fa-file-pdf mr-1"></i>匯出病歷 PDF</button>
+                        <button onclick="openMemberTrash()" class="border border-gray-300 hover:bg-gray-50 px-4 py-1.5 rounded-full text-sm font-medium transition">回收桶</button>
                         <button onclick="openUploadModal()" class="bg-[#d4ede2] hover:bg-[#b8dfd0] text-[#2d7a5e] px-4 py-1.5 rounded-full text-sm font-medium transition"><i class="fa-solid fa-upload mr-1"></i>上傳報告</button>
                         <button onclick="refreshMemberData()" class="border border-gray-300 hover:bg-gray-50 px-4 py-1.5 rounded-full text-sm font-medium transition"><i class="fa-solid fa-rotate-right mr-1"></i>重新整理</button>
                         <button id="memberToggleSelectModeBtn" onclick="toggleMemberSelectMode()" class="border border-gray-300 hover:bg-gray-50 px-4 py-1.5 rounded-full text-sm font-medium transition">選擇報告</button>
@@ -678,6 +675,14 @@
             <button type="button" onclick="closeAdminRestoreModal()" class="w-full mt-4 py-2 border border-gray-300 rounded-2xl text-sm">關閉</button>
         </div>
     </div>
+    <div id="memberTrashModal" class="modal">
+        <div class="modal-content fade-in" style="max-width:560px;">
+            <h3 class="text-lg font-bold text-gray-800 mb-2">回收桶</h3>
+            <p class="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 mb-3">⚠️ 回收桶內的項目將於 30 天後被系統自動永久清理。</p>
+            <div id="memberTrashList" class="text-sm text-gray-600 space-y-2 max-h-[50vh] overflow-y-auto">載入中…</div>
+            <button type="button" onclick="closeMemberTrash()" class="w-full mt-4 py-2 border border-gray-300 rounded-2xl text-sm">關閉</button>
+        </div>
+    </div>
     <!-- 後台管理 -->
     <div id="adminDashboard" class="max-w-6xl mx-auto px-6 pb-10 hidden">
         <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
@@ -693,6 +698,9 @@
             <button onclick="loadAdminUsers()" class="px-4 py-2 bg-indigo-600 text-white rounded-2xl text-sm">重新整理</button>
         </div>
         <div id="adminUserList" class="space-y-3 text-sm text-gray-600">載入中…</div>
+        <h3 class="text-lg font-bold text-indigo-800 mt-8 mb-2">終極客服回收桶</h3>
+        <p class="text-xs text-gray-500 mb-2">用戶刪除後仍保留；滿 180 天先永久抹除。登入後台會自動清理過期項目。</p>
+        <div id="adminMasterTrash" class="space-y-2 text-sm mb-8">載入中…</div>
         <h3 class="text-lg font-bold text-indigo-800 mt-8 mb-3">會員查詢</h3>
         <div class="flex flex-wrap gap-2 mb-3">
             <button onclick="setAdminInquiryFilter('open')" class="px-3 py-1 rounded-full text-xs border border-indigo-300 text-indigo-700">未回覆</button>
@@ -700,6 +708,34 @@
             <button onclick="setAdminInquiryFilter('all')" class="px-3 py-1 rounded-full text-xs border border-gray-300">全部</button>
         </div>
         <div id="adminInquiryList" class="space-y-3 text-sm text-gray-600">—</div>
+        <h3 class="text-lg font-bold text-indigo-800 mt-8 mb-2">優惠碼管理</h3>
+        <p class="text-xs text-gray-500 mb-3">新增或停用優惠碼後，前台付款會即時跟據設定計算。無需改程式碼。</p>
+        <div class="grid md:grid-cols-2 gap-3 mb-3 text-sm">
+            <input id="promoNewCode" type="text" placeholder="優惠碼（如 NEWPET）" class="px-3 py-2 border border-gray-200 rounded-xl uppercase">
+            <select id="promoNewType" class="px-3 py-2 border border-gray-200 rounded-xl">
+                <option value="amount">固定扣減金額（HK$）</option>
+                <option value="percent">折扣百分比（%）</option>
+            </select>
+            <input id="promoNewValue" type="number" min="0" placeholder="折扣值（如 50）" class="px-3 py-2 border border-gray-200 rounded-xl">
+            <input id="promoNewMaxUses" type="number" min="0" placeholder="使用次數上限（0=不限）" class="px-3 py-2 border border-gray-200 rounded-xl">
+            <div>
+                <input id="promoNewExpiry" type="date" class="w-full px-3 py-2 border border-gray-200 rounded-xl">
+                <div class="flex flex-wrap gap-1 mt-1">
+                    <button type="button" onclick="setPromoExpiryQuick(1)" class="px-2 py-1 text-xs border border-indigo-200 text-indigo-700 rounded-full">1個月</button>
+                    <button type="button" onclick="setPromoExpiryQuick(3)" class="px-2 py-1 text-xs border border-indigo-200 text-indigo-700 rounded-full">3個月</button>
+                    <button type="button" onclick="setPromoExpiryQuick(6)" class="px-2 py-1 text-xs border border-indigo-200 text-indigo-700 rounded-full">6個月</button>
+                    <button type="button" onclick="setPromoExpiryQuick(12)" class="px-2 py-1 text-xs border border-indigo-200 text-indigo-700 rounded-full">1年</button>
+                </div>
+            </div>
+            <select id="promoNewPeriod" class="px-3 py-2 border border-gray-200 rounded-xl">
+                <option value="half_year">僅限半年繳 / 年繳（商業方案）</option>
+                <option value="owner_all">所有一般方案 (月繳 / 半年 / 年繳)</option>
+                <option value="all_zones">全部方案及專區 (包含義工/領養專區)</option>
+            </select>
+        </div>
+        <button type="button" onclick="adminSavePromoCode()" class="mb-4 px-4 py-2 bg-indigo-600 text-white rounded-2xl text-sm">新增／更新優惠碼</button>
+        <h4 class="text-sm font-bold text-indigo-800 mb-2">已建立優惠碼列表</h4>
+        <div id="adminPromoList" class="overflow-x-auto text-sm text-gray-600">載入中…</div>
     </div>
 
     <!-- ============================================================ -->
@@ -730,15 +766,18 @@
                 <button type="button" class="pricing-tab" id="tabVolunteerBtn" onclick="showPricingTab('volunteer')">獨立義工 / 領養專區</button>
             </div>
             <div id="pricingOwnerTab">
+            <p class="text-center mb-3 px-3 py-2 rounded-2xl bg-amber-50 border border-amber-200 text-sm text-amber-900">🎉 新客戶專屬：半年繳買 5 送 1｜年繳買 10 送 2</p>
             <div class="grid md:grid-cols-3 gap-4 mb-4" id="pricingCardsContainer">
                 <div class="pricing-card" id="cardLite" onclick="selectPricingCard('lite')">
-                    <p class="text-xs text-[#2d8f6f] font-semibold tracking-wide mb-1">健康毛孩首選</p>
+                    <p class="text-xs text-[#2d8f6f] font-semibold tracking-wide mb-1">單寵家庭首選</p>
                     <h3 class="text-lg font-bold text-gray-800">輕量版</h3>
                     <div class="mt-3 mb-1">
                         <span class="text-2xl font-bold text-gray-900">$38</span>
                         <span class="text-sm text-gray-500">／月</span>
                     </div>
-                    <p class="text-xs text-gray-500 mb-3">或 $380／年　·　試用 30 天</p>
+                    <div class="mt-2 mb-3 text-xs text-gray-700 leading-relaxed">
+                        半年繳 <s class="text-gray-400">$228</s> <strong class="text-[#2d8f6f]">$190</strong><br>年繳 <s class="text-gray-400">$456</s> <strong class="text-[#2d8f6f]">$380</strong>
+                    </div>
                     <ul class="features">
                         <li><span class="check">✓</span> 1 隻毛孩</li>
                         <li><span class="check">✓</span> 適合例行體檢、偶爾睇醫生</li>
@@ -755,7 +794,9 @@
                         <span class="text-2xl font-bold text-gray-900">$58</span>
                         <span class="text-sm text-gray-500">／月</span>
                     </div>
-                    <p class="text-xs text-gray-500 mb-3">或 $580／年　·　試用 30 天</p>
+                    <div class="mt-2 mb-3 text-xs text-gray-700 leading-relaxed">
+                        半年繳 <s class="text-gray-400">$348</s> <strong class="text-[#2d8f6f]">$290</strong><br>年繳 <s class="text-gray-400">$696</s> <strong class="text-[#2d8f6f]">$580</strong>
+                    </div>
                     <ul class="features">
                         <li><span class="check">✓</span> 1–2 隻毛孩</li>
                         <li><span class="check">✓</span> 適合須定期覆診、追蹤健康狀況的毛孩</li>
@@ -771,7 +812,9 @@
                         <span class="text-2xl font-bold text-gray-900">$78</span>
                         <span class="text-sm text-gray-500">／月</span>
                     </div>
-                    <p class="text-xs text-gray-500 mb-3">或 $780／年　·　試用 30 天</p>
+                    <div class="mt-2 mb-3 text-xs text-gray-700 leading-relaxed">
+                        半年繳 <s class="text-gray-400">$468</s> <strong class="text-[#2d8f6f]">$390</strong><br>年繳 <s class="text-gray-400">$936</s> <strong class="text-[#2d8f6f]">$780</strong>
+                    </div>
                     <ul class="features">
                         <li><span class="check">✓</span> 3–5 隻毛孩</li>
                         <li><span class="check">✓</span> 適合多寵家庭、資料集中管理</li>
@@ -849,6 +892,14 @@
                         <option value="adopt">新手領養愛心禮 - HK$20 / 首6個月</option>
                     </select>
                 </div>
+                <div>
+                    <p class="text-sm font-medium text-gray-700 mb-2">付款週期</p>
+                    <select id="paymentPeriodSelect" onchange="applyPaymentAmountDisplay()" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl text-sm">
+                        <option value="month" selected>月繳（原價）</option>
+                        <option value="half">半年繳（新客戶優惠：買 5 送 1）</option>
+                        <option value="year">年繳（新客戶優惠：買 10 送 2）</option>
+                    </select>
+                </div>
                 <div id="renewalAddonRow" class="hidden flex-wrap items-center justify-between gap-2">
                     <div>
                         <p class="text-sm font-medium text-gray-700">額外增加毛孩</p>
@@ -860,9 +911,12 @@
                         <button type="button" onclick="changeRenewalAddonQty(1)" class="w-8 h-8 rounded-full border">+</button>
                     </div>
                 </div>
+                <p class="text-sm font-medium text-gray-700">優惠碼（選填）</p>
+                <input id="paymentPromoCode" type="text" placeholder="例如 NEWPET" oninput="applyPaymentAmountDisplay()" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl text-sm uppercase">
+                <p id="paymentPromoHint" class="text-xs text-red-600 hidden"></p>
                 <div class="p-3 bg-[#f0faf5] rounded-xl border border-[#d4ede2]">
                     <p class="text-lg font-bold text-gray-800" id="paymentPlanPrice">HK$58 <span class="text-sm font-normal text-gray-400">／每月</span></p>
-                    <p class="text-xs text-green-700 mt-1" id="paymentPlanNote">核實後會籍將由現有到期日自動順延 30 天。</p>
+                    <p class="text-xs text-green-700 mt-1" id="paymentPlanNote">核實後會籍將由現有到期日自動順延。</p>
                 </div>
             </div>
             <div class="payment-card selected" onclick="selectPaymentMethod('payme')">
@@ -898,6 +952,32 @@
         </div>
     </div>
 
+    <div id="welcomePromoModal" class="modal">
+        <div class="modal-content fade-in text-center" style="max-width:420px;">
+            <div class="text-4xl mb-2">🎉</div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">新店開張首半年專屬</h3>
+            <p class="text-sm text-gray-600 leading-relaxed mb-4">結帳自動帶入優惠碼 <strong class="text-[#2d8f6f]">NEWPET</strong>，即折 <strong>HK$50</strong>！</p>
+            <button type="button" onclick="closeWelcomePromo()" class="w-full py-2.5 bg-[#3da881] text-white rounded-2xl text-sm font-semibold">知道了</button>
+        </div>
+    </div>
+    <div id="earlyBirdSurveyModal" class="modal">
+        <div class="modal-content fade-in" style="max-width:440px;">
+            <h3 class="text-lg font-bold text-gray-800 mb-1">1 分鐘體驗問卷</h3>
+            <p class="text-xs text-gray-500 mb-3">完成後即時加贈 1 個月會籍，無需人工審核。</p>
+            <label class="text-xs text-gray-600">整體滿唔滿意？</label>
+            <select id="surveyScore" class="w-full mb-2 px-3 py-2 border rounded-xl text-sm">
+                <option value="5">5 非常滿意</option>
+                <option value="4">4 滿意</option>
+                <option value="3" selected>3 一般</option>
+                <option value="2">2 不太滿意</option>
+                <option value="1">1 需要改善</option>
+            </select>
+            <label class="text-xs text-gray-600">最想加強邊樣？</label>
+            <textarea id="surveyNote" rows="3" class="w-full mb-3 px-3 py-2 border rounded-xl text-sm" placeholder="可填病歷、診所對接、價錢等"></textarea>
+            <button type="button" onclick="submitEarlyBirdSurvey()" class="w-full py-2.5 bg-[#3da881] text-white rounded-2xl text-sm font-semibold">提交並領取 +1 個月</button>
+            <button type="button" onclick="closeEarlyBirdSurvey()" class="w-full mt-2 py-2 border rounded-2xl text-sm text-gray-500">稍後</button>
+        </div>
+    </div>
     <div id="paymentDoneModal" class="modal">
         <div class="modal-content fade-in text-center" style="max-width:400px;">
             <div class="text-4xl mb-3">✅</div>
@@ -1367,7 +1447,8 @@
     <div id="signupModal" class="modal">
         <div class="modal-content fade-in">
             <h3 class="text-xl font-bold text-center text-[#2d8f6f] mb-4">註冊成為會員</h3>
-            <p class="text-center text-xs text-gray-500 mb-3">註冊即享 <strong class="text-[#2d8f6f]">30 天免費試用</strong></p>
+            <p class="text-center text-xs text-gray-500 mb-2">註冊即享 <strong class="text-[#2d8f6f]">30 天免費試用</strong></p>
+            <p class="text-center text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 mb-3">🎉 結帳輸入 <strong>NEWPET</strong> 再折 HK$50</p>
             <button onclick="handleGoogleSignup()" class="w-full py-2.5 border border-gray-300 rounded-2xl text-sm font-medium hover:bg-gray-50 transition flex items-center justify-center gap-2 mb-3">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-5 h-5"> 使用 Google 帳戶註冊
             </button>
@@ -1377,6 +1458,7 @@
             <input id="signupName" type="text" placeholder="顯示名稱 (選填)" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
             <input id="signupEmail" type="email" placeholder="電郵地址 *" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
             <input id="signupPassword" type="password" placeholder="密碼（6位或以上，只限英文或數字）*" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
+            <input id="signupPromoCode" type="text" placeholder="優惠碼（選填，例如 NEWPET）" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm uppercase">
             <button onclick="handleSignupSubmit()" class="w-full py-2.5 bg-[#3da881] text-white rounded-2xl font-medium text-sm hover:bg-[#2d8f6f] transition">註冊並開始試用</button>
             <p class="text-center text-xs text-gray-400 mt-2">已經有帳戶？<button onclick="clearSignupFields(); closeSignupModal(); openLoginModal();" class="text-[#2d8f6f] hover:underline">登入</button></p>
             <button onclick="closeSignupModal()" class="w-full mt-2 text-gray-400 text-xs hover:text-gray-600 transition">取消</button>
@@ -1671,12 +1753,15 @@
         var extraPetsPurchased = 0;
         var memberReportPage = 1;
         var MEMBER_REPORT_PAGE_SIZE = 10;
+        var memberReportNewestFirst = true;
         var memberMaxPetsOverride = null;
         var extraPetPending = false;
         var extraPetQty = 1;
         var memberPendingPlan = null;
         var memberPendingPlanAt = null;
         var pendingAddonCheckout = false;
+        var cachedPromoCodes = [];
+        var userUsedPromoCode = '';
         var usedStorageBytes = 0;
 
         function getPlanLimits() {
@@ -1890,6 +1975,8 @@
         }
 
         function loadUserData(userId) {
+            userId = userId || (currentUser && currentUser.uid);
+            if (!userId) return;
             pets = [];
             petReports = {};
             selectedPetId = null;
@@ -1899,6 +1986,7 @@
                 if (snapshot.empty) {
                     pets = [];
                     petReports = {};
+                    runTrashCleanup(userId);
                     renderAll();
                     updatePlanDisplay();
                     updateTrialBanner();
@@ -1924,6 +2012,7 @@
                     petPromises.push(promise);
                 });
                 Promise.all(petPromises).then(function() {
+                    runTrashCleanup(userId);
                     if (pets.length > 0 && !selectedPetId) {
                         selectedPetId = pets[0].id;
                         memberSelectedPetId = pets[0].id;
@@ -1972,6 +2061,39 @@
             if (!end) return null;
             return Math.ceil((end - new Date()) / (1000 * 60 * 60 * 24));
         }
+        function maybeShowEarlyBirdSurvey(data) {
+            if (!data || data.surveyDone) return;
+            if (!(data.earlyBird || data.billingPeriod === 'half' || data.billingPeriod === 'year')) return;
+            var start = parseTrialDate(data.planStartDate) || parseTrialDate(data.purchaseDate);
+            if (!start) return;
+            var due = parseTrialDate(data.surveyEligibleAt) || new Date(start.getTime() + 90 * 24 * 60 * 60 * 1000);
+            if (new Date() < due) return;
+            var m = document.getElementById('earlyBirdSurveyModal');
+            if (m) m.classList.add('show');
+        }
+        function closeEarlyBirdSurvey() {
+            var m = document.getElementById('earlyBirdSurveyModal');
+            if (m) m.classList.remove('show');
+        }
+        function submitEarlyBirdSurvey() {
+            if (!currentUser.uid) return;
+            var score = (document.getElementById('surveyScore') || {}).value || '3';
+            var note = (document.getElementById('surveyNote') || {}).value || '';
+            var end = planEndDate ? new Date(planEndDate.getTime()) : new Date();
+            end.setDate(end.getDate() + 30);
+            planEndDate = end;
+            db.collection('users').doc(currentUser.uid).set({
+                surveyDone: true,
+                surveyScore: score,
+                surveyNote: note,
+                surveyAt: new Date(),
+                planEndDate: end
+            }, { merge: true }).then(function() {
+                closeEarlyBirdSurvey();
+                updateMembershipStatusCard();
+                showToast('多謝回饋！已加贈 1 個月會籍', 'success');
+            }).catch(function(err) { showToast(err.message || err, 'error'); });
+        }
         function maybeShowRenewalReminder() {
             var d = daysUntilPlanEnd();
             if (d === null || d > 7 || d < 0) return;
@@ -2003,8 +2125,8 @@
             var payTag = document.getElementById('memberPaymentStatusTag');
             if (hasPaid) {
                 if (tag) {
-                    tag.textContent = planBadgeText(limits.label);
-                    tag.className = 'plan-tag plan-tag-' + (limits.label === '基礎版' || limits.label === '標準' ? 'standard' : (limits.label.indexOf('大家庭') >= 0 || limits.label.indexOf('多寵') >= 0 ? 'longterm' : 'pro'));
+                    tag.textContent = '';
+                    tag.className = 'hidden';
                 }
                 if (payTag) {
                     var paidEndChk = parseTrialDate(planEndDate);
@@ -2025,8 +2147,8 @@
                 }
             } else if (isLoggedIn && isTrialActive) {
                 if (tag) {
-                    tag.textContent = planBadgeText(limits.label);
-                    tag.className = 'plan-tag plan-tag-' + (limits.label === '基礎版' || limits.label === '標準' ? 'standard' : (limits.label.indexOf('大家庭') >= 0 ? 'longterm' : 'pro'));
+                    tag.textContent = '';
+                    tag.className = 'hidden';
                 }
                 if (payTag) {
                     payTag.textContent = '免費試用';
@@ -2034,8 +2156,8 @@
                 }
             } else if (isLoggedIn) {
                 if (tag) {
-                    tag.textContent = '試用期已結束';
-                    tag.className = 'plan-tag plan-tag-standard';
+                    tag.textContent = '';
+                    tag.className = 'hidden';
                 }
                 if (payTag) {
                     if (paymentStatus === 'pending_review') {
@@ -2279,6 +2401,7 @@
                     if (doc.exists) {
                         var data = doc.data();
                         hasPaid = data.hasPaid === true;
+                        userUsedPromoCode = String(data.promoCode || '').toUpperCase();
                         if (data.plan) currentPlan = data.plan;
                         extraPetsPurchased = data.extraPets || 0;
                         extraPetPending = data.extraPetPending === true;
@@ -2298,6 +2421,7 @@
                         planStartDate = parseTrialDate(data.planStartDate);
                         planEndDate = parseTrialDate(data.planEndDate);
                         maybeShowRenewalReminder();
+                        maybeShowEarlyBirdSurvey(data);
                         memberPendingPlan = data.pendingPlan || null;
                         memberPendingPlanAt = parseTrialDate(data.pendingPlanEffectiveAt);
                         if (data.pendingPlan && data.pendingPlanEffectiveAt) {
@@ -2982,9 +3106,11 @@
                         extraPets: 0,
                         usedStorageBytes: 0,
                         createdAt: new Date()
+                    }).then(function() {
+                        return applyPromoCodeToUser(user.uid, email);
                     }).catch(function(err) { console.warn('建立用戶文件失敗:', err); });
                     closeSignupModal();
-                    showToast('註冊成功！請查收驗證電郵，並開始 30 天免費試用', 'success');
+                    showToast('註冊成功！請查收驗證電郵', 'success');
                     notifyAdmin('新會員註冊', (email || '') + ' 剛註冊 Paw Vault');
                     openPricingModal();
                 })
@@ -3052,7 +3178,11 @@
                             isTrialActive: false,
                             plan: 'standard',
                             createdAt: new Date()
+                        }).then(function() {
+                            return applyPromoCodeToUser(user.uid, currentUser.email);
                         }).catch(function(err) { console.warn('建立用戶文件失敗:', err); });
+                    } else {
+                        applyPromoCodeToUser(user.uid, currentUser.email);
                     }
                 });
                 openPricingModal();
@@ -3485,6 +3615,20 @@
             return false;
         }
 
+        function reportSortTime(r) {
+            var raw = r && (r.createdAt || r.date || r.updatedAt);
+            if (!raw) return 0;
+            if (raw.toDate) raw = raw.toDate();
+            var t = new Date(raw).getTime();
+            return isNaN(t) ? 0 : t;
+        }
+        function toggleMemberReportSort() {
+            memberReportNewestFirst = !memberReportNewestFirst;
+            var btn = document.getElementById('memberReportSortBtn');
+            if (btn) btn.textContent = memberReportNewestFirst ? '按日期：最新 ⇅' : '按日期：最舊 ⇅';
+            memberReportPage = 1;
+            renderMemberReports();
+        }
         function renderMemberReports() {
             var container = document.getElementById('memberReportListContainer');
             if (!container) return;
@@ -3510,6 +3654,11 @@
             if (q) {
                 reports = reports.filter(function(r) { return reportMatchesQuery(r, q); });
             }
+            reports.sort(function(a, b) {
+                var ta = reportSortTime(a);
+                var tb = reportSortTime(b);
+                return memberReportNewestFirst ? (tb - ta) : (ta - tb);
+            });
             if (reports.length === 0) {
                 container.innerHTML =
                     '<div class="text-center py-6 text-gray-400 text-sm">' + (q ? '沒有符合「' + qEl.value.trim() + '」的報告' : '尚無病歷報告，點擊「上傳報告」') + '</div>';
@@ -3918,7 +4067,7 @@
             });
         }
         function deleteReport(petId, reportId) {
-            appConfirm('確定刪除這份報告？可於後台回收桶復原。').then(function(ok) {
+            appConfirm('確定刪除這份報告？將移入回收桶，30 天內可還原。').then(function(ok) {
             if (!ok) return;
             petReports[petId] = petReports[petId].filter(function(r) { return r.id !== reportId; });
             if (currentUser.uid) {
@@ -4220,7 +4369,7 @@
         // 寵物 CRUD（會員版）
         // ================================================================
         function deletePet(petId) {
-            if (!confirm('確定刪除這隻寵物？可於後台回收桶復原。')) return;
+            if (!confirm('確定刪除這隻寵物？將移入回收桶，30 天內可還原。')) return;
             var idx = pets.findIndex(function(p) { return p.id === petId; });
             if (idx !== -1) {
                 pets.splice(idx, 1);
@@ -4241,6 +4390,134 @@
         }
 
         // ✅ 問題4已修復：新增寵物按儲存有反應
+
+        function trashDeletedAt(d) {
+            return parseTrialDate(d.deletedAt || d.userPurgedAt || d.archivedAt) || null;
+        }
+        function daysSinceDate(d) {
+            var t = parseTrialDate(d);
+            if (!t) return 0;
+            return (Date.now() - t.getTime()) / (1000 * 60 * 60 * 24);
+        }
+        function isUserVisibleTrash(d) {
+            if (d.userPurged || d.admin_archived && d.userPurged) return false;
+            return !!(d.is_deleted || d.isDeleted);
+        }
+        function openMemberTrash() {
+            var m = document.getElementById('memberTrashModal');
+            if (m) m.classList.add('show');
+            loadMemberTrash();
+        }
+        function closeMemberTrash() {
+            var m = document.getElementById('memberTrashModal');
+            if (m) m.classList.remove('show');
+        }
+        function loadMemberTrash() {
+            var box = document.getElementById('memberTrashList');
+            if (!box) return;
+            if (!currentUser.uid) { box.textContent = '請先登入'; return; }
+            box.textContent = '載入中…';
+            db.collection('users').doc(currentUser.uid).collection('pets').get().then(function(ps) {
+                var items = [];
+                var jobs = [];
+                ps.forEach(function(p) {
+                    var pd = p.data() || {};
+                    pd.id = p.id;
+                    if (isUserVisibleTrash(pd)) items.push({ type: 'pet', petId: p.id, name: pd.name || p.id, at: trashDeletedAt(pd) });
+                    jobs.push(p.ref.collection('reports').get().then(function(rs) {
+                        rs.forEach(function(r) {
+                            var rd = r.data() || {};
+                            if (isUserVisibleTrash(rd)) items.push({ type: 'report', petId: p.id, reportId: r.id, name: rd.title || r.id, at: trashDeletedAt(rd) });
+                        });
+                    }));
+                });
+                return Promise.all(jobs).then(function() { return items; });
+            }).then(function(items) {
+                if (!items.length) { box.textContent = '回收桶是空的。'; return; }
+                box.innerHTML = items.map(function(it, idx) {
+                    var left = it.at ? Math.max(0, Math.ceil(30 - daysSinceDate(it.at))) : 30;
+                    return '<div class="flex justify-between items-center gap-2 p-2 border border-gray-100 rounded-xl">' +
+                        '<div><div>' + (it.type === 'pet' ? '毛孩' : '病歷') + '：' + it.name + '</div>' +
+                        '<div class="text-xs text-gray-400">約 ' + left + ' 天後自動清理</div></div>' +
+                        '<div class="flex gap-1">' +
+                        '<button type="button" data-trash-act="restore" data-trash-idx="' + idx + '" class="px-3 py-1 bg-[#3da881] text-white rounded-full text-xs">還原</button>' +
+                        '<button type="button" data-trash-act="purge" data-trash-idx="' + idx + '" class="px-3 py-1 border border-red-300 text-red-600 rounded-full text-xs">永久刪除</button>' +
+                        '</div></div>';
+                }).join('');
+                box._trashItems = items;
+                box.onclick = function(ev) {
+                    var btn = ev.target.closest('[data-trash-act]');
+                    if (!btn) return;
+                    var item = (box._trashItems || [])[parseInt(btn.getAttribute('data-trash-idx'), 10)];
+                    if (!item) return;
+                    if (btn.getAttribute('data-trash-act') === 'restore') restoreMemberTrashItem(item.type, item.petId, item.reportId || '');
+                    else purgeMemberTrashItem(item.type, item.petId, item.reportId || '');
+                };
+            }).catch(function(err) { box.textContent = err.message || err; });
+        }
+        function restoreMemberTrashItem(type, petId, reportId) {
+            if (!currentUser || !petId) return;
+            if (type === 'report' && !reportId) return;
+            var ref = db.collection('users').doc(currentUser.uid).collection('pets').doc(petId);
+            if (type === 'report') ref = ref.collection('reports').doc(reportId);
+            ref.set({ is_deleted: false, isDeleted: false, userPurged: false, admin_archived: false, restoredAt: new Date() }, { merge: true }).then(function() {
+                showToast('已還原', 'success');
+                loadUserData(currentUser.uid);
+                loadMemberTrash();
+            }).catch(function(err) { showToast(err.message || err, 'error'); });
+        }
+        function purgeMemberTrashItem(type, petId, reportId) {
+            appConfirm('永久刪除後你將看不到此項目。客服備份仍會保留最多 180 天。確定？').then(function(ok) {
+                if (!ok) return;
+                var ref = db.collection('users').doc(currentUser.uid).collection('pets').doc(petId);
+                if (type === 'report') ref = ref.collection('reports').doc(reportId);
+                ref.set({ is_deleted: true, userPurged: true, admin_archived: true, userPurgedAt: new Date() }, { merge: true }).then(function() {
+                    showToast('已從你的回收桶移除', 'success');
+                    loadMemberTrash();
+                }).catch(function(err) { showToast(err.message || err, 'error'); });
+            });
+        }
+        function runTrashCleanup(userId) {
+            if (!userId || !db) return;
+            db.collection('users').doc(userId).collection('pets').get().then(function(ps) {
+                ps.forEach(function(p) {
+                    var pd = p.data() || {};
+                    if ((pd.is_deleted || pd.isDeleted) && !pd.userPurged && daysSinceDate(pd.deletedAt) >= 30) {
+                        p.ref.set({ userPurged: true, admin_archived: true, userPurgedAt: new Date() }, { merge: true }).catch(function(){});
+                    }
+                    if (pd.admin_archived && daysSinceDate(pd.deletedAt || pd.userPurgedAt) >= 180) {
+                        p.ref.delete().catch(function(){});
+                    }
+                    p.ref.collection('reports').get().then(function(rs) {
+                        rs.forEach(function(r) {
+                            var rd = r.data() || {};
+                            if ((rd.is_deleted || rd.isDeleted) && !rd.userPurged && daysSinceDate(rd.deletedAt) >= 30) {
+                                r.ref.set({ userPurged: true, admin_archived: true, userPurgedAt: new Date() }, { merge: true }).catch(function(){});
+                            }
+                            if (rd.admin_archived && daysSinceDate(rd.deletedAt || rd.userPurgedAt) >= 180) {
+                                r.ref.delete().catch(function(){});
+                            }
+                        });
+                    }).catch(function(){});
+                });
+            }).catch(function(){});
+        }
+        function readPromoCodeInput() {
+            var a = document.getElementById('signupPromoCode');
+            var b = document.getElementById('paymentPromoCode');
+            var v = ((a && a.value) || (b && b.value) || '').trim().toUpperCase();
+            return v;
+        }
+        function applyPromoCodeToUser(uid, email) {
+            var code = readPromoCodeInput();
+            if (!code) return Promise.resolve(false);
+            if (code === 'NEWPET') {
+                showToast('NEWPET 會在結帳總價自動扣 HK$50', 'success');
+                return Promise.resolve('discount');
+            }
+            showToast('無效優惠碼', 'warning');
+            return Promise.resolve(false);
+        }
 
         function countActivePets() {
             return (pets || []).filter(function(p) { return !p.pendingApproval && !p.is_deleted && !p.isDeleted; }).length;
@@ -4344,16 +4621,76 @@
             var select = document.getElementById('paymentPlanSelect');
             return (select && select.value) ? select.value : (selectedPricingPlan || currentPlan || 'standard');
         }
+        function selectedPaymentPeriod() {
+            var el = document.getElementById('paymentPeriodSelect');
+            return (el && el.value) ? el.value : 'month';
+        }
+        function periodPayMonths() {
+            var p = selectedPaymentPeriod();
+            if (p === 'half') return 5;
+            if (p === 'year') return 10;
+            return 1;
+        }
+        function periodGrantDays() {
+            var key = selectedPlanKey();
+            if (key === 'adopt') return 180;
+            var p = selectedPaymentPeriod();
+            if (p === 'half') return 180;
+            if (p === 'year') return 365;
+            return 30;
+        }
+        function findPromoRule(code) {
+            code = String(code || '').trim().toUpperCase();
+            if (!code) return null;
+            for (var i = 0; i < cachedPromoCodes.length; i++) {
+                if (String(cachedPromoCodes[i].code || '').toUpperCase() === code) return cachedPromoCodes[i];
+            }
+            if (code === 'NEWPET') {
+                return { code: 'NEWPET', type: 'amount', value: 50, periods: ['half', 'year'], plans: ['lite', 'standard', 'longterm', 'pro'], active: true };
+            }
+            return null;
+        }
+        function promoRuleApplies(rule) {
+            if (!rule || rule.active === false) return false;
+            if (rule.expiresAt) {
+                var exp = parseTrialDate(rule.expiresAt) || new Date(rule.expiresAt);
+                if (exp && exp < new Date()) return false;
+            }
+            if (rule.maxUses && rule.usedCount && rule.usedCount >= rule.maxUses) return false;
+            var key = selectedPlanKey();
+            var period = selectedPaymentPeriod();
+            var plans = rule.plans || [];
+            var periods = rule.periods || [];
+            if (plans.length && plans.indexOf(key) === -1 && plans.indexOf('all') === -1) return false;
+            if (key !== 'volunteer' && key !== 'adopt' && periods.length && periods.indexOf(period) === -1 && periods.indexOf('all') === -1) return false;
+            return true;
+        }
+        function promoDiscountAmount() {
+            var key = selectedPlanKey();
+            if (pendingAddonCheckout) return 0;
+            var rule = findPromoRule(readPromoCodeInput());
+            if (!promoRuleApplies(rule)) return 0;
+            var pl = PLAN_LIMITS[key] || PLAN_LIMITS.standard;
+            var n = parseInt(String(pl.price || '0').replace(/[^0-9]/g, ''), 10);
+            if (isNaN(n)) n = 58;
+            var extras = (key === 'longterm' || key === 'pro') ? (typeof renewalAddonQty === 'number' ? renewalAddonQty : (extraPetsPurchased || 0)) : 0;
+            var raw = (n + extraAddonMonthlyCost(extras)) * periodPayMonths();
+            if (rule.type === 'percent') return Math.round(raw * (Number(rule.value) || 0) / 100);
+            return Number(rule.value) || 0;
+        }
         function getCheckoutAmount() {
             if (pendingAddonCheckout) {
                 return extraAddonMonthlyCost((extraPetsPurchased || 0) + (extraPetQty || 1)) - extraAddonMonthlyCost(extraPetsPurchased || 0);
             }
-            var pl = PLAN_LIMITS[selectedPlanKey()] || PLAN_LIMITS.standard;
+            var key = selectedPlanKey();
+            if (key === 'adopt') return 20;
+            if (key === 'volunteer') return 10;
+            var pl = PLAN_LIMITS[key] || PLAN_LIMITS.standard;
             var n = parseInt(String(pl.price || '0').replace(/[^0-9]/g, ''), 10);
             if (isNaN(n)) n = 58;
-            var key = selectedPlanKey();
             var extras = (key === 'longterm' || key === 'pro') ? (typeof renewalAddonQty === 'number' ? renewalAddonQty : (extraPetsPurchased || 0)) : 0;
-            return n + extraAddonMonthlyCost(extras);
+            var raw = (n + extraAddonMonthlyCost(extras)) * periodPayMonths();
+            return Math.max(0, raw - promoDiscountAmount());
         }
         function applyPaymentAmountDisplay() {
             var isAddon = !!pendingAddonCheckout;
@@ -4363,6 +4700,11 @@
             var select = document.getElementById('paymentPlanSelect');
             if (select) select.disabled = false;
             var planKey = selectedPlanKey();
+            var periodWrap = document.getElementById('paymentPeriodSelect');
+            if (periodWrap && periodWrap.parentNode) {
+                var hidePeriod = planKey === 'volunteer' || planKey === 'adopt' || isAddon;
+                periodWrap.parentNode.classList.toggle('hidden', hidePeriod);
+            }
             var showAddon = !isAddon && (planKey === 'longterm' || planKey === 'pro');
             var row = document.getElementById('renewalAddonRow');
             if (row) {
@@ -4371,6 +4713,15 @@
                 else row.classList.remove('flex');
             }
             if (!showAddon && !isAddon) renewalAddonQty = 0;
+            var promoEl = document.getElementById('paymentPromoCode');
+            if (promoEl) {
+                var eligible = !isAddon && planKey !== 'volunteer' && planKey !== 'adopt' && (selectedPaymentPeriod() === 'half' || selectedPaymentPeriod() === 'year') && !userUsedPromoCode;
+                if (eligible) {
+                    if (!promoEl.value || promoEl.value.toUpperCase() === 'NEWPET') promoEl.value = 'NEWPET';
+                } else if ((promoEl.value || '').toUpperCase() === 'NEWPET') {
+                    promoEl.value = '';
+                }
+            }
             var amt = getCheckoutAmount();
             var extraN = isAddon ? (extraPetQty || 1) : (showAddon ? (renewalAddonQty || 0) : 0);
             var extraCost = extraAddonMonthlyCost(extraN);
@@ -4378,14 +4729,24 @@
             if (unitHint) {
                 unitHint.textContent = '額外加購 ' + extraN + ' 隻（+HK$' + extraCost + ' / 月）';
             }
+            var periodHint = document.getElementById('paymentPromoHint');
+            if (periodHint) {
+                periodHint.textContent = '';
+                periodHint.classList.add('hidden');
+            }
+            var unit = selectedPaymentPeriod() === 'year' ? '／12個月' : (selectedPaymentPeriod() === 'half' ? '／6個月' : '／每月');
+            if (planKey === 'adopt') unit = '／6個月';
+            if (planKey === 'volunteer') unit = '／隻';
             if (priceEl) {
-                priceEl.innerHTML = 'HK$' + amt + ' <span class="text-sm font-normal text-gray-400">／每月</span>';
+                var disc = promoDiscountAmount();
+                var extra = disc > 0 ? ' <span class="text-sm font-normal text-[#2d8f6f]">（已自動套用 ' + readPromoCodeInput() + ' 折扣 -$' + disc + '）</span>' : '';
+                priceEl.innerHTML = 'HK$' + amt + ' <span class="text-sm font-normal text-gray-400">' + unit + '</span>' + extra;
             }
             if (confirmEl) confirmEl.textContent = String(amt);
             if (noteEl) {
                 noteEl.textContent = isAddon
                     ? '加購跟隨主方案到期日。核實前不會增加名額。'
-                    : '核實後會籍將由現有到期日自動順延 30 天。';
+                    : ('核實後會籍將由現有到期日自動順延 ' + periodGrantDays() + ' 天。');
             }
             var infoAmt = document.getElementById('paymentInfoAmount');
             if (infoAmt) infoAmt.textContent = 'HK$' + amt;
@@ -5148,7 +5509,8 @@
                         email: currentUser.email,
                         paymentStatus: 'pending_review',
                         paymentMethod: selectedPaymentMethod || 'payme',
-                        lastPaymentSubmittedAt: purchaseDate
+                        lastPaymentSubmittedAt: purchaseDate,
+                        promoCode: readPromoCodeInput() || ''
                     }, { merge: true });
                 }).then(function() {
                     if (savedReceiptUrls && savedReceiptUrls.length) {
@@ -5160,16 +5522,25 @@
                     notifyAdmin('新入數紙', (currentUser.email || '') + ' 提交 ' + planLabel(currentPlan) + ' 入數紙');
                     return db.collection('users').doc(currentUser.uid).collection('payments').add({
                         plan: currentPlan,
-                        amount: plan.price,
+                        amount: getCheckoutAmount(),
+                        period: selectedPaymentPeriod(),
+                        daysGranted: periodGrantDays(),
+                        earlyBird: selectedPaymentPeriod() !== 'month',
+                        promoCode: readPromoCodeInput() || '',
                         method: selectedPaymentMethod || 'payme',
                         status: 'pending_review',
                         submittedAt: purchaseDate,
                         receiptUrls: savedReceiptUrls,
                         receiptUrl: savedReceiptUrls[0] || '',
-                        note: '續費' + planLabel(currentPlan) + ' ' + (plan.price || ''),
+                        note: '續費' + planLabel(currentPlan) + ' HK$' + getCheckoutAmount(),
                         receiptCount: receiptFiles ? receiptFiles.length : 0
                     });
                 }).then(function() {
+                    var used = readPromoCodeInput();
+                    if (used) {
+                        userUsedPromoCode = used;
+                        bumpPromoUse(used);
+                    }
                     setPaySubmitBusy(false);
                     showPaymentDoneModal();
                 }).catch(function(err) {
@@ -5205,8 +5576,27 @@
             renewalAddonQty = extraPetsPurchased || 0;
             var lab = document.getElementById('renewalAddonQtyLabel');
             if (lab) lab.textContent = renewalAddonQty;
-            applyPaymentAmountDisplay();
             document.getElementById('paymentModal').classList.add('show');
+            loadCachedPromoCodes().then(function() { applyPaymentAmountDisplay(); });
+            applyPaymentAmountDisplay();
+        }
+        function closeWelcomePromo() {
+            var m = document.getElementById('welcomePromoModal');
+            if (m) m.classList.remove('show');
+            try {
+                localStorage.setItem('pawWelcomePromoAt', String(Date.now()));
+                sessionStorage.setItem('pawWelcomePromoSeen', '1');
+            } catch (e) {}
+        }
+        function maybeShowWelcomePromo() {
+            if (isLoggedIn && (userUsedPromoCode === 'NEWPET' || String(userUsedPromoCode || '').indexOf('NEWPET') === 0)) return;
+            try {
+                if (sessionStorage.getItem('pawWelcomePromoSeen') === '1') return;
+                var t = parseInt(localStorage.getItem('pawWelcomePromoAt') || '0', 10);
+                if (t && (Date.now() - t) < 7 * 24 * 60 * 60 * 1000) return;
+            } catch (e) {}
+            var m = document.getElementById('welcomePromoModal');
+            if (m) m.classList.add('show');
         }
 
         // ================================================================
@@ -5214,11 +5604,12 @@
         // ================================================================
         // ✅ 問題5已修復：試用期已結束嘅提示同限制
        function showMemberPets() {
-            if (window.pendingOpenAdmin) {
-                window.pendingOpenAdmin = false;
-                if (isAdminUser()) { openAdminPage(); return; }
-            }
+            window.pendingOpenAdmin = false;
             document.getElementById('mainContent').classList.add('hidden');
+            var ad = document.getElementById('adminDashboard');
+            if (ad) ad.classList.add('hidden');
+            var cw = document.getElementById('clinicWorkbench');
+            if (cw) cw.classList.add('hidden');
             document.getElementById('memberDashboard').classList.add('show');
             
             // 試用已過期：只顯示付款提示
@@ -5373,6 +5764,7 @@
             loadAdminPending();
             loadAdminUsers();
             loadAdminInquiries();
+            loadAdminPromoCodes();
         }
         function adminFmt(d) {
             if (!d) return '—';
@@ -5497,8 +5889,18 @@
                         if (end && end > base) base = end;
                         if (tEnd && tEnd > base) base = tEnd;
                         base = new Date(base.getTime());
-                        base.setMonth(base.getMonth() + 1);
+                        var addDays = parseInt(rec.daysGranted, 10);
+                        if (!addDays || addDays < 1) {
+                            if (rec.period === 'half') addDays = 180;
+                            else if (rec.period === 'year') addDays = 365;
+                            else addDays = 30;
+                        }
+                        base.setDate(base.getDate() + addDays);
                         patch.planEndDate = base;
+                        if (rec.earlyBird || rec.period === 'half' || rec.period === 'year') {
+                            patch.earlyBird = true;
+                            patch.surveyEligibleAt = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
+                        }
                         var requested = rec.plan || rec.requestedPlan || d.plan;
                         if (requested && requested !== d.plan) {
                             var curEnd = parseTrialDate(d.planEndDate);
@@ -5536,6 +5938,7 @@
             });
         }
         function loadAdminUsers() {
+            loadAdminMasterTrash();
             var box = document.getElementById('adminUserList');
             var q = (document.getElementById('adminSearchEmail').value || '').trim().toLowerCase();
             box.textContent = '載入中…';
@@ -5676,6 +6079,45 @@
                 closeAdminPlanModal();
             }).catch(function(err) { showToast(err.message || err, 'error'); });
         }
+        function loadAdminMasterTrash() {
+            var box = document.getElementById('adminMasterTrash');
+            if (!box) return;
+            box.textContent = '載入中…';
+            db.collection('users').get().then(function(snap) {
+                var jobs = [];
+                var items = [];
+                snap.forEach(function(u) {
+                    jobs.push(u.ref.collection('pets').get().then(function(ps) {
+                        var inner = [];
+                        ps.forEach(function(p) {
+                            var pd = p.data() || {};
+                            if (pd.is_deleted || pd.isDeleted || pd.admin_archived || pd.userPurged) {
+                                items.push({ email: (u.data()||{}).email || u.id, type: 'pet', name: pd.name || p.id, at: trashDeletedAt(pd), uid: u.id, petId: p.id });
+                            }
+                            inner.push(p.ref.collection('reports').get().then(function(rs) {
+                                rs.forEach(function(r) {
+                                    var rd = r.data() || {};
+                                    if (rd.is_deleted || rd.isDeleted || rd.admin_archived || rd.userPurged) {
+                                        items.push({ email: (u.data()||{}).email || u.id, type: 'report', name: rd.title || r.id, at: trashDeletedAt(rd), uid: u.id, petId: p.id, reportId: r.id });
+                                    }
+                                });
+                            }));
+                        });
+                        return Promise.all(inner);
+                    }));
+                });
+                return Promise.all(jobs).then(function() { return items; });
+            }).then(function(items) {
+                if (!items.length) { box.textContent = '沒有備份項目。'; return; }
+                box.innerHTML = items.map(function(it) {
+                    var left = it.at ? Math.max(0, Math.ceil(180 - daysSinceDate(it.at))) : 180;
+                    return '<div class="p-2 border border-gray-100 rounded-xl flex justify-between gap-2">' +
+                        '<div>' + it.email + ' · ' + (it.type === 'pet' ? '毛孩' : '病歷') + '：' + it.name +
+                        '<div class="text-xs text-gray-400">約 ' + left + ' 天後永久抹除</div></div>' +
+                        '<button onclick="adminRestoreItem(\'' + it.uid + '\',\'' + it.type + '\',\'' + it.petId + '\',\'' + (it.reportId || '') + '\')" class="px-3 py-1 bg-[#3da881] text-white rounded-full text-xs">復原</button></div>';
+                }).join('');
+            }).catch(function(err) { box.textContent = err.message || err; });
+        }
         function closeAdminRestoreModal() {
             var m = document.getElementById('adminRestoreModal');
             if (m) m.classList.remove('show');
@@ -5690,14 +6132,14 @@
                 var jobs = [];
                 ps.forEach(function(p) {
                     var pd = p.data() || {};
-                    if (pd.is_deleted || pd.isDeleted) {
-                        items.push({ type: 'pet', uid: uid, petId: p.id, name: pd.name || p.id });
+                    if (pd.is_deleted || pd.isDeleted || pd.admin_archived || pd.userPurged) {
+                        items.push({ type: 'pet', uid: uid, petId: p.id, name: pd.name || p.id, archived: !!pd.admin_archived });
                     }
                     jobs.push(p.ref.collection('reports').get().then(function(rs) {
                         rs.forEach(function(r) {
                             var rd = r.data() || {};
-                            if (rd.is_deleted || rd.isDeleted) {
-                                items.push({ type: 'report', uid: uid, petId: p.id, reportId: r.id, name: rd.title || r.id });
+                            if (rd.is_deleted || rd.isDeleted || rd.admin_archived || rd.userPurged) {
+                                items.push({ type: 'report', uid: uid, petId: p.id, reportId: r.id, name: rd.title || r.id, archived: !!rd.admin_archived });
                             }
                         });
                     }));
@@ -5707,19 +6149,172 @@
                 if (!items.length) { box.textContent = '回收桶是空的。'; return; }
                 box.innerHTML = items.map(function(it) {
                     return '<div class="flex justify-between items-center gap-2 p-2 border border-gray-100 rounded-xl">' +
-                        '<span>' + (it.type === 'pet' ? '寵物' : '報告') + '：' + it.name + '</span>' +
+                        '<span>' + (it.type === 'pet' ? '寵物' : '報告') + '：' + it.name + (it.archived ? '（客服備份）' : '') + '</span>' +
                         '<button onclick="adminRestoreItem(\'' + it.uid + '\',\'' + it.type + '\',\'' + it.petId + '\',\'' + (it.reportId || '') + '\')" class="px-3 py-1 bg-[#3da881] text-white rounded-full text-xs">一鍵復原</button></div>';
                 }).join('');
             }).catch(function(err) { box.textContent = err.message || err; });
         }
         function adminRestoreItem(uid, type, petId, reportId) {
+            if (!uid || !petId) return;
+            if (type === 'report' && !reportId) return;
             var ref = db.collection('users').doc(uid).collection('pets').doc(petId);
             if (type === 'report') ref = ref.collection('reports').doc(reportId);
-            ref.set({ is_deleted: false, isDeleted: false, restoredAt: new Date() }, { merge: true }).then(function() {
+            ref.set({ is_deleted: false, isDeleted: false, userPurged: false, admin_archived: false, restoredAt: new Date() }, { merge: true }).then(function() {
                 touchAdminUser(uid, {});
                 showToast('已復原', 'success');
+                loadAdminMasterTrash();
                 openAdminRestore(uid);
+                if (currentUser && currentUser.uid === uid) loadUserData(uid);
             }).catch(function(err) { showToast(err.message || err, 'error'); });
+        }
+        function loadCachedPromoCodes() {
+            if (!db) return Promise.resolve();
+            return db.collection('promo_codes').get().then(function(snap) {
+                cachedPromoCodes = [];
+                snap.forEach(function(d) {
+                    var x = d.data() || {};
+                    x.id = d.id;
+                    x.code = x.code || d.id;
+                    cachedPromoCodes.push(x);
+                });
+            }).catch(function() {});
+        }
+        function bumpPromoUse(code) {
+            code = String(code || '').trim().toUpperCase();
+            if (!code || !db) return;
+            var ref = db.collection('promo_codes').doc(code);
+            ref.set({ usedCount: firebase.firestore.FieldValue.increment(1), code: code }, { merge: true }).catch(function(){});
+        }
+        function promoScopeLabel(p) {
+            var plans = p.plans || [];
+            var periods = p.periods || [];
+            if (plans.indexOf('volunteer') >= 0 || plans.indexOf('adopt') >= 0 || plans.indexOf('all') >= 0) {
+                return '全部方案及專區（含義工／領養）';
+            }
+            if (periods.indexOf('month') >= 0) return '所有一般方案（月繳／半年／年繳）';
+            return '僅限半年繳／年繳（商業方案）';
+        }
+        function loadAdminPromoCodes() {
+            var box = document.getElementById('adminPromoList');
+            if (!box) return;
+            box.textContent = '載入中…';
+            loadCachedPromoCodes().then(function() {
+                if (!cachedPromoCodes.length) {
+                    box.innerHTML = '<p class="text-gray-400">尚未有優惠碼，請用上方表單新增。</p>';
+                    return;
+                }
+                var rows = cachedPromoCodes.map(function(p) {
+                    var exp = p.expiresAt ? (parseTrialDate(p.expiresAt) || new Date(p.expiresAt)) : null;
+                    var expText = exp && !isNaN(exp.getTime()) ? exp.toLocaleDateString('zh-HK') : '無到期';
+                    var disc = p.type === 'percent' ? (p.value + '%') : ('HK$' + (p.value || 0));
+                    var uses = (p.usedCount || 0) + (p.maxUses ? (' / ' + p.maxUses) : '');
+                    var st = p.active === false ? '<span class="text-red-500">已停用</span>' : '<span class="text-emerald-600">使用中</span>';
+                    return '<tr class="border-t border-gray-100">' +
+                        '<td class="py-2 pr-3 font-semibold">' + (p.code || '') + '</td>' +
+                        '<td class="py-2 pr-3">' + disc + '</td>' +
+                        '<td class="py-2 pr-3">' + promoScopeLabel(p) + '</td>' +
+                        '<td class="py-2 pr-3">' + uses + '</td>' +
+                        '<td class="py-2 pr-3">' + expText + '</td>' +
+                        '<td class="py-2 pr-3">' + st + '</td>' +
+                        '<td class="py-2 whitespace-nowrap">' +
+                        '<button type="button" onclick="adminEditPromo(\'' + p.code + '\')" class="px-3 py-1 border border-indigo-300 text-indigo-700 rounded-full text-xs mr-1">編輯／延期</button>' +
+                        '<button type="button" onclick="adminTogglePromo(\'' + p.code + '\',' + (p.active === false) + ')" class="px-3 py-1 border rounded-full text-xs mr-1">' + (p.active === false ? '啟用' : '停用') + '</button>' +
+                        '<button type="button" onclick="adminDeletePromo(\'' + p.code + '\')" class="px-3 py-1 border border-red-300 text-red-600 rounded-full text-xs">刪除</button>' +
+                        '</td></tr>';
+                }).join('');
+                box.innerHTML = '<table class="w-full text-left min-w-[720px]"><thead><tr class="text-xs text-gray-500">' +
+                    '<th class="py-2 pr-3">優惠碼</th><th class="py-2 pr-3">折扣</th><th class="py-2 pr-3">適用方案</th>' +
+                    '<th class="py-2 pr-3">使用次數</th><th class="py-2 pr-3">到期日</th><th class="py-2 pr-3">狀態</th><th class="py-2">操作</th>' +
+                    '</tr></thead><tbody>' + rows + '</tbody></table>';
+            });
+        }
+        function adminSavePromoCode() {
+            var code = ((document.getElementById('promoNewCode') || {}).value || '').trim().toUpperCase();
+            if (!code) { showToast('請輸入優惠碼', 'warning'); return; }
+            var type = (document.getElementById('promoNewType') || {}).value || 'amount';
+            var value = Number((document.getElementById('promoNewValue') || {}).value || 0);
+            var maxUses = Number((document.getElementById('promoNewMaxUses') || {}).value || 0);
+            var expiry = (document.getElementById('promoNewExpiry') || {}).value || '';
+            var periodSel = (document.getElementById('promoNewPeriod') || {}).value || 'half_year';
+            var periods = ['half', 'year'];
+            var plans = ['lite', 'standard', 'longterm', 'pro'];
+            if (periodSel === 'owner_all') {
+                periods = ['month', 'half', 'year'];
+            } else if (periodSel === 'all_zones') {
+                periods = ['all'];
+                plans = ['all', 'lite', 'standard', 'longterm', 'pro', 'volunteer', 'adopt'];
+            }
+            db.collection('promo_codes').doc(code).set({
+                code: code,
+                type: type,
+                value: value,
+                maxUses: maxUses,
+                expiresAt: expiry ? new Date(expiry) : null,
+                periods: periods,
+                plans: plans,
+                active: true,
+                updatedAt: new Date()
+            }, { merge: true }).then(function() {
+                showToast('優惠碼已儲存', 'success');
+                loadAdminPromoCodes();
+            }).catch(function(err) { showToast(err.message || err, 'error'); });
+        }
+        function setPromoExpiryQuick(months) {
+            var el = document.getElementById('promoNewExpiry');
+            if (!el) return;
+            var d = new Date();
+            d.setMonth(d.getMonth() + (Number(months) || 0));
+            var m = d.getMonth() + 1;
+            var day = d.getDate();
+            el.value = d.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day;
+        }
+        function adminEditPromo(code) {
+            var p = null;
+            for (var i = 0; i < cachedPromoCodes.length; i++) {
+                if (String(cachedPromoCodes[i].code || '').toUpperCase() === String(code || '').toUpperCase()) p = cachedPromoCodes[i];
+            }
+            if (!p) { showToast('找不到此優惠碼', 'warning'); return; }
+            var codeEl = document.getElementById('promoNewCode');
+            var typeEl = document.getElementById('promoNewType');
+            var valEl = document.getElementById('promoNewValue');
+            var maxEl = document.getElementById('promoNewMaxUses');
+            var expEl = document.getElementById('promoNewExpiry');
+            var perEl = document.getElementById('promoNewPeriod');
+            if (codeEl) codeEl.value = p.code || '';
+            if (typeEl) typeEl.value = p.type || 'amount';
+            if (valEl) valEl.value = p.value || 0;
+            if (maxEl) maxEl.value = p.maxUses || 0;
+            if (expEl) {
+                var exp = p.expiresAt ? (parseTrialDate(p.expiresAt) || new Date(p.expiresAt)) : null;
+                if (exp && !isNaN(exp.getTime())) {
+                    var m = exp.getMonth() + 1, day = exp.getDate();
+                    expEl.value = exp.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day;
+                } else expEl.value = '';
+            }
+            if (perEl) {
+                var plans = p.plans || [];
+                var periods = p.periods || [];
+                if (plans.indexOf('volunteer') >= 0 || plans.indexOf('adopt') >= 0 || plans.indexOf('all') >= 0) perEl.value = 'all_zones';
+                else if (periods.indexOf('month') >= 0) perEl.value = 'owner_all';
+                else perEl.value = 'half_year';
+            }
+            var form = document.getElementById('promoNewCode');
+            if (form && form.scrollIntoView) form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            showToast('已載入 ' + code + '，改到期日後按「新增／更新優惠碼」儲存', 'success');
+        }
+        function adminTogglePromo(code, enable) {
+            db.collection('promo_codes').doc(code).set({ active: !!enable, updatedAt: new Date() }, { merge: true }).then(function() {
+                loadAdminPromoCodes();
+            }).catch(function(err) { showToast(err.message || err, 'error'); });
+        }
+        function adminDeletePromo(code) {
+            appConfirm('確定刪除優惠碼 ' + code + '？刪除後前台不能再用。').then(function(ok) {
+                if (!ok) return;
+                db.collection('promo_codes').doc(code).delete().then(function() {
+                    showToast('已刪除 ' + code, 'success');
+                    loadAdminPromoCodes();
+                }).catch(function(err) { showToast(err.message || err, 'error'); });
+            });
         }
         function adminConfirmRenew(uid) {
             appConfirm('確定為此會員續期 +1 個月？').then(function(ok) {
@@ -6945,12 +7540,14 @@
         // ================================================================
         window.onload = function() {
             initDevPanel();
+            loadCachedPromoCodes();
             auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function() {});
             if (!auth.currentUser) {
                 updateNav();
                 document.getElementById('mainContent').classList.remove('hidden');
                 renderDemoPets();
                 renderDemoReports();
+                setTimeout(maybeShowWelcomePromo, 600);
             }
             
             // 安全更新元素（避免不存在的 ID 報錯）

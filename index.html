@@ -12,6 +12,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
     <style>
         /* ===== 全域重置 ===== */
@@ -552,6 +553,10 @@
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-[#2d8f6f]">我的會員專區</h2>
         </div>
+        <div id="emailVerifyBanner" class="hidden mb-4 px-4 py-3 rounded-2xl bg-amber-50 border border-amber-200 text-sm text-amber-900 flex flex-wrap items-center justify-between gap-2">
+            <span>請驗證電郵以保障帳戶安全。未驗證亦可先使用所有功能。</span>
+            <button type="button" onclick="resendEmailVerification()" class="px-3 py-1 rounded-full bg-white border border-amber-300 text-xs">重發驗證信</button>
+        </div>
         <div class="member-area">
             <div class="flex flex-wrap items-center gap-6">
                 <div>
@@ -585,7 +590,7 @@
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 pt-6 border-t border-gray-100">
                 <div class="text-center p-3 bg-[#f0faf5] rounded-xl">
-                    <div class="text-2xl font-bold text-[#2d8f6f]" id="memberPetCount">0 / 0 隻</div>
+                    <div class="text-2xl font-bold text-[#2d8f6f]" id="memberPetCount">0 / 1 隻</div>
                     <div class="text-xs text-gray-500">已登記毛孩配額</div>
                 </div>
                 <div class="text-center p-3 bg-[#f0faf5] rounded-xl">
@@ -612,13 +617,14 @@
             <div class="p-6 border-b">
                 <div class="flex justify-between items-center flex-wrap gap-3 mb-2">
                     <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-paw text-[#3da881] mr-2"></i>我的毛孩</h2>
-                    <div class="flex gap-2">
+                    <div class="flex gap-2 flex-wrap">
+                    <button type="button" onclick="openUpgradeOrAddon()" class="px-3 py-1.5 border border-[#3da881] text-[#2d8f6f] rounded-full text-sm">加購配額／升級方案</button>
                     <button type="button" onclick="openMemberTrash()" class="px-3 py-1.5 border border-gray-300 rounded-full text-sm">回收桶</button>
                     <button id="memberAddPetBtn" onclick="openAddPetModal()" class="add-pet-btn-small">＋新增毛孩</button>
                     </div>
                 </div>
                 <p id="memberPetCapacity" class="hidden"></p>
-                <p id="memberPetCapacityHint" class="hidden text-xs text-amber-700 mb-3">已達目前方案毛孩上限，如需新增請進行加購或聯繫客服。</p>
+                <p id="memberPetCapacityHint" class="hidden"></p>
                 <div id="memberPetList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
             </div>
             <div class="p-6 bg-gradient-to-r from-[#f0faf5]/30 to-white">
@@ -628,7 +634,6 @@
                     <div class="flex gap-2 flex-wrap">
                         <button type="button" id="memberReportSortBtn" onclick="toggleMemberReportSort()" class="border border-gray-300 hover:bg-gray-50 px-4 py-1.5 rounded-full text-sm font-medium transition">按日期：最新 ⇅</button>
                         <button onclick="exportMedicalHistoryPdf()" class="bg-white hover:bg-[#f0faf5] border border-[#3da881] text-[#2d8f6f] px-4 py-1.5 rounded-full text-sm font-medium transition"><i class="fa-regular fa-file-pdf mr-1"></i>匯出病歷 PDF</button>
-                        <button onclick="openMemberTrash()" class="border border-gray-300 hover:bg-gray-50 px-4 py-1.5 rounded-full text-sm font-medium transition">回收桶</button>
                         <button onclick="openUploadModal()" class="bg-[#d4ede2] hover:bg-[#b8dfd0] text-[#2d7a5e] px-4 py-1.5 rounded-full text-sm font-medium transition"><i class="fa-solid fa-upload mr-1"></i>上傳報告</button>
                         <button onclick="refreshMemberData()" class="border border-gray-300 hover:bg-gray-50 px-4 py-1.5 rounded-full text-sm font-medium transition"><i class="fa-solid fa-rotate-right mr-1"></i>重新整理</button>
                         <button id="memberToggleSelectModeBtn" onclick="toggleMemberSelectMode()" class="border border-gray-300 hover:bg-gray-50 px-4 py-1.5 rounded-full text-sm font-medium transition">選擇報告</button>
@@ -670,7 +675,8 @@
     </div>
     <div id="adminRestoreModal" class="modal">
         <div class="modal-content fade-in" style="max-width:520px;">
-            <h3 class="text-lg font-bold text-gray-800 mb-2">資料救援／回收桶</h3>
+            <h3 class="text-lg font-bold text-gray-800 mb-1">資料救援／回收桶</h3>
+            <p id="adminRestoreScope" class="text-xs text-gray-500 mb-3">只顯示此會員已刪項目</p>
             <div id="adminRestoreList" class="text-sm text-gray-600 space-y-2 max-h-[50vh] overflow-y-auto">載入中…</div>
             <button type="button" onclick="closeAdminRestoreModal()" class="w-full mt-4 py-2 border border-gray-300 rounded-2xl text-sm">關閉</button>
         </div>
@@ -679,6 +685,10 @@
         <div class="modal-content fade-in" style="max-width:560px;">
             <h3 class="text-lg font-bold text-gray-800 mb-2">回收桶</h3>
             <p class="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 mb-3">⚠️ 回收桶內的項目將於 30 天後被系統自動永久清理。</p>
+            <div class="flex flex-wrap gap-2 mb-3">
+                <button type="button" onclick="toggleSelectAllTrash()" class="px-3 py-1.5 border rounded-full text-xs">全部選取</button>
+                <button type="button" onclick="purgeSelectedTrash()" class="px-3 py-1.5 border border-red-300 text-red-600 rounded-full text-xs">刪除已選</button>
+            </div>
             <div id="memberTrashList" class="text-sm text-gray-600 space-y-2 max-h-[50vh] overflow-y-auto">載入中…</div>
             <button type="button" onclick="closeMemberTrash()" class="w-full mt-4 py-2 border border-gray-300 rounded-2xl text-sm">關閉</button>
         </div>
@@ -698,9 +708,6 @@
             <button onclick="loadAdminUsers()" class="px-4 py-2 bg-indigo-600 text-white rounded-2xl text-sm">重新整理</button>
         </div>
         <div id="adminUserList" class="space-y-3 text-sm text-gray-600">載入中…</div>
-        <h3 class="text-lg font-bold text-indigo-800 mt-8 mb-2">終極客服回收桶</h3>
-        <p class="text-xs text-gray-500 mb-2">用戶刪除後仍保留；滿 180 天先永久抹除。登入後台會自動清理過期項目。</p>
-        <div id="adminMasterTrash" class="space-y-2 text-sm mb-8">載入中…</div>
         <h3 class="text-lg font-bold text-indigo-800 mt-8 mb-3">會員查詢</h3>
         <div class="flex flex-wrap gap-2 mb-3">
             <button onclick="setAdminInquiryFilter('open')" class="px-3 py-1 rounded-full text-xs border border-indigo-300 text-indigo-700">未回覆</button>
@@ -835,9 +842,10 @@
                         <span class="text-2xl font-bold text-gray-900">$10</span>
                         <span class="text-sm text-gray-500">／隻</span>
                     </div>
-                    <p class="text-xs text-gray-500 mb-3">免費開戶 · 一次性按隻計費</p>
+                    <p class="text-xs text-gray-500 mb-3">按隻買斷 HK$10／隻 · 永久有效 · 不需月繳／年繳</p>
                     <ul class="features">
-                        <li><span class="check">✓</span> 一個帳號管理多隻毛孩</li>
+                        <li><span class="check">✓</span> 買 1 隻即開 1 個永久毛孩名額</li>
+                        <li><span class="check">✓</span> 一個帳號可多次加購</li>
                         <li><span class="check">✓</span> 一鍵生成領養轉移連結</li>
                     </ul>
                 </div>
@@ -888,7 +896,7 @@
                         <option value="lite">輕量版 - HK$38 / 每月</option>
                         <option value="standard" selected>基礎版 - HK$58 / 每月</option>
                         <option value="longterm">大家庭版 - HK$78 / 每月</option>
-                        <option value="volunteer">義工 - HK$10 / 隻</option>
+                        <option value="volunteer">義工 - 按隻買斷 HK$10 / 隻（永久）</option>
                         <option value="adopt">新手領養愛心禮 - HK$20 / 首6個月</option>
                     </select>
                 </div>
@@ -899,6 +907,17 @@
                         <option value="half">半年繳（新客戶優惠：買 5 送 1）</option>
                         <option value="year">年繳（新客戶優惠：買 10 送 2）</option>
                     </select>
+                </div>
+                <div id="volunteerSlotRow" class="hidden flex-wrap items-center justify-between gap-2">
+                    <div>
+                        <p class="text-sm font-medium text-gray-700">新增毛孩配額（買斷）</p>
+                        <p id="volunteerSlotHint" class="text-xs text-[#2d8f6f]">1 隻 × HK$10 = HK$10（永久有效）</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="changeVolunteerSlotQty(-1)" class="w-8 h-8 rounded-full border">−</button>
+                        <span id="volunteerSlotQtyLabel" class="font-bold w-6 text-center">1</span>
+                        <button type="button" onclick="changeVolunteerSlotQty(1)" class="w-8 h-8 rounded-full border">+</button>
+                    </div>
                 </div>
                 <div id="renewalAddonRow" class="hidden flex-wrap items-center justify-between gap-2">
                     <div>
@@ -981,8 +1000,8 @@
     <div id="paymentDoneModal" class="modal">
         <div class="modal-content fade-in text-center" style="max-width:400px;">
             <div class="text-4xl mb-3">✅</div>
-            <h3 class="text-xl font-bold text-gray-800 mb-2">多謝你繼續支持 Paw Vault！</h3>
-            <p class="text-sm text-gray-600 mb-5" id="paymentDoneText">我們已收到你的付款證明，團隊將於 1 個工作天內完成核實。核實後會籍將自動疊加延長，感謝你的耐心等候。</p>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">已收到付款證明</h3>
+            <p class="text-sm text-gray-600 mb-5" id="paymentDoneText">已收到付款證明，將於 1 個工作天內核對並解鎖毛孩配額。</p>
             <button onclick="closePaymentDoneModal()" class="w-full py-2.5 bg-[#3da881] text-white rounded-2xl text-sm font-medium">確定</button>
         </div>
     </div>
@@ -1232,6 +1251,16 @@
     </div>
 
 
+    <div id="quotaLimitModal" class="modal">
+        <div class="modal-content fade-in" style="max-width:420px;">
+            <h3 class="text-xl font-bold text-gray-800 mb-2 text-center">毛孩數量已達上限</h3>
+            <p id="quotaLimitText" class="text-sm text-gray-600 text-center mb-4">您的毛孩數量已達上限，請升級方案或加購配額</p>
+            <p id="quotaLimitCount" class="text-center text-sm text-[#2d8f6f] font-medium mb-4"></p>
+            <button type="button" id="quotaLimitPayBtn" onclick="goQuotaLimitPay()" class="w-full py-2.5 bg-[#3da881] text-white rounded-2xl text-sm font-medium mb-2">前往付款加購</button>
+            <button type="button" onclick="closeQuotaLimitModal(); openPricingModal();" class="w-full py-2.5 border border-gray-300 rounded-2xl text-sm mb-2">查看升級方案</button>
+            <button type="button" onclick="closeQuotaLimitModal()" class="w-full py-2 text-gray-400 text-sm">取消</button>
+        </div>
+    </div>
     <!-- 加購毛孩付款（CASE A：未入數） -->
     <div id="extraPetPayModal" class="modal">
         <div class="modal-content fade-in" style="max-width:440px;">
@@ -1320,6 +1349,7 @@
                 <div class="sub">支援 PDF / JPEG / PNG</div>
                 <input type="file" id="fileInput" class="hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" multiple>
             </div>
+            <p id="ocrHint" class="text-xs text-[#2d8f6f] mb-2 hidden">正在辨識圖片文字…</p>
             <div id="fileList" class="text-xs text-gray-500 mb-3"></div>
             <div class="flex gap-2.5">
                 <button onclick="closeUploadModal()" class="flex-1 py-2.5 border border-gray-300 rounded-2xl text-sm hover:bg-gray-50 transition">取消</button>
@@ -1423,8 +1453,11 @@
         <div class="modal-content fade-in">
             <h3 class="text-xl font-bold text-center text-[#2d8f6f] mb-4">登入</h3>
             <p class="text-center text-xs text-gray-500 mb-4">登入你的帳戶，繼續管理毛孩健康檔案</p>
-            <button onclick="handleGoogleLogin()" class="w-full py-2.5 border border-gray-300 rounded-2xl text-sm font-medium hover:bg-gray-50 transition flex items-center justify-center gap-2 mb-3">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-5 h-5"> 使用 Google 帳戶登入
+            <button onclick="handleGoogleLogin()" class="w-full py-2.5 border border-gray-300 rounded-2xl text-sm font-medium hover:bg-gray-50 transition flex items-center justify-center gap-2 mb-2">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-5 h-5"> 使用 Google 一鍵登入
+            </button>
+            <button onclick="handleAppleLogin()" class="w-full py-2.5 border border-gray-300 rounded-2xl text-sm font-medium hover:bg-gray-50 transition flex items-center justify-center gap-2 mb-3">
+                <i class="fa-brands fa-apple text-lg"></i> 使用 Apple 一鍵登入
             </button>
             <div class="flex items-center gap-3 my-3">
                 <hr class="flex-1 border-gray-200"><span class="text-xs text-gray-400">或使用電郵登入</span><hr class="flex-1 border-gray-200">
@@ -1449,8 +1482,11 @@
             <h3 class="text-xl font-bold text-center text-[#2d8f6f] mb-4">註冊成為會員</h3>
             <p class="text-center text-xs text-gray-500 mb-2">註冊即享 <strong class="text-[#2d8f6f]">30 天免費試用</strong></p>
             <p class="text-center text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 mb-3">🎉 結帳輸入 <strong>NEWPET</strong> 再折 HK$50</p>
-            <button onclick="handleGoogleSignup()" class="w-full py-2.5 border border-gray-300 rounded-2xl text-sm font-medium hover:bg-gray-50 transition flex items-center justify-center gap-2 mb-3">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-5 h-5"> 使用 Google 帳戶註冊
+            <button onclick="handleGoogleSignup()" class="w-full py-2.5 border border-gray-300 rounded-2xl text-sm font-medium hover:bg-gray-50 transition flex items-center justify-center gap-2 mb-2">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-5 h-5"> 使用 Google 一鍵註冊
+            </button>
+            <button onclick="handleAppleLogin()" class="w-full py-2.5 border border-gray-300 rounded-2xl text-sm font-medium hover:bg-gray-50 transition flex items-center justify-center gap-2 mb-3">
+                <i class="fa-brands fa-apple text-lg"></i> 使用 Apple 一鍵註冊
             </button>
             <div class="flex items-center gap-3 my-3">
                 <hr class="flex-1 border-gray-200"><span class="text-xs text-gray-400">或使用電郵註冊</span><hr class="flex-1 border-gray-200">
@@ -1739,9 +1775,9 @@
             longterm: { petLimit: 5, yearlyReportLimit: 100, monthlyReportLimit: 100, medicalReportLimit: 100, label: '大家庭版', hardCap: 10,
                 price: 'HK$78', annualPrice: 'HK$780', navBadge: '大家庭', badgeClass: 'badge-longterm',
                 maxStorageBytes: 10 * GB, extraPetFee: 5, feature: '3-5 隻 · 10GB · 每年約 100 次', allowFullReport: true },
-            volunteer: { petLimit: 30, yearlyReportLimit: 80, monthlyReportLimit: 80, medicalReportLimit: 80, label: '義工方案',
-                price: 'HK$10', annualPrice: 'HK$10／隻', annualOnly: true, navBadge: '義工', badgeClass: 'badge-pro',
-                maxStorageBytes: 5 * GB, extraPetFee: 0, feature: '按隻 $10 · 領養連結', allowFullReport: true },
+            volunteer: { petLimit: 0, yearlyReportLimit: 80, monthlyReportLimit: 80, medicalReportLimit: 80, label: '義工方案',
+                price: 'HK$10', annualPrice: '按隻買斷 HK$10', annualOnly: true, navBadge: '義工', badgeClass: 'badge-pro',
+                maxStorageBytes: 5 * GB, extraPetFee: 0, feature: 'HK$10／隻永久 · 領養連結', allowFullReport: true },
             adopt: { petLimit: 2, yearlyReportLimit: 50, monthlyReportLimit: 50, medicalReportLimit: 50, label: '新手領養愛心禮',
                 price: 'HK$20', annualPrice: '其後自選方案', navBadge: '航禮', badgeClass: 'badge-pro',
                 maxStorageBytes: 5 * GB, extraPetFee: 5, feature: '首 6 個月 $20 享基礎版', allowFullReport: true },
@@ -1750,7 +1786,9 @@
                 maxStorageBytes: 10 * GB, extraPetFee: 5, allowFullReport: true }
         };
         var FAMILY_HARD_CAP = 10;
+        var VOLUNTEER_HARD_CAP = 50;
         var extraPetsPurchased = 0;
+        var volunteerSlotQty = 1;
         var memberReportPage = 1;
         var MEMBER_REPORT_PAGE_SIZE = 10;
         var memberReportNewestFirst = true;
@@ -1764,13 +1802,27 @@
         var userUsedPromoCode = '';
         var usedStorageBytes = 0;
 
+        function displayPetQuota() {
+            var y = getPlanLimits().petLimit || 0;
+            if (y < 1) y = 1;
+            return y;
+        }
         function getPlanLimits() {
             var base = PLAN_LIMITS[currentPlan] || PLAN_LIMITS.standard;
             var extra = extraPetsPurchased || 0;
-            var raw = (base.petLimit || 1) + extra;
-            if (memberMaxPetsOverride && memberMaxPetsOverride > 0) raw = memberMaxPetsOverride;
+            var raw = extra;
+            if (hasPaid && currentPlan === 'volunteer') raw = extra;
+            else if (hasPaid) raw = (base.petLimit || 0) + extra;
+            if (hasPaid && memberMaxPetsOverride && memberMaxPetsOverride > 0 && currentPlan !== 'volunteer') raw = memberMaxPetsOverride;
+            var hard = currentPlan === 'volunteer' ? VOLUNTEER_HARD_CAP : (currentPlan === 'longterm' || currentPlan === 'pro' ? FAMILY_HARD_CAP : Math.max(base.petLimit || 1, extra + (base.petLimit || 0)));
+            if (currentPlan === 'volunteer') raw = Math.min(raw, VOLUNTEER_HARD_CAP);
+            else if (currentPlan === 'longterm' || currentPlan === 'pro') raw = Math.min(raw, FAMILY_HARD_CAP);
+            var reports = (!hasPaid && currentPlan !== 'volunteer') ? 5 : (base.yearlyReportLimit || 15);
             return Object.assign({}, base, {
                 petLimit: raw,
+                yearlyReportLimit: reports,
+                monthlyReportLimit: reports,
+                medicalReportLimit: reports,
                 maxStorageBytes: (base.maxStorageBytes || (2*GB)) + extra * GB
             });
         }
@@ -1778,24 +1830,14 @@
             var capEl = document.getElementById('memberPetCapacity');
             var hint = document.getElementById('memberPetCapacityHint');
             var btn = document.getElementById('memberAddPetBtn');
-            var y = getPlanLimits().petLimit;
+            var y = displayPetQuota();
             var x = countActivePets();
-            if (capEl) capEl.textContent = '現有毛孩：' + x + ' / ' + y + ' 隻';
-            var full = y !== Infinity && x >= y;
+            if (capEl) capEl.textContent = x + ' / ' + y + ' 隻';
             if (btn) {
                 btn.disabled = false;
                 btn.classList.remove('opacity-50', 'pointer-events-none');
             }
-            if (hint) {
-                if (full || extraPetsPurchased >= 6 || countActivePets() >= 11) {
-                    hint.textContent = extraPetsPurchased >= 6 || countActivePets() >= 11
-                        ? '第 11 隻起每隻 +$10／月（含高容量雲端備份）'
-                        : '已達目前方案毛孩上限，如需新增請進行加購或聯繫客服。';
-                    hint.classList.remove('hidden');
-                } else {
-                    hint.classList.add('hidden');
-                }
-            }
+            if (hint) { hint.classList.add('hidden'); hint.textContent = ''; }
             var rEl = document.getElementById('memberReportCapacity');
             if (rEl) {
                 var used = getTotalReports();
@@ -2184,7 +2226,7 @@
             }
             var petCountEl = document.getElementById('memberPetCount');
             var reportCountEl = document.getElementById('memberReportCount');
-            if (petCountEl) petCountEl.textContent = countActivePets() + ' / ' + limits.petLimit + ' 隻';
+            if (petCountEl) petCountEl.textContent = countActivePets() + ' / ' + displayPetQuota() + ' 隻';
             if (reportCountEl) reportCountEl.textContent = getTotalReports() + ' / ' + (limits.yearlyReportLimit || limits.monthlyReportLimit || 50) + ' 份';
             updateMembershipStatusCard();
             var adminBar = document.getElementById('adminHomeBar');
@@ -2412,7 +2454,9 @@
                         }
                         usedStorageBytes = data.usedStorageBytes || 0;
                         if (data.approvalNotice) {
-                            showToast('🎉 你的毛孩加購/續費申請已審核通過！', 'success');
+                            var notice = data.approvalNotice;
+                            var nUnlock = (notice && typeof notice === 'object') ? (notice.qty || 0) : 0;
+                            showApprovalUnlockModal(nUnlock);
                             db.collection('users').doc(user.uid).set({ approvalNotice: firebase.firestore.FieldValue.delete() }, { merge: true }).catch(function(){});
                         }
                         syncApprovedAddons(user.uid, data);
@@ -2931,6 +2975,20 @@
         }
 
         function closeSignupModal() { document.getElementById('signupModal').classList.remove('show'); }
+        function updateEmailVerifyBanner() {
+            var bar = document.getElementById('emailVerifyBanner');
+            if (!bar) return;
+            var user = auth.currentUser;
+            var need = !!(user && user.providerData && user.providerData.some(function(p) { return p.providerId === 'password'; }) && !user.emailVerified);
+            bar.classList.toggle('hidden', !need);
+        }
+        function resendEmailVerification() {
+            var user = auth.currentUser;
+            if (!user || !user.sendEmailVerification) { showToast('請先登入', 'warning'); return; }
+            user.sendEmailVerification().then(function() {
+                showToast('已重發驗證信，請查收電郵', 'success');
+            }).catch(function(err) { showToast(err.message || err, 'error'); });
+        }
 
         function clearSignupFields() {
             document.getElementById('signupName').value = '';
@@ -3100,8 +3158,8 @@
                         hasPaid: false,
                         hasUsedFreeTrial: false,
                         isTrialActive: false,
-                        plan: 'standard',
-                        maxPets: 2,
+                        plan: 'lite',
+                        maxPets: 0,
                         maxStorageBytes: 5 * GB,
                         extraPets: 0,
                         usedStorageBytes: 0,
@@ -3110,8 +3168,12 @@
                         return applyPromoCodeToUser(user.uid, email);
                     }).catch(function(err) { console.warn('建立用戶文件失敗:', err); });
                     closeSignupModal();
-                    showToast('註冊成功！請查收驗證電郵', 'success');
+                    isLoggedIn = true;
+                    updateNav();
+                    updateEmailVerifyBanner();
+                    showToast('註冊成功，已進入會員專區。驗證電郵可稍後完成。', 'success');
                     notifyAdmin('新會員註冊', (email || '') + ' 剛註冊 Paw Vault');
+                    showMemberPets();
                     openPricingModal();
                 })
                 .catch(function(error) {
@@ -3131,6 +3193,8 @@
         function handleGoogleLogin() {
             var provider = new firebase.auth.GoogleAuthProvider();
             auth.signInWithPopup(provider).then(function(result) {
+                finishSocialAuth(result.user, 'Google');
+                return;
                 var user = result.user;
                 currentUser.uid = user.uid;
                 currentUser.email = user.email || '';
@@ -3157,6 +3221,47 @@
             });
         }
 
+        function handleAppleLogin() {
+            var provider = new firebase.auth.OAuthProvider('apple.com');
+            provider.addScope('email');
+            provider.addScope('name');
+            auth.signInWithPopup(provider).then(function(result) {
+                finishSocialAuth(result.user, 'Apple');
+            }).catch(function(error) {
+                alert('Apple 登入失敗: ' + (error.message || error) + '\n請先在 Firebase Authentication 啟用 Apple 登入。');
+            });
+        }
+        function finishSocialAuth(user, label) {
+            currentUser.uid = user.uid;
+            currentUser.email = user.email || '';
+            currentUser.name = user.displayName || '寵物主人';
+            isLoggedIn = true;
+            document.getElementById('memberName').textContent = currentUser.name;
+            document.getElementById('memberEmail').textContent = currentUser.email;
+            closeLoginModal();
+            closeSignupModal();
+            showToast(label + ' 登入成功', 'success');
+            db.collection('users').doc(user.uid).get().then(function(doc) {
+                if (!doc.exists) {
+                    return db.collection('users').doc(user.uid).set({
+                        name: currentUser.name,
+                        email: currentUser.email,
+                        hasPaid: false,
+                        hasUsedFreeTrial: false,
+                        isTrialActive: false,
+                        plan: 'lite',
+                        maxPets: 0,
+                        extraPets: 0,
+                        emailVerified: true,
+                        createdAt: new Date()
+                    });
+                }
+            }).then(function() {
+                updateNav();
+                updateEmailVerifyBanner();
+                showMemberPets();
+            });
+        }
         function handleGoogleSignup() {
             var provider = new firebase.auth.GoogleAuthProvider();
             auth.signInWithPopup(provider).then(function(result) {
@@ -4437,8 +4542,9 @@
                 box.innerHTML = items.map(function(it, idx) {
                     var left = it.at ? Math.max(0, Math.ceil(30 - daysSinceDate(it.at))) : 30;
                     return '<div class="flex justify-between items-center gap-2 p-2 border border-gray-100 rounded-xl">' +
+                        '<label class="flex items-start gap-2 flex-1"><input type="checkbox" class="trash-cb mt-1" data-trash-idx="' + idx + '">' +
                         '<div><div>' + (it.type === 'pet' ? '毛孩' : '病歷') + '：' + it.name + '</div>' +
-                        '<div class="text-xs text-gray-400">約 ' + left + ' 天後自動清理</div></div>' +
+                        '<div class="text-xs text-gray-400">約 ' + left + ' 天後自動清理</div></div></label>' +
                         '<div class="flex gap-1">' +
                         '<button type="button" data-trash-act="restore" data-trash-idx="' + idx + '" class="px-3 py-1 bg-[#3da881] text-white rounded-full text-xs">還原</button>' +
                         '<button type="button" data-trash-act="purge" data-trash-idx="' + idx + '" class="px-3 py-1 border border-red-300 text-red-600 rounded-full text-xs">永久刪除</button>' +
@@ -4454,6 +4560,57 @@
                     else purgeMemberTrashItem(item.type, item.petId, item.reportId || '');
                 };
             }).catch(function(err) { box.textContent = err.message || err; });
+        }
+        function selectedTrashItems() {
+            var box = document.getElementById('memberTrashList');
+            var items = (box && box._trashItems) || [];
+            var cbs = box ? box.querySelectorAll('.trash-cb:checked') : [];
+            var out = [];
+            cbs.forEach(function(cb) {
+                var it = items[parseInt(cb.getAttribute('data-trash-idx'), 10)];
+                if (it) out.push(it);
+            });
+            return out;
+        }
+        function toggleSelectAllTrash() {
+            var box = document.getElementById('memberTrashList');
+            if (!box) return;
+            var cbs = box.querySelectorAll('.trash-cb');
+            var allOn = cbs.length && Array.prototype.every.call(cbs, function(c) { return c.checked; });
+            cbs.forEach(function(c) { c.checked = !allOn; });
+        }
+        function purgeSelectedTrash() {
+            var list = selectedTrashItems();
+            if (!list.length) { showToast('請先剔選項目', 'warning'); return; }
+            appConfirm('確定徹底刪除已選的 ' + list.length + ' 項？此操作無法復原').then(function(ok) {
+                if (!ok) return;
+                var jobs = list.map(function(it) {
+                    var ref = db.collection('users').doc(currentUser.uid).collection('pets').doc(it.petId);
+                    if (it.type === 'report') ref = ref.collection('reports').doc(it.reportId);
+                    return ref.set({ is_deleted: true, userPurged: true, admin_archived: true, userPurgedAt: new Date() }, { merge: true });
+                });
+                Promise.all(jobs).then(function() {
+                    showToast('已刪除已選項目', 'success');
+                    loadMemberTrash();
+                }).catch(function(err) { showToast(err.message || err, 'error'); });
+            });
+        }
+        function purgeAllMemberTrash() {
+            var box = document.getElementById('memberTrashList');
+            var items = (box && box._trashItems) || [];
+            if (!items.length) { showToast('回收桶是空的', 'warning'); return; }
+            appConfirm('確定要徹底刪除所有項目？此操作無法復原').then(function(ok) {
+                if (!ok) return;
+                var jobs = items.map(function(it) {
+                    var ref = db.collection('users').doc(currentUser.uid).collection('pets').doc(it.petId);
+                    if (it.type === 'report') ref = ref.collection('reports').doc(it.reportId);
+                    return ref.set({ is_deleted: true, userPurged: true, admin_archived: true, userPurgedAt: new Date() }, { merge: true });
+                });
+                Promise.all(jobs).then(function() {
+                    showToast('回收桶已清空', 'success');
+                    loadMemberTrash();
+                }).catch(function(err) { showToast(err.message || err, 'error'); });
+            });
         }
         function restoreMemberTrashItem(type, petId, reportId) {
             if (!currentUser || !petId) return;
@@ -4533,6 +4690,85 @@
             if (hint) hint.textContent = '加購 ' + extraPetQty + ' 隻毛孩 = HK$' + addCost + ' / 月';
             var amt = document.getElementById('extraPetAmtLabel');
             if (amt) amt.textContent = 'HK$' + addCost;
+        }
+        function enforceCreatePetQuota() {
+            if (!currentUser.uid) return Promise.reject(new Error('QUOTA: 請先登入'));
+            return db.collection('users').doc(currentUser.uid).get().then(function(doc) {
+                var d = doc.data() || {};
+                var paid = !!(d.hasPaid || d.paymentStatus === 'confirmed');
+                var extra = d.extraPets || 0;
+                var plan = d.plan || currentPlan || 'lite';
+                var base = (PLAN_LIMITS[plan] || PLAN_LIMITS.lite).petLimit || 0;
+                var quota = paid ? (base + extra) : extra;
+                if (d.maxPets && Number(d.maxPets) > 0 && paid) quota = Number(d.maxPets);
+                return db.collection('users').doc(currentUser.uid).collection('pets').get().then(function(ps) {
+                    var live = 0;
+                    ps.forEach(function(p) {
+                        var pd = p.data() || {};
+                        if (!pd.is_deleted && !pd.isDeleted && !pd.pendingApproval) live++;
+                    });
+                    var cap = (plan === 'volunteer') ? VOLUNTEER_HARD_CAP : ((plan === 'longterm' || plan === 'pro') ? FAMILY_HARD_CAP : quota);
+                    if (quota > cap) quota = cap;
+                    if (live >= quota) {
+                        throw new Error('QUOTA: 配額不足（' + live + '/' + quota + '），請先付款加購');
+                    }
+                });
+            });
+        }
+        function isPetQuotaFull() {
+            var limits = getPlanLimits();
+            var n = countActivePets();
+            if (currentPlan !== 'volunteer' && n >= FAMILY_HARD_CAP) return true;
+            if (limits.petLimit === Infinity) return false;
+            return n >= (limits.petLimit || 0);
+        }
+        function openQuotaLimitModal() {
+            if (extraPetPending) {
+                showToast('入數紙審核中，核實後將自動開通額度。', 'warning');
+                return;
+            }
+            var n = countActivePets();
+            var y = getPlanLimits().petLimit;
+            var countEl = document.getElementById('quotaLimitCount');
+            var payBtn = document.getElementById('quotaLimitPayBtn');
+            var textEl = document.getElementById('quotaLimitText');
+            if (countEl) countEl.textContent = '現有毛孩 ' + n + ' / ' + y + ' 隻';
+            if (textEl) textEl.textContent = '您的毛孩數量已達上限，請升級方案或加購配額';
+            if (payBtn) payBtn.textContent = currentPlan === 'volunteer' ? '付款 HK$10 增加 1 隻配額（永久）' : '前往付款加購／升級';
+            var m = document.getElementById('quotaLimitModal');
+            if (m) m.classList.add('show');
+        }
+        function closeQuotaLimitModal() {
+            var m = document.getElementById('quotaLimitModal');
+            if (m) m.classList.remove('show');
+        }
+        function goQuotaLimitPay() {
+            closeQuotaLimitModal();
+            if (currentPlan === 'volunteer') openVolunteerAddonPay(1);
+            else openPaymentModal();
+        }
+        function openFirstPetPayGate() {
+            if (extraPetPending) {
+                showToast('入數紙審核中，核實後將自動開通額度。', 'warning');
+                return;
+            }
+            var n = countActivePets();
+            var y = getPlanLimits().petLimit || 0;
+            showToast('目前配額 ' + n + ' / ' + y + '，請先完成 PayMe／轉數快付款後先可新增毛孩', 'warning');
+            if (currentPlan === 'volunteer') openVolunteerAddonPay(1);
+            else openPaymentModal();
+        }
+        function openUpgradeOrAddon() {
+            if (isPetQuotaFull()) { openFirstPetPayGate(); return; }
+            if (currentPlan === 'volunteer') openVolunteerAddonPay(1);
+            else openPaymentModal();
+        }
+        function openVolunteerAddonPay(qty) {
+            volunteerSlotQty = Math.max(1, qty || 1);
+            pendingAddonCheckout = false;
+            window.forcePaymentPlan = 'volunteer';
+            showToast('請先付 HK$' + (10 * volunteerSlotQty) + ' 加購毛孩配額（永久）', 'warning');
+            openPaymentModal();
         }
         function openExtraPetPayModal() {
             extraPetQty = 1;
@@ -4684,7 +4920,7 @@
             }
             var key = selectedPlanKey();
             if (key === 'adopt') return 20;
-            if (key === 'volunteer') return 10;
+            if (key === 'volunteer') return 10 * Math.max(1, volunteerSlotQty || 1);
             var pl = PLAN_LIMITS[key] || PLAN_LIMITS.standard;
             var n = parseInt(String(pl.price || '0').replace(/[^0-9]/g, ''), 10);
             if (isNaN(n)) n = 58;
@@ -4704,6 +4940,17 @@
             if (periodWrap && periodWrap.parentNode) {
                 var hidePeriod = planKey === 'volunteer' || planKey === 'adopt' || isAddon;
                 periodWrap.parentNode.classList.toggle('hidden', hidePeriod);
+            }
+            var vRow = document.getElementById('volunteerSlotRow');
+            if (vRow) {
+                var showV = !isAddon && planKey === 'volunteer';
+                vRow.classList.toggle('hidden', !showV);
+                if (showV) vRow.classList.add('flex');
+                else vRow.classList.remove('flex');
+                var lab = document.getElementById('volunteerSlotQtyLabel');
+                var hint = document.getElementById('volunteerSlotHint');
+                if (lab) lab.textContent = String(Math.max(1, volunteerSlotQty || 1));
+                if (hint) hint.textContent = Math.max(1, volunteerSlotQty || 1) + ' 隻 × HK$10 = HK$' + (10 * Math.max(1, volunteerSlotQty || 1)) + '（永久有效）';
             }
             var showAddon = !isAddon && (planKey === 'longterm' || planKey === 'pro');
             var row = document.getElementById('renewalAddonRow');
@@ -4736,7 +4983,7 @@
             }
             var unit = selectedPaymentPeriod() === 'year' ? '／12個月' : (selectedPaymentPeriod() === 'half' ? '／6個月' : '／每月');
             if (planKey === 'adopt') unit = '／6個月';
-            if (planKey === 'volunteer') unit = '／隻';
+            if (planKey === 'volunteer') unit = '／' + Math.max(1, volunteerSlotQty || 1) + '隻（永久）';
             if (priceEl) {
                 var disc = promoDiscountAmount();
                 var extra = disc > 0 ? ' <span class="text-sm font-normal text-[#2d8f6f]">（已自動套用 ' + readPromoCodeInput() + ' 折扣 -$' + disc + '）</span>' : '';
@@ -4744,12 +4991,16 @@
             }
             if (confirmEl) confirmEl.textContent = String(amt);
             if (noteEl) {
-                noteEl.textContent = isAddon
-                    ? '加購跟隨主方案到期日。核實前不會增加名額。'
+                noteEl.textContent = (isAddon || planKey === 'volunteer')
+                    ? '核對後將自動為你解鎖新增毛孩配額，不會延長會籍。'
                     : ('核實後會籍將由現有到期日自動順延 ' + periodGrantDays() + ' 天。');
             }
             var infoAmt = document.getElementById('paymentInfoAmount');
             if (infoAmt) infoAmt.textContent = 'HK$' + amt;
+        }
+        function changeVolunteerSlotQty(delta) {
+            volunteerSlotQty = Math.max(1, Math.min(VOLUNTEER_HARD_CAP, (volunteerSlotQty || 1) + delta));
+            applyPaymentAmountDisplay();
         }
         function purchaseExtraPetSlot() {
             if (extraPetPending) {
@@ -4832,23 +5083,20 @@
             if (checkTrialExpired()) return;
             
             petId = petId || null;
-            var limits = getPlanLimits();
-            var activeCount = countActivePets();
             window.addingOverLimit = false;
             var addonBox = document.getElementById('petAddonPayBox');
             if (addonBox) addonBox.classList.add('hidden');
-            if (!petId && activeCount >= FAMILY_HARD_CAP) {
-                showToast('此帳號最多 10 隻毛孩。如需更多請聯絡客服或改用義工方案。', 'warning');
+            if (petId) {
+                proceedOpenPetForm(petId);
                 return;
             }
-            if (!petId && limits.petLimit !== Infinity && activeCount >= limits.petLimit) {
-                if (extraPetPending) {
-                    showToast('入數紙審核中，核實後將自動開通額度。', 'warning');
-                    return;
-                }
-                openExtraPetPayModal();
-                return;
-            }
+            enforceCreatePetQuota().then(function() {
+                proceedOpenPetForm(null);
+            }).catch(function() {
+                openFirstPetPayGate();
+            });
+        }
+        function proceedOpenPetForm(petId) {
             editingPetId = petId;
             document.getElementById('petModalTitle').innerText = petId ? '編輯寵物' : '新增寵物';
             if (petId) {
@@ -4900,6 +5148,11 @@
                 alert('請填寫寵物名字'); 
                 return; 
             }
+            if (!editingPetId && isPetQuotaFull()) {
+                closePetModal();
+                openFirstPetPayGate();
+                return;
+            }
             
             var newPetData = {
                 name: name,
@@ -4940,56 +5193,34 @@
                 var newId = generateId();
                 newPetData.shareCode = generateShareCode();
                 var fullPetData = { id: newId, ...newPetData };
-                pets.push(fullPetData);
-                petReports[newId] = [];
-                selectedPetId = newId;
-                memberSelectedPetId = newId;
-                
-                if (currentUser.uid) {
-                    db.collection('users').doc(currentUser.uid).collection('pets').doc(newId).set(newPetData)
-                        .then(function() {
-                            if (window.addingOverLimit) {
-                                extraPetPending = true;
-                                var rec = document.getElementById('petAddonReceipt');
-                                var file = rec && rec.files && rec.files[0] ? rec.files[0] : null;
-                                var writes = [
-                                    db.collection('users').doc(currentUser.uid).set({ extraPetPending: true }, { merge: true }),
-                                    db.collection('users').doc(currentUser.uid).collection('addons').add({
-                                        type: 'extra_pet',
-                                        amount: 5,
-                                        status: 'pending',
-                                        petId: newId,
-                                        alignedPlanEndDate: planEndDate || null,
-                                        submittedAt: new Date()
-                                    })
-                                ];
-                                if (file) {
-                                    writes.push(storage.ref('users/' + currentUser.uid + '/addons/' + Date.now() + '_' + file.name).put(file));
-                                }
-                                return Promise.all(writes);
-                            }
-                            return persistShareCode(fullPetData);
-                        })
-                        .then(function() { 
-                            showToast(window.addingOverLimit ? '入數紙審核中，核實後將自動開通額度' : '✅ 已儲存寵物', window.addingOverLimit ? 'warning' : 'success');
-                            window.addingOverLimit = false;
-                            closePetModal();
-                            renderAll();
-                        })
-                        .catch(function(err) { 
-                            console.warn('儲存失敗:', err);
-                            var msg = err.message || '';
-                            if (msg.indexOf('permission') !== -1 || msg.indexOf('Permission') !== -1) {
-                                showToast('❌ 儲存失敗：Firebase 權限不足。請到 Firebase Console → Firestore → Rules，允許已登入用戶讀寫自己的 users/{uid}/pets 資料。', 'error');
-                            } else {
-                                showToast('❌ 儲存失敗：' + msg, 'error');
-                            }
-                        });
-                } else {
+                if (!currentUser.uid) {
+                    showToast('請先登入', 'warning');
+                    return;
+                }
+                enforceCreatePetQuota().then(function() {
+                    return db.collection('users').doc(currentUser.uid).collection('pets').doc(newId).set(Object.assign({}, newPetData, { quotaCheckedAt: new Date() }));
+                }).then(function() {
+                    pets.push(fullPetData);
+                    petReports[newId] = [];
+                    selectedPetId = newId;
+                    memberSelectedPetId = newId;
+                    return persistShareCode(fullPetData);
+                }).then(function() {
+                    showToast('✅ 已儲存寵物', 'success');
                     closePetModal();
                     renderAll();
-                    showToast('✅ 已新增寵物（示範模式）', 'success');
-                }
+                }).catch(function(err) {
+                    var msg = err.message || String(err);
+                    if (msg.indexOf('QUOTA') !== -1) {
+                        openFirstPetPayGate();
+                        return;
+                    }
+                    if (msg.toLowerCase().indexOf('permission') !== -1) {
+                        showToast('❌ 儲存失敗：配額不足或權限不足。', 'error');
+                    } else {
+                        showToast('❌ 儲存失敗：' + msg, 'error');
+                    }
+                });
             }
         }
 
@@ -5139,7 +5370,45 @@
                         '<span class="text-red-500">❌</span> ' + file.name +
                         ' <span class="text-gray-400">(' + (chk && chk.reason ? chk.reason : '不支援') + ')</span>';
                     list.appendChild(div);
+                    if (file.type && file.type.indexOf('image/') === 0) runReportOcr(file);
                 }
+            }
+        }
+
+        function runReportOcr(file) {
+            if (typeof Tesseract === 'undefined') return;
+            var hint = document.getElementById('ocrHint');
+            if (hint) { hint.classList.remove('hidden'); hint.textContent = '正在辨識「' + file.name + '」文字…'; }
+            Tesseract.recognize(file, 'chi_tra+eng').then(function(res) {
+                var text = (res && res.data && res.data.text) ? res.data.text : '';
+                applyOcrToReportForm(text);
+                if (hint) { hint.textContent = '已嘗試帶入辨識到的日期／文字，請核對後再儲存。'; }
+            }).catch(function() {
+                if (hint) hint.textContent = '未能自動辨識，請自行填寫。';
+            });
+        }
+        function applyOcrToReportForm(text) {
+            if (!text) return;
+            var dateEl = document.getElementById('reportDate');
+            var descEl = document.getElementById('reportDesc');
+            var titleEl = document.getElementById('reportTitle');
+            var iso = text.match(/(20\d{2})[-\/.年](\d{1,2})[-\/.月](\d{1,2})/);
+            var slash = text.match(/(\d{1,2})[\/.](\d{1,2})[\/.](20\d{2})/);
+            var dateVal = '';
+            if (iso) {
+                dateVal = iso[1] + '-' + ('0' + iso[2]).slice(-2) + '-' + ('0' + iso[3]).slice(-2);
+            } else if (slash) {
+                dateVal = slash[3] + '-' + ('0' + slash[2]).slice(-2) + '-' + ('0' + slash[1]).slice(-2);
+            }
+            if (dateEl && dateVal && !dateEl.value) dateEl.value = dateVal;
+            if (titleEl && !titleEl.value) {
+                if (/疫苗|針|vaccin/i.test(text)) titleEl.value = '疫苗／打針紀錄';
+                else if (/血|生化|CBC/i.test(text)) titleEl.value = '化驗報告';
+                else titleEl.value = '看診紀錄' + (dateVal ? (' - ' + dateVal) : '');
+            }
+            if (descEl && !descEl.value.trim()) {
+                var clip = text.replace(/\s+/g, ' ').trim().slice(0, 180);
+                if (clip) descEl.value = clip;
             }
         }
 
@@ -5417,12 +5686,25 @@
             closePaymentModal();
             closePaymentInfoModal();
             var title = document.querySelector('#paymentDoneModal h3');
-            if (title) title.textContent = '多謝你繼續支持 Paw Vault！';
+            if (title) title.textContent = '已收到付款證明';
             var el = document.getElementById('paymentDoneText');
-            var def = '我們已收到你的付款證明，團隊將於 1 個工作天內完成核實。核實後會籍將自動疊加延長，感謝你的耐心等候。';
-            if (el) el.textContent = msg || def;
+            if (el) el.textContent = '已收到付款證明，將於 1 個工作天內核對並解鎖毛孩配額。';
             var m = document.getElementById('paymentDoneModal');
             if (m) m.classList.add('show');
+        }
+        function showApprovalUnlockModal(n) {
+            n = parseInt(n, 10) || 0;
+            var m = document.getElementById('approvalUnlockModal');
+            if (!m) {
+                m = document.createElement('div');
+                m.id = 'approvalUnlockModal';
+                m.className = 'modal';
+                m.innerHTML = '<div class="modal-content fade-in text-center" style="max-width:400px;"><h3 class="text-xl font-bold text-[#2d8f6f] mb-3">審核成功</h3><p id="approvalUnlockText" class="text-sm text-gray-600 mb-4"></p><button type="button" onclick="document.getElementById(\'approvalUnlockModal\').classList.remove(\'show\')" class="w-full py-2.5 bg-[#3da881] text-white rounded-2xl text-sm">確定</button></div>';
+                document.body.appendChild(m);
+            }
+            var t = document.getElementById('approvalUnlockText');
+            if (t) t.textContent = n > 0 ? ('已成功解鎖 ' + n + ' 隻毛孩配額。') : '已成功解鎖毛孩配額。';
+            m.classList.add('show');
         }
         function closePaymentDoneModal() {
             var m = document.getElementById('paymentDoneModal');
@@ -5524,7 +5806,9 @@
                         plan: currentPlan,
                         amount: getCheckoutAmount(),
                         period: selectedPaymentPeriod(),
-                        daysGranted: periodGrantDays(),
+                        daysGranted: currentPlan === 'volunteer' ? 0 : periodGrantDays(),
+                        lifetime: currentPlan === 'volunteer',
+                        qty: currentPlan === 'volunteer' ? Math.max(1, volunteerSlotQty || 1) : 0,
                         earlyBird: selectedPaymentPeriod() !== 'month',
                         promoCode: readPromoCodeInput() || '',
                         method: selectedPaymentMethod || 'payme',
@@ -5532,7 +5816,9 @@
                         submittedAt: purchaseDate,
                         receiptUrls: savedReceiptUrls,
                         receiptUrl: savedReceiptUrls[0] || '',
-                        note: '續費' + planLabel(currentPlan) + ' HK$' + getCheckoutAmount(),
+                        note: currentPlan === 'volunteer'
+                            ? ('義工買斷毛孩 ×' + Math.max(1, volunteerSlotQty || 1) + ' HK$' + getCheckoutAmount())
+                            : ('續費' + planLabel(currentPlan) + ' HK$' + getCheckoutAmount()),
                         receiptCount: receiptFiles ? receiptFiles.length : 0
                     });
                 }).then(function() {
@@ -5571,7 +5857,8 @@
         function openPaymentModal() {
             var select = document.getElementById('paymentPlanSelect');
             if (select && !pendingAddonCheckout) {
-                select.value = currentPlan || 'standard';
+                select.value = window.forcePaymentPlan || currentPlan || 'standard';
+                window.forcePaymentPlan = '';
             }
             renewalAddonQty = extraPetsPurchased || 0;
             var lab = document.getElementById('renewalAddonQtyLabel');
@@ -5611,6 +5898,7 @@
             var cw = document.getElementById('clinicWorkbench');
             if (cw) cw.classList.add('hidden');
             document.getElementById('memberDashboard').classList.add('show');
+            updateEmailVerifyBanner();
             
             // 試用已過期：只顯示付款提示
             if (isTrialOver()) {
@@ -5802,7 +6090,9 @@
                         ps.forEach(function(p) {
                             var st = (p.data() || {}).status || '';
                             if (st === 'pending' || st === 'pending_review') {
-                                tasks.push({ kind: 'renew', uid: doc.id, email: d.email || doc.id, id: p.id, data: p.data() || {}, user: d });
+                                var pd = p.data() || {};
+                                var slotBuy = pd.plan === 'volunteer' || pd.lifetime || (parseInt(pd.qty, 10) > 0 && pd.plan === 'volunteer');
+                                tasks.push({ kind: slotBuy ? 'addon' : 'renew', uid: doc.id, email: d.email || doc.id, id: p.id, data: pd, user: d, source: 'payments' });
                             }
                         });
                     }).catch(function() {}));
@@ -5812,9 +6102,7 @@
                         var d = u.data;
                         var hasAddon = tasks.some(function(t) { return t.uid === u.id && t.kind === 'addon'; });
                         var hasRenew = tasks.some(function(t) { return t.uid === u.id && t.kind === 'renew'; });
-                        if (d.extraPetPending && !hasAddon) {
-                            tasks.push({ kind: 'addon', uid: u.id, email: d.email || u.id, id: 'userflag', data: { amount: 5 }, user: d });
-                        } else if (d.paymentStatus === 'pending_review' && !d.extraPetPending && !hasRenew) {
+                        if (d.paymentStatus === 'pending_review' && !hasRenew && !hasAddon) {
                             tasks.push({ kind: 'renew', uid: u.id, email: d.email || u.id, id: 'userflag', data: { plan: d.plan }, user: d });
                         }
                     });
@@ -5830,7 +6118,17 @@
                             best[key] = t;
                         }
                     });
-                    return Object.keys(best).map(function(k) { return best[k]; });
+                    return Object.keys(best).map(function(k) { return best[k]; }).filter(function(t) {
+                        if (t.id === 'userflag' && t.kind === 'addon' && !(t.data.qty || t.data.amount)) return false;
+                        var qty = parseInt(t.data.qty, 10) || 0;
+                        var amt = Number(t.data.amount) || 0;
+                        if (t.kind === 'addon' || t.data.plan === 'volunteer' || t.data.lifetime) {
+                            if (!qty && amt >= 10) qty = Math.round(amt / 10);
+                            if (!amt && qty) amt = qty * 10;
+                            if (qty < 1 || amt < 1) return false;
+                        }
+                        return true;
+                    });
                 });
             }).then(function(tasks) {
                 if (!tasks.length) {
@@ -5839,10 +6137,14 @@
                 }
                 box.innerHTML = tasks.map(function(t) {
                     var locked = t.data.status === 'approved';
-                    var qtyN = t.data.qty || (t.kind === 'addon' ? 1 : 0);
-                    var tag = t.kind === 'addon'
-                        ? ('加購毛孩 × ' + qtyN + ' 隻（HK$' + (qtyN * 5) + '）')
-                        : ('續約／月費' + (t.data.plan ? (' ' + t.data.plan) : '') + (t.data.amount ? (' ' + t.data.amount) : ''));
+                    var qtyN = parseInt(t.data.qty, 10) || 0;
+                    var amtN = Number(t.data.amount) || 0;
+                    if ((t.kind === 'addon' || t.data.plan === 'volunteer') && !qtyN && amtN >= 10) qtyN = Math.round(amtN / 10);
+                    if ((t.kind === 'addon' || t.data.plan === 'volunteer') && !amtN && qtyN) amtN = qtyN * 10;
+                    var isSlot = t.kind === 'addon' || t.data.plan === 'volunteer' || t.data.lifetime;
+                    var tag = isSlot
+                        ? ('【加購毛孩配額】× ' + qtyN + ' 隻（HK$' + amtN + '）')
+                        : ('【方案月費／年費續約】' + planLabel(t.data.plan || t.user.plan) + (amtN ? (' HK$' + amtN) : '') + '　到期 ' + adminFmt(t.user.planEndDate));
                     var cls = t.kind === 'addon' ? 'addon' : 'renew';
                     return '<div class="pending-card ' + cls + '">' +
                         '<div class="flex flex-wrap justify-between gap-2 items-center">' +
@@ -5853,7 +6155,7 @@
                         '<button onclick="adminViewReceipts(\'' + t.uid + '\',\'' + t.kind + '\',\'' + t.id + '\')" class="px-3 py-1.5 border rounded-full text-xs">睇入數圖</button>' +
                         (locked
                             ? '<button disabled class="px-3 py-1.5 bg-gray-200 text-gray-500 rounded-full text-xs">已批核</button>'
-                            : '<button id="approveBtn_' + t.kind + '_' + t.uid + '_' + t.id + '" onclick="adminApproveTask(\'' + t.kind + '\',\'' + t.uid + '\',\'' + t.id + '\', this)" class="px-3 py-1.5 bg-emerald-600 text-white rounded-full text-xs">批核</button>') +
+                            : '<button id="approveBtn_' + t.kind + '_' + t.uid + '_' + t.id + '" onclick="adminApproveTask(\'' + t.kind + '\',\'' + t.uid + '\',\'' + t.id + '\', this)" class="px-3 py-1.5 bg-emerald-600 text-white rounded-full text-xs">' + (isSlot && qtyN ? ('批核 (+' + qtyN + ' 隻)') : '批核') + '</button>') +
                         '</div></div></div>';
                 }).join('');
             }).catch(function(err) {
@@ -5864,20 +6166,35 @@
             if (!isAdminUser()) return;
             if (btn) { btn.disabled = true; btn.textContent = '處理中'; }
             var now = new Date();
-            var recRef = null;
-            if (recId && recId !== 'userflag') {
-                recRef = db.collection('users').doc(uid).collection(kind === 'addon' ? 'addons' : 'payments').doc(recId);
-            }
-            var recPromise = recRef ? recRef.get() : Promise.resolve(null);
+            var payRef = (recId && recId !== 'userflag') ? db.collection('users').doc(uid).collection('payments').doc(recId) : null;
+            var addRef = (recId && recId !== 'userflag') ? db.collection('users').doc(uid).collection('addons').doc(recId) : null;
+            var recPromise = payRef ? payRef.get().then(function(s) {
+                if (s && s.exists) return s;
+                return addRef ? addRef.get() : null;
+            }) : Promise.resolve(null);
             recPromise.then(function(recSnap) {
                 var rec = recSnap && recSnap.exists ? (recSnap.data() || {}) : {};
+                var recPath = recSnap && recSnap.ref ? recSnap.ref : null;
                 return db.collection('users').doc(uid).get().then(function(doc) {
                     var d = doc.data() || {};
-                    var patch = { approvalNotice: kind, extraPetPending: false, paymentStatus: 'confirmed', hasPaid: true, lastUpdatedAt: now };
-                    if (kind === 'addon') {
-                        var qty = parseInt(rec.qty || rec.amount && rec.amount / 5 || 1, 10);
-                        if (!qty || qty < 1) qty = 1;
-                        var extra = (d.extraPets || 0) + qty;
+                    var isVolunteerSlot = rec.plan === 'volunteer' || rec.lifetime || d.plan === 'volunteer' && (kind === 'addon' || rec.qty);
+                    var qtyUnlock = 0;
+                    if (isVolunteerSlot) {
+                        qtyUnlock = parseInt(rec.qty, 10);
+                        if (!qtyUnlock || qtyUnlock < 1) qtyUnlock = Math.max(1, Math.round((Number(rec.amount) || 10) / 10));
+                    } else if (kind === 'addon') {
+                        qtyUnlock = parseInt(rec.qty, 10);
+                        if (!qtyUnlock || qtyUnlock < 1) qtyUnlock = Math.max(1, Math.round((Number(rec.amount) || 5) / 5));
+                    }
+                    var patch = { approvalNotice: { kind: isVolunteerSlot || kind === 'addon' ? 'addon' : 'renew', qty: qtyUnlock }, extraPetPending: false, paymentStatus: 'confirmed', hasPaid: true, lastUpdatedAt: now };
+                    if (isVolunteerSlot) {
+                        var extraV = (Number(d.extraPets) || 0) + qtyUnlock;
+                        patch.plan = 'volunteer';
+                        patch.extraPets = extraV;
+                        patch.maxPets = Math.min(extraV, VOLUNTEER_HARD_CAP);
+                        patch.lifetimeVolunteer = true;
+                    } else if (kind === 'addon') {
+                        var extra = (Number(d.extraPets) || 0) + qtyUnlock;
                         var base = (PLAN_LIMITS[d.plan] || PLAN_LIMITS.longterm).petLimit || 5;
                         patch.extraPets = extra;
                         patch.maxPets = Math.min(base + extra, FAMILY_HARD_CAP);
@@ -5914,17 +6231,12 @@
                         }
                     }
                     return db.collection('users').doc(uid).set(patch, { merge: true }).then(function() {
-                        var col = kind === 'addon' ? 'addons' : 'payments';
-                        return db.collection('users').doc(uid).collection(col).get().then(function(snap) {
-                            var batch = db.batch();
-                            snap.forEach(function(s) {
-                                var st = (s.data() || {}).status || '';
-                                if (st === 'pending' || st === 'pending_review') {
-                                    batch.set(s.ref, { status: 'approved', approvedAt: now }, { merge: true });
-                                }
-                            });
-                            return batch.commit();
-                        });
+                        if (recPath) return recPath.set({ status: 'approved', approvedAt: now }, { merge: true });
+                        if (!recId || recId === 'userflag') return null;
+                        return Promise.all([
+                            db.collection('users').doc(uid).collection('payments').doc(recId).set({ status: 'approved', approvedAt: now }, { merge: true }).catch(function(){}),
+                            db.collection('users').doc(uid).collection('addons').doc(recId).set({ status: 'approved', approvedAt: now }, { merge: true }).catch(function(){})
+                        ]);
                     });
                 });
             }).then(function() {
@@ -5936,6 +6248,19 @@
                 if (btn) { btn.disabled = false; btn.textContent = '批核'; }
                 showToast('失敗：' + (err.message || err), 'error');
             });
+        }
+        function adminDisplayQuota(d) {
+            d = d || {};
+            if (d.plan === 'volunteer') {
+                var q = Number(d.extraPets || 0);
+                if (q < 1) return 1;
+                return Math.min(q, VOLUNTEER_HARD_CAP);
+            }
+            var base = Number((PLAN_LIMITS[d.plan] || {}).petLimit || 0);
+            var extra = Number(d.extraPets || 0);
+            var n = base + extra;
+            if (d.plan === 'longterm' || d.plan === 'pro') n = Math.min(n, FAMILY_HARD_CAP);
+            return Math.max(n, 1);
         }
         function loadAdminUsers() {
             loadAdminMasterTrash();
@@ -5991,7 +6316,7 @@
                         '　狀態：' + status +
                         '　到期：' + adminFmt(d.planEndDate) +
                         '　上次交單：' + adminFmt(d.lastPaymentSubmittedAt) + (d.extraPetPending ? '　加購審核中' : '') + ((d.lastReceiptUrls && d.lastReceiptUrls.length) ? '　有入數圖' : '') + (d.pendingPlan ? ('　預約於 ' + adminFmt(d.pendingPlanEffectiveAt) + ' 自動切換為：' + planLabel(d.pendingPlan)) : '') + '</div>' +
-                        '<div class="text-xs text-gray-500 mt-1">毛孩 ' + (r.livePets || 0) + ' / ' + (((PLAN_LIMITS[d.plan]||{}).petLimit || 5) + (d.extraPets || 0)) + ' 隻　·　病歷 ' + (r.fileCount || 0) + ' 份　·　已用 ' + formatAdminBytes(r.usedBytes || 0) + (d.lastUpdatedAt ? ('　·　最後操作 ' + adminFmt(d.lastUpdatedAt)) : '') + '</div></div>' +
+                        '<div class="text-xs text-gray-500 mt-1">毛孩 ' + (r.livePets || 0) + ' / ' + adminDisplayQuota(d) + ' 隻　·　病歷 ' + (r.fileCount || 0) + ' 份　·　已用 ' + formatAdminBytes(r.usedBytes || 0) + (d.lastUpdatedAt ? ('　·　最後操作 ' + adminFmt(d.lastUpdatedAt)) : '') + '</div></div>' +
                         '<div class="flex flex-wrap items-center gap-2">' +
                         '<select id="adminPlan_' + r.id + '" onchange="openAdminPlanModal(\'' + r.id + '\', this.value)" class="px-2 py-1.5 border border-gray-200 rounded-xl text-sm">' +
                         '<option value="lite"' + (d.plan==='lite'?' selected':'') + '>輕量版 $38</option>' +
@@ -5999,7 +6324,7 @@
                         '<option value="longterm"' + (d.plan==='longterm'?' selected':'') + '>大家庭版 $78</option>' +
                         '<option value="volunteer"' + (d.plan==='volunteer'?' selected':'') + '>義工方案</option>' +
                         '</select>' +
-                        '<label class="text-xs text-gray-500">毛孩上限 <input type="number" min="1" max="30" id="adminQuota_' + r.id + '" value="' + ((((PLAN_LIMITS[d.plan]||{}).petLimit || 5) + (d.extraPets || 0))) + '" class="w-16 px-2 py-1 border border-gray-200 rounded-lg text-sm"></label>' +
+                        '<label class="text-xs text-gray-500">毛孩上限 <input type="number" min="1" max="50" id="adminQuota_' + r.id + '" value="' + adminDisplayQuota(d) + '" class="w-16 px-2 py-1 border border-gray-200 rounded-lg text-sm"></label>' +
                         '<button onclick="adminSaveQuota(\'' + r.id + '\')" class="px-3 py-2 border border-gray-300 rounded-full text-sm">更新上限</button>' +
                         '<button onclick="adminConfirmRenew(\'' + r.id + '\')" class="px-4 py-2 bg-indigo-600 text-white rounded-full text-sm">+1 個月</button>' +
                         '<button onclick="adminMinusMonth(\'' + r.id + '\')" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-full text-sm">−1 個月</button>' +
@@ -6079,6 +6404,17 @@
                 closeAdminPlanModal();
             }).catch(function(err) { showToast(err.message || err, 'error'); });
         }
+        var adminMasterTrashItems = [];
+        function formatTrashWhen(at) {
+            var d = at instanceof Date ? at : (at && at.toDate ? at.toDate() : (at ? new Date(at) : null));
+            if (!d || isNaN(d.getTime())) return '—';
+            var p = function(n) { return (n < 10 ? '0' : '') + n; };
+            return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+        }
+        function trashItemLabel(it) {
+            if (it.type === 'pet') return '毛孩 ' + (it.name || '未命名') + ' (ID: ' + it.petId + ')';
+            return '報告 ' + (it.name || '未命名') + (it.reportId ? ' (ID: ' + it.reportId + ')' : '');
+        }
         function loadAdminMasterTrash() {
             var box = document.getElementById('adminMasterTrash');
             if (!box) return;
@@ -6108,15 +6444,33 @@
                 });
                 return Promise.all(jobs).then(function() { return items; });
             }).then(function(items) {
-                if (!items.length) { box.textContent = '沒有備份項目。'; return; }
-                box.innerHTML = items.map(function(it) {
-                    var left = it.at ? Math.max(0, Math.ceil(180 - daysSinceDate(it.at))) : 180;
-                    return '<div class="p-2 border border-gray-100 rounded-xl flex justify-between gap-2">' +
-                        '<div>' + it.email + ' · ' + (it.type === 'pet' ? '毛孩' : '病歷') + '：' + it.name +
-                        '<div class="text-xs text-gray-400">約 ' + left + ' 天後永久抹除</div></div>' +
-                        '<button onclick="adminRestoreItem(\'' + it.uid + '\',\'' + it.type + '\',\'' + it.petId + '\',\'' + (it.reportId || '') + '\')" class="px-3 py-1 bg-[#3da881] text-white rounded-full text-xs">復原</button></div>';
-                }).join('');
+                adminMasterTrashItems = items || [];
+                renderAdminMasterTrash();
             }).catch(function(err) { box.textContent = err.message || err; });
+        }
+        function renderAdminMasterTrash() {
+            var box = document.getElementById('adminMasterTrash');
+            if (!box) return;
+            var q = ((document.getElementById('adminTrashEmailFilter') || {}).value || '').trim().toLowerCase();
+            var items = (adminMasterTrashItems || []).filter(function(it) {
+                return !q || String(it.email || '').toLowerCase().indexOf(q) >= 0;
+            });
+            if (!items.length) { box.textContent = q ? '沒有符合此電郵的備份。' : '沒有備份項目。'; return; }
+            var groups = {};
+            items.forEach(function(it) {
+                var key = it.email || it.uid;
+                if (!groups[key]) groups[key] = [];
+                groups[key].push(it);
+            });
+            box.innerHTML = Object.keys(groups).sort().map(function(email) {
+                var rows = groups[email].map(function(it) {
+                    return '<div class="p-2 border border-gray-100 rounded-xl flex justify-between gap-2">' +
+                        '<div>' + trashItemLabel(it) +
+                        '<div class="text-xs text-gray-400">刪除日期：' + formatTrashWhen(it.at) + '</div></div>' +
+                        '<button type="button" onclick="adminRestoreItem(\'' + it.uid + '\',\'' + it.type + '\',\'' + it.petId + '\',\'' + (it.reportId || '') + '\')" class="px-3 py-1 bg-[#3da881] text-white rounded-full text-xs">一鍵復原</button></div>';
+                }).join('');
+                return '<div class="mb-4"><p class="text-sm font-semibold text-indigo-800 mb-2">' + email + '（' + groups[email].length + '）</p>' + rows + '</div>';
+            }).join('');
         }
         function closeAdminRestoreModal() {
             var m = document.getElementById('adminRestoreModal');
@@ -6125,32 +6479,41 @@
         function openAdminRestore(uid) {
             var box = document.getElementById('adminRestoreList');
             var m = document.getElementById('adminRestoreModal');
+            var scope = document.getElementById('adminRestoreScope');
             if (m) m.classList.add('show');
             if (box) box.textContent = '載入中…';
+            if (!uid) { if (box) box.textContent = '找不到此會員'; return; }
+            window.currentAdminRestoreUid = uid;
+            db.collection('users').doc(uid).get().then(function(u) {
+                var email = ((u.data() || {}).email) || uid;
+                if (scope) scope.textContent = '只顯示 ' + email + ' 的已刪項目';
+            }).catch(function(){});
             db.collection('users').doc(uid).collection('pets').get().then(function(ps) {
                 var items = [];
                 var jobs = [];
                 ps.forEach(function(p) {
                     var pd = p.data() || {};
                     if (pd.is_deleted || pd.isDeleted || pd.admin_archived || pd.userPurged) {
-                        items.push({ type: 'pet', uid: uid, petId: p.id, name: pd.name || p.id, archived: !!pd.admin_archived });
+                        items.push({ type: 'pet', uid: uid, petId: p.id, name: pd.name || '未命名', at: trashDeletedAt(pd), archived: !!pd.admin_archived });
                     }
                     jobs.push(p.ref.collection('reports').get().then(function(rs) {
                         rs.forEach(function(r) {
                             var rd = r.data() || {};
                             if (rd.is_deleted || rd.isDeleted || rd.admin_archived || rd.userPurged) {
-                                items.push({ type: 'report', uid: uid, petId: p.id, reportId: r.id, name: rd.title || r.id, archived: !!rd.admin_archived });
+                                items.push({ type: 'report', uid: uid, petId: p.id, reportId: r.id, name: rd.title || '未命名', at: trashDeletedAt(rd), archived: !!rd.admin_archived });
                             }
                         });
                     }));
                 });
                 return Promise.all(jobs).then(function() { return items; });
             }).then(function(items) {
-                if (!items.length) { box.textContent = '回收桶是空的。'; return; }
+                items = (items || []).filter(function(it) { return it.uid === uid; });
+                if (!items.length) { box.textContent = '此會員回收桶是空的。'; return; }
                 box.innerHTML = items.map(function(it) {
                     return '<div class="flex justify-between items-center gap-2 p-2 border border-gray-100 rounded-xl">' +
-                        '<span>' + (it.type === 'pet' ? '寵物' : '報告') + '：' + it.name + (it.archived ? '（客服備份）' : '') + '</span>' +
-                        '<button onclick="adminRestoreItem(\'' + it.uid + '\',\'' + it.type + '\',\'' + it.petId + '\',\'' + (it.reportId || '') + '\')" class="px-3 py-1 bg-[#3da881] text-white rounded-full text-xs">一鍵復原</button></div>';
+                        '<div>' + trashItemLabel(it) +
+                        '<div class="text-xs text-gray-400">刪除日期：' + formatTrashWhen(it.at) + (it.archived ? ' · 客服備份' : '') + '</div></div>' +
+                        '<button type="button" onclick="adminRestoreItem(\'' + uid + '\',\'' + it.type + '\',\'' + it.petId + '\',\'' + (it.reportId || '') + '\')" class="px-3 py-1 bg-[#3da881] text-white rounded-full text-xs">一鍵復原</button></div>';
                 }).join('');
             }).catch(function(err) { box.textContent = err.message || err; });
         }

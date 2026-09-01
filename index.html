@@ -3376,32 +3376,8 @@
         function handleGoogleSignup() {
             var provider = new firebase.auth.GoogleAuthProvider();
             auth.signInWithPopup(provider).then(function(result) {
-                var user = result.user;
-                currentUser.uid = user.uid;
-                currentUser.email = user.email || '';
-                currentUser.name = user.displayName || '寵物主人';
-                document.getElementById('memberName').textContent = currentUser.name;
-                document.getElementById('memberEmail').textContent = currentUser.email;
-                closeSignupModal();
-                showToast('Google 註冊成功！請選擇你的方案', 'success');
-                db.collection('users').doc(user.uid).get().then(function(doc) {
-                    if (!doc.exists) {
-                        db.collection('users').doc(user.uid).set({
-                            name: currentUser.name,
-                            email: currentUser.email,
-                            hasPaid: false,
-                            hasUsedFreeTrial: false,
-                            isTrialActive: false,
-                            plan: 'standard',
-                            createdAt: new Date()
-                        }).then(function() {
-                            return applyPromoCodeToUser(user.uid, currentUser.email);
-                        }).catch(function(err) { console.warn('建立用戶文件失敗:', err); });
-                    } else {
-                        applyPromoCodeToUser(user.uid, currentUser.email);
-                    }
-                });
-                openPricingModal();
+                finishSocialAuth(result.user, 'Google');
+                setTimeout(function() { openPricingModal(); }, 400);
             }).catch(function(error) {
                 alert(googleAuthErrorText(error));
             });
@@ -3409,8 +3385,17 @@
         function googleAuthErrorText(error) {
             var code = (error && error.code) || '';
             var msg = (error && error.message) || String(error || '');
+            if (code === 'auth/operation-not-allowed' || /operation-not-allowed/i.test(msg)) {
+                return 'Google 登入尚未啟用。請到 Firebase Console → Authentication → Sign-in method，開啟 Google。';
+            }
             if (code === 'auth/unauthorized-domain' || /authorized domain/i.test(msg)) {
                 return 'Google 登入失敗：目前網域尚未加入 Firebase 授權清單。\n請到 Firebase Console → Authentication → Settings → Authorized domains，新增 paw-vault.com 同 www.paw-vault.com。';
+            }
+            if (code === 'auth/popup-blocked') {
+                return '瀏覽器攔截了 Google 登入視窗，請允許彈出視窗後再試。';
+            }
+            if (code === 'auth/popup-closed-by-user') {
+                return '已取消 Google 登入。';
             }
             return 'Google 登入／註冊失敗：' + msg;
         }

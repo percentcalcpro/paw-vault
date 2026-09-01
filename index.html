@@ -405,7 +405,8 @@
                         </label>
                         <span class="info" id="demoSelectedCountDisplay">已選 0 份報告</span>
                         <button onclick="copyDemoSelectedReports()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-1 rounded-full text-sm font-medium transition">複製所選報告</button>
-                        <button onclick="downloadDemoSelectedReports()" class="bg-[#3da881] hover:bg-[#2d8f6f] text-white px-4 py-1 rounded-full text-sm font-medium transition">下載原檔</button>
+                        <button onclick="downloadDemoSelectedReports()" class="bg-[#3da881] hover:bg-[#2d8f6f] text-white px-4 py-1 rounded-full text-sm font-medium transition">分享/下載原檔</button>
+                        <button onclick="deleteDemoSelectedReports()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-1 rounded-full text-sm font-medium transition">刪除所選報告</button>
                         <button onclick="exitDemoSelectMode()" class="text-gray-400 hover:text-gray-600 text-sm">取消</button>
                     </div>
                     <input id="demoReportSearch" type="search" placeholder="搜尋報告標題、內容、診所、醫生…" oninput="renderDemoReports()" class="w-full px-4 py-2 border border-gray-200 rounded-2xl text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
@@ -668,7 +669,8 @@
                     </label>
                     <span class="info" id="memberSelectedCountDisplay">已選 0 份報告</span>
                     <button onclick="copyMemberSelectedReports()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-1 rounded-full text-sm font-medium transition">複製所選報告</button>
-                    <button id="memberDownloadOriginalBtn" onclick="downloadMemberSelectedReports()" class="bg-[#3da881] hover:bg-[#2d8f6f] text-white px-4 py-1 rounded-full text-sm font-medium transition">下載原檔</button>
+                    <button id="memberDownloadOriginalBtn" onclick="downloadMemberSelectedReports()" class="bg-[#3da881] hover:bg-[#2d8f6f] text-white px-4 py-1 rounded-full text-sm font-medium transition">分享/下載原檔</button>
+                    <button onclick="deleteMemberSelectedReports()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-1 rounded-full text-sm font-medium transition">刪除所選報告</button>
                     <button onclick="exitMemberSelectMode()" class="text-gray-400 hover:text-gray-600 text-sm">取消</button>
                 </div>
                 <input id="memberReportSearch" type="search" placeholder="搜尋報告標題、內容、診所、醫生…" oninput="renderMemberReports()" class="w-full px-4 py-2 border border-gray-200 rounded-2xl text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
@@ -1483,13 +1485,9 @@
     <div id="signupModal" class="modal">
         <div class="modal-content fade-in">
             <h3 class="text-xl font-bold text-center text-[#2d8f6f] mb-4">註冊成為會員</h3>
-            <p class="text-center text-xs text-gray-500 mb-2">註冊即享 <strong class="text-[#2d8f6f]">30 天免費試用</strong></p>
-            <p class="text-center text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 mb-3">🎉 結帳輸入 <strong>NEWPET</strong> 再折 HK$50</p>
+            <p class="text-center text-xs text-gray-500 mb-3">註冊即享 <strong class="text-[#2d8f6f]">30 天免費試用</strong></p>
             <button onclick="handleGoogleSignup()" class="w-full py-2.5 border border-gray-300 rounded-2xl text-sm font-medium hover:bg-gray-50 transition flex items-center justify-center gap-2 mb-2">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-5 h-5"> 使用 Google 一鍵註冊
-            </button>
-            <button onclick="handleAppleLogin()" class="w-full py-2.5 border border-gray-300 rounded-2xl text-sm font-medium hover:bg-gray-50 transition flex items-center justify-center gap-2 mb-3">
-                <i class="fa-brands fa-apple text-lg"></i> 使用 Apple 一鍵註冊
             </button>
             <div class="flex items-center gap-3 my-3">
                 <hr class="flex-1 border-gray-200"><span class="text-xs text-gray-400">或使用電郵註冊</span><hr class="flex-1 border-gray-200">
@@ -1497,7 +1495,6 @@
             <input id="signupName" type="text" placeholder="顯示名稱 (選填)" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
             <input id="signupEmail" type="email" placeholder="電郵地址 *" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
             <input id="signupPassword" type="password" placeholder="密碼（6位或以上，只限英文或數字）*" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
-            <input id="signupPromoCode" type="text" placeholder="優惠碼（選填，例如 NEWPET）" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm uppercase">
             <button onclick="handleSignupSubmit()" class="w-full py-2.5 bg-[#3da881] text-white rounded-2xl font-medium text-sm hover:bg-[#2d8f6f] transition">註冊並開始試用</button>
             <p class="text-center text-xs text-gray-400 mt-2">已經有帳戶？<button onclick="clearSignupFields(); closeSignupModal(); openLoginModal();" class="text-[#2d8f6f] hover:underline">登入</button></p>
             <button onclick="closeSignupModal()" class="w-full mt-2 text-gray-400 text-xs hover:text-gray-600 transition">取消</button>
@@ -3331,7 +3328,7 @@
                     }
                 });
             }).catch(function(error) {
-                alert('Google 登入失敗: ' + error.message);
+                alert(googleAuthErrorText(error));
             });
         }
 
@@ -3406,8 +3403,16 @@
                 });
                 openPricingModal();
             }).catch(function(error) {
-                alert('Google 註冊失敗: ' + error.message);
+                alert(googleAuthErrorText(error));
             });
+        }
+        function googleAuthErrorText(error) {
+            var code = (error && error.code) || '';
+            var msg = (error && error.message) || String(error || '');
+            if (code === 'auth/unauthorized-domain' || /authorized domain/i.test(msg)) {
+                return 'Google 登入失敗：目前網域尚未加入 Firebase 授權清單。\n請到 Firebase Console → Authentication → Settings → Authorized domains，新增 paw-vault.com 同 www.paw-vault.com。';
+            }
+            return 'Google 登入／註冊失敗：' + msg;
         }
 
         // ================================================================
@@ -4328,6 +4333,48 @@
             });
             if (!n) showToast('所選報告沒有原檔', 'warning');
         }
+        function deleteMemberSelectedReports() {
+            if (!memberSelectedReports || memberSelectedReports.size === 0) { alert('請至少選擇一份報告'); return; }
+            var n = memberSelectedReports.size;
+            appConfirm('確定刪除已選的 ' + n + ' 份報告？將移入回收桶，30 天內可還原。').then(function(ok) {
+                if (!ok) return;
+                var ids = Array.from(memberSelectedReports);
+                var jobs = [];
+                ids.forEach(function(rid) {
+                    Object.keys(petReports || {}).forEach(function(pid) {
+                        var list = petReports[pid] || [];
+                        var hit = list.some(function(r) { return r.id === rid; });
+                        if (!hit) return;
+                        petReports[pid] = list.filter(function(r) { return r.id !== rid; });
+                        if (currentUser.uid) {
+                            jobs.push(db.collection('users').doc(currentUser.uid).collection('pets').doc(pid).collection('reports').doc(rid).set({ is_deleted: true, deletedAt: new Date() }, { merge: true }));
+                        }
+                    });
+                });
+                Promise.all(jobs).then(function() {
+                    memberSelectedReports.clear();
+                    renderMemberReports();
+                    renderMemberPets();
+                    showToast('已將 ' + n + ' 份報告移入回收桶', 'success');
+                }).catch(function() {
+                    renderMemberReports();
+                    showToast('部分報告刪除失敗，請重試', 'error');
+                });
+            });
+        }
+        function deleteDemoSelectedReports() {
+            if (!demoSelectedReports || demoSelectedReports.size === 0) { alert('請至少選擇一份報告'); return; }
+            var n = demoSelectedReports.size;
+            appConfirm('確定刪除已選的 ' + n + ' 份報告？示範模式刪除後無法還原。').then(function(ok) {
+                if (!ok) return;
+                demoReportsData = demoReportsData.filter(function(r) { return !demoSelectedReports.has(r.id); });
+                demoReportCount = demoReportsData.length;
+                demoSelectedReports.clear();
+                renderDemoReports();
+                renderDemoPets();
+                showToast('已刪除 ' + n + ' 份示範報告', 'success');
+            });
+        }
         function copyMemberSelectedReports() {
             if (memberSelectedReports.size === 0) { alert('請至少選擇一份報告'); return; }
             var pet = pets.find(function(p) { return p.id === memberSelectedPetId; });
@@ -4890,10 +4937,8 @@
             }).catch(function(){});
         }
         function readPromoCodeInput() {
-            var a = document.getElementById('signupPromoCode');
             var b = document.getElementById('paymentPromoCode');
-            var v = ((a && a.value) || (b && b.value) || '').trim().toUpperCase();
-            return v;
+            return ((b && b.value) || '').trim().toUpperCase();
         }
         function applyPromoCodeToUser(uid, email) {
             var code = readPromoCodeInput();
@@ -5695,41 +5740,62 @@
             var raw = String(text || '').replace(/\r/g, '');
             var lines = raw.split('\n').map(function(s) { return s.replace(/\s+/g, ' ').trim(); }).filter(Boolean);
             var blob = lines.join('\n');
-            var cutAddr = /(Shop|Road|Street|Floor|Flat|Tel|Phone|Email|Fax|www\.|http|地址|電話|電郵)/i;
+            var addrRe = /(Shop|Shops|G\/F|1\/F|2\/F|3\/F|Floor|Flat|Unit|Room|Road|Street|Ave|Avenue|Lane|Drive|Building|Plaza|Centre|Center|Conwell|Kowloon|Hong Kong|HK\b|Tel|Phone|WhatsApp|Email|Fax|www\.|http|地址|電話|電郵|傳真)/i;
+            var payRe = /(Cash|Change|找續|找錢|付現|現金|Visa|Master|Octopus|PayMe|FPS|八達通|付款|找零)/i;
             var clinic = '';
-            if (lines[0]) {
-                clinic = lines[0].split(cutAddr)[0].trim();
-                if ((!clinic || clinic.length < 3) && lines[1] && !cutAddr.test(lines[1])) clinic = lines[1].split(cutAddr)[0].trim();
+            var named = blob.match(/([A-Za-z][A-Za-z0-9 .&'’-]{2,48}(?:Clinic|Hospital|Veterinary|Vet))\s*(?:\(([A-Z]{2,8})\))?/i);
+            var namedZh = blob.match(/([\u4e00-\u9fff]{2,16}(?:動物醫院|獸醫診所|寵物診所|診所))/);
+            if (named) clinic = named[2] ? named[1].trim() + ' (' + named[2] + ')' : named[1].trim();
+            else if (namedZh) clinic = namedZh[1];
+            if (!clinic) {
+                for (var i = 0; i < Math.min(lines.length, 4); i++) {
+                    var ln = lines[i];
+                    if (addrRe.test(ln) || payRe.test(ln) || /Dr\.|Doctor|日期|Date/i.test(ln)) continue;
+                    if (ln.length < 3 || ln.length > 60) continue;
+                    var acr = ln.match(/\(([A-Z]{2,8})\)/);
+                    clinic = acr ? acr[1] : ln.replace(/[,，].*$/, '').trim();
+                    break;
+                }
             }
-            clinic = (clinic || '').replace(/\s{2,}/g, ' ').replace(/[,，].*$/, '').trim();
+            if (clinic && addrRe.test(clinic)) {
+                var ac2 = clinic.match(/\(([A-Z]{2,8})\)/);
+                clinic = ac2 ? ac2[1] : clinic.split(addrRe)[0].trim();
+            }
+            clinic = (clinic || '').replace(/\s{2,}/g, ' ').trim();
+            if (clinic.length > 48) {
+                var ac3 = clinic.match(/\(([A-Z]{2,8})\)/);
+                clinic = ac3 ? ac3[1] : clinic.slice(0, 48);
+            }
             var date = '';
             var dateLine = blob.match(/(?:Date|日期|看診日期|Visit Date)[:：\s]*([^\n]{6,20})/i);
             if (dateLine) date = normalizeOcrDate(dateLine[1]);
             if (!date) date = normalizeOcrDate(blob);
             var doctor = '';
-            var docLine = blob.match(/(?:Doctor\s*Name|Veterinary\s*Surgeon|主治獸醫|獸醫|醫生)[:：\s]*([^\n]{3,50})/i);
-            if (docLine) doctor = docLine[1];
+            var dr = blob.match(/\bDr\.?\s+[A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+){0,4}/);
+            if (dr) doctor = dr[0];
             if (!doctor) {
-                var dr = blob.match(/\bDr\.?\s+[A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+){0,4}/);
-                if (dr) doctor = dr[0];
+                var docLine = blob.match(/(?:Doctor\s*Name|Veterinary\s*Surgeon|主治獸醫|獸醫|醫生)[:：\s]*([^\n]{3,50})/i);
+                if (docLine) doctor = docLine[1];
             }
-            doctor = (doctor || '').replace(/^[:：\s]+/, '').trim();
-            var skip = /(Address|Tel|Phone|Fax|Email|Website|www\.|http|Flat|Floor|Road|Street|Hong Kong|地址|電話|電郵|傳真)/i;
+            doctor = (doctor || '').replace(/^[:：\s]+/, '');
+            doctor = doctor.split(payRe)[0].split(addrRe)[0].replace(/[|:：].*$/, '').trim();
+            if (/Cash|Change|HKD|HK\$|找錢|付現/i.test(doctor)) doctor = '';
+            var skip = /(Address|Tel|Phone|Fax|Email|Website|www\.|http|Flat|Floor|Road|Street|Hong Kong|地址|電話|電郵|傳真|Cash|Change)/i;
             var notes = [];
             var start = false;
             for (var i = 0; i < lines.length; i++) {
                 var l = lines[i];
                 if (/(Consultation|診斷|建議|病情|主訴|Assessment|Treatment|處方|明細|Item)/i.test(l)) start = true;
                 if (!start) continue;
-                if (skip.test(l)) continue;
+                if (skip.test(l) || payRe.test(l)) continue;
                 if (l === clinic || l === doctor) continue;
                 notes.push(l);
             }
             if (!notes.length) {
                 notes = lines.filter(function(l) {
-                    if (l === clinic || l.indexOf(clinic) === 0) return false;
+                    if (l === clinic || (clinic && l.indexOf(clinic) === 0)) return false;
                     if (doctor && l.indexOf(doctor) !== -1) return false;
-                    if (skip.test(l)) return false;
+                    if (skip.test(l) || payRe.test(l) || addrRe.test(l)) return false;
                     if (/(Date|日期|Doctor|Clinic)/i.test(l)) return false;
                     return l.length >= 3;
                 }).slice(0, 6);
@@ -5741,8 +5807,8 @@
             var amount = '';
             var cleanedAmt = blob.replace(/(?:Cash|Change|找續|找錢|付現|現金)[:：\s]*HKD?\s*\$?\s*[0-9.,]+/ig, '');
             var tot = cleanedAmt.match(/(?:Grand\s*Total|Total(?:\s*Amount)?|總金額|合計|總計)\s*[:：]?\s*(?:HKD|HK\$|\$)?\s*([0-9]{1,6}(?:\.[0-9]{1,2})?)/i);
-            if (!tot) tot = cleanedAmt.match(/(?:Price|金額)\s*[:：]?\s*(?:HKD|HK\$|\$)?\s*([0-9]{1,6}(?:\.[0-9]{1,2})?)/i);
             if (tot) amount = tot[1];
+            if (amount) amount = Number(amount).toFixed(2);
             var noteText = notes.join('\n').trim();
             if (noteText && (skip.test(noteText) || noteText === clinic)) noteText = '';
             return { clinic: clinic, date: date, doctor: doctor, notes: noteText.slice(0, 400), title: title, amount: amount };

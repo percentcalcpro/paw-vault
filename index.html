@@ -349,6 +349,7 @@
                         <span class="icon">🔍</span>
                         <span class="text"><span class="highlight">示範體驗（假資料）</span>　豆豆／咪咪及以下報告只供試用，不是真實病歷，亦不是公開會員資料。</span>
                         <span class="text">註冊登入後，只有你自己睇到自己嘅檔案</span>
+                        <button type="button" onclick="resetDemoExperience()" class="px-3 py-1 rounded-full bg-white border border-[#93c5fd] text-[#1e3a5f] text-xs font-medium hover:bg-[#eff6ff]">🔄 還原預設範例</button>
                     </div>
                     <div class="flex justify-between items-center flex-wrap gap-3 mb-4">
                         <div>
@@ -1858,11 +1859,11 @@
         var demoSelectedReports = new Set();
         var demoEditingReport = null;
         var demoUploadMode = false;
+        var DEMO_SEED_PETS = JSON.parse(JSON.stringify(demoPets));
+        var DEMO_SEED_REPORTS = JSON.parse(JSON.stringify(demoReportsData));
         try {
-            var _lp = JSON.parse(localStorage.getItem('pawDemoPets') || 'null');
-            if (Array.isArray(_lp) && _lp.length) demoPets = _lp;
-            var _lr = JSON.parse(localStorage.getItem('pawDemoReports') || 'null');
-            if (Array.isArray(_lr) && _lr.length) demoReportsData = _lr;
+            localStorage.removeItem('pawDemoPets');
+            localStorage.removeItem('pawDemoReports');
         } catch (e) {}
 
         const GB = 1073741824;
@@ -2260,16 +2261,26 @@
             });
         }
         function persistDemoPetsLocal() {
-            try { localStorage.setItem('pawDemoPets', JSON.stringify(demoPets || [])); } catch (e) {}
-            try { localStorage.setItem('pawDemoReports', JSON.stringify(demoReportsData || [])); } catch (e) {}
+            try { localStorage.removeItem('pawDemoPets'); localStorage.removeItem('pawDemoReports'); } catch (e) {}
         }
-        function loadDemoPetsLocal() {
-            try {
-                var p = JSON.parse(localStorage.getItem('pawDemoPets') || 'null');
-                if (Array.isArray(p) && p.length) demoPets = p;
-                var r = JSON.parse(localStorage.getItem('pawDemoReports') || 'null');
-                if (Array.isArray(r) && r.length) demoReportsData = r;
-            } catch (e) {}
+        function resetDemoExperience() {
+            demoPets = JSON.parse(JSON.stringify(DEMO_SEED_PETS));
+            demoReportsData = JSON.parse(JSON.stringify(DEMO_SEED_REPORTS));
+            demoPetCount = demoPets.length;
+            demoReportCount = demoReportsData.length;
+            demoSelectedPetId = 'all';
+            demoUploadedFiles = [];
+            demoEditingReport = null;
+            demoUploadMode = false;
+            demoSelectedReports = new Set();
+            isDemoSelectMode = false;
+            flippedPetIds = {};
+            persistDemoPetsLocal();
+            if (typeof closeAllModals === 'function') closeAllModals();
+            renderDemoPets();
+            renderDemoReports();
+            if (typeof renderDemoPetFilters === 'function') renderDemoPetFilters();
+            showToast('已還原預設示範資料', 'success');
         }
         function persistPetPhoto(petId, dataUrl, demo) {
             if (demo) { persistDemoPetsLocal(); return Promise.resolve(dataUrl); }

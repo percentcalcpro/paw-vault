@@ -1429,7 +1429,7 @@
                 <label class="text-xs text-gray-500 mb-1 block">日期</label>
                 <input id="ocrPreviewDate" type="date" class="w-full px-4 py-2.5 border rounded-2xl mb-2.5 text-sm">
                 <label class="text-xs text-gray-500 mb-1 block">詳細內容／備註</label>
-                <textarea id="ocrPreviewNotes" rows="4" placeholder="診斷備註、藥物摘要" class="w-full px-4 py-2.5 border rounded-2xl mb-3 text-sm"></textarea>
+                <textarea id="ocrPreviewNotes" rows="7" placeholder="診療項目、藥物、異常指標或診斷摘要" class="w-full px-4 py-2.5 border rounded-2xl mb-3 text-sm"></textarea>
             </div>
             <div class="flex gap-2">
                 <button type="button" onclick="closeOcrPreviewModal()" class="flex-1 py-2 border rounded-2xl text-sm">取消</button>
@@ -2545,7 +2545,7 @@
             var pd = document.getElementById('ocrPreviewDate');
             var pnotes = document.getElementById('ocrPreviewNotes');
             if (pn) pn.value = lastOcrPetName;
-            if (pt) pt.value = fields.title || 'Consultation';
+            if (pt) pt.value = fields.title || '看診紀錄';
             if (pc) pc.value = fields.clinic || '';
             if (pdoc) pdoc.value = fields.doctor || '';
             if (pd) pd.value = fields.date || new Date().toISOString().slice(0, 10);
@@ -6452,8 +6452,12 @@
             if (doctorEl && fields.doctor && !doctorEl.value) doctorEl.value = fields.doctor;
             var amtEl = document.getElementById('reportAmount');
             if (amtEl && fields.amount && !amtEl.value) amtEl.value = fields.amount;
-            if (titleEl && !titleEl.value) titleEl.value = fields.title || 'Consultation';
+            if (titleEl && !titleEl.value) titleEl.value = fields.title || '看診紀錄';
             if (descEl && !descEl.value.trim() && fields.notes) descEl.value = fields.notes;
+            var titleDemo = document.getElementById('reportTitleDemo');
+            var descDemo = document.getElementById('reportDescDemo');
+            if (titleDemo && !titleDemo.value) titleDemo.value = fields.title || '看診紀錄';
+            if (descDemo && !descDemo.value.trim() && fields.notes) descDemo.value = fields.notes;
         }
         function normalizeOcrDate(raw) {
             if (!raw) return '';
@@ -6462,6 +6466,93 @@
             m = String(raw).match(/(\d{1,2})\s*[\/.]\s*(\d{1,2})\s*[\/.]\s*(20\d{2})/);
             if (m) return m[3] + '-' + ('0' + m[1]).slice(-2) + '-' + ('0' + m[2]).slice(-2);
             return '';
+        }
+        function classifyMedicalDoc(blob) {
+            if (/(CBC|WBC|RBC|HGB|PLT|ALT|AST|ALP|BUN|CREA|Creatinine|生化|血檢|血液檢查|Lab Report|Reference Range|High\b|Low\b|偏高|偏低)/i.test(blob)) return 'lab';
+            if (/(ultrasound|ultrason|echo|X-?ray|radiograph|X光|超聲波|影像診斷|Impression|Conclusion|Findings)/i.test(blob)) return 'imaging';
+            if (/(vaccin|疫苗|針卡|Rabies|狂犬|DHPP|FVRCP|五合一|三合一)/i.test(blob)) return 'vaccine';
+            if (/(Invoice|Receipt|Grand Total|Invoice\s*No|收據|發票|處方|Prescription|Qty|UOM|Deposit|Item)/i.test(blob)) return 'receipt';
+            return 'consult';
+        }
+        function buildSmartOcrTitle(kind, blob) {
+            if (kind === 'lab') {
+                if (/超聲|ultrasound|echo/i.test(blob)) return '超聲波檢查報告';
+                if (/X-?ray|X光|radiograph/i.test(blob)) return 'X 光報告';
+                if (/heart|心臟/i.test(blob)) return '心臟檢查報告';
+                return '血液檢查報告';
+            }
+            if (kind === 'imaging') {
+                if (/超聲|ultrasound|echo/i.test(blob)) return '超聲波檢查報告';
+                if (/X-?ray|X光|radiograph/i.test(blob)) return 'X 光報告';
+                return '影像診斷報告';
+            }
+            if (kind === 'vaccine') return '疫苗／打針紀錄';
+            if (kind === 'receipt') {
+                if (/dental|scaling|extraction|洗牙|拔牙|polishing/i.test(blob)) return '洗牙及拔牙手術';
+                if (/spay|neuter|castrat|ovario|絕育|絕育手術/i.test(blob)) return '絕育手術';
+                if (/surgery|手術/i.test(blob)) return '手術紀錄';
+                if (/consult/i.test(blob) && /(amox|meloxicam|cefazolin|處方|藥|injection|tablet)/i.test(blob)) return '門診覆診與拿藥';
+                if (/consult/i.test(blob)) return '門診看診';
+                return '門診覆診與拿藥';
+            }
+            if (/Consultation/i.test(blob)) return 'Consultation';
+            return '看診紀錄';
+        }
+        function isOcrJunkLine(l) {
+            return /(UOM|Price|Total|Deposit|Refund|Invoice\s*No|Qty|Quantity|Grand Total|HKD|HK\$|找續|找錢|付現|現金|發票編號|收據編號)/i.test(l);
+        }
+        function buildStructuredOcrNotes(kind, lines, blob, clinic, doctor) {
+            var clean = (lines || []).filter(function(l) {
+                if (!l || l.length < 3) return false;
+                if (clinic && (l === clinic || l.indexOf(clinic) === 0)) return false;
+                if (doctor && l.indexOf(doctor) !== -1) return false;
+                if (isOcrJunkLine(l)) return false;
+                if (/(Shop|Road|Street|Tel|Phone|Email|地址|電話|電郵|www\.)/i.test(l)) return false;
+                return true;
+            });
+            if (kind === 'receipt') {
+                var procedures = [];
+                var meds = [];
+                clean.forEach(function(l) {
+                    if (/(consult|dental|scaling|extract|surgery|fluid|iv set|麻醉|洗牙|拔牙|手術|輸液|檢查|vaccine|vaccin)/i.test(l)) procedures.push(l.replace(/\s+[0-9]+\.[0-9]{2}\s*$/, '').trim());
+                    else if (/(mg|ml|tab|inj|capsule|syrup|amox|meloxicam|cefazolin|prednis|antibiotic|處方|注射|口服)/i.test(l)) meds.push(l.replace(/\s+[0-9]+\.[0-9]{2}\s*$/, '').trim());
+                });
+                var out = [];
+                if (procedures.length) out.push('【診療／手術項目】\n- ' + procedures.slice(0, 8).join('\n- '));
+                if (meds.length) out.push('【處方藥物】\n- ' + meds.slice(0, 8).join('\n- '));
+                if (!out.length && clean.length) out.push(clean.slice(0, 8).join('\n'));
+                return out.join('\n\n');
+            }
+            if (kind === 'lab') {
+                var highs = [];
+                var normals = [];
+                clean.forEach(function(l) {
+                    if (/(high|low|偏高|偏低|H\b|L\b|\*|↑|↓)/i.test(l)) highs.push(l);
+                    else if (/(RBC|WBC|PLT|HGB|ALT|AST|BUN|CREA|GLU)/i.test(l)) normals.push(l.split(/\s{2,}/)[0]);
+                });
+                var out = [];
+                if (highs.length) out.push('【關鍵異常指標】\n- ' + highs.slice(0, 8).join('\n- '));
+                if (normals.length) out.push('【正常指標摘要】\n- ' + normals.slice(0, 6).join('、') + ' 等其餘數值見原檔。');
+                if (!out.length) out.push(clean.slice(0, 8).join('\n'));
+                return out.join('\n\n');
+            }
+            if (kind === 'imaging') {
+                var impress = [];
+                var recs = [];
+                var mode = '';
+                clean.forEach(function(l) {
+                    if (/(impression|conclusion|診斷|結論|findings)/i.test(l)) mode = 'imp';
+                    else if (/(recommend|建議|follow[- ]?up)/i.test(l)) mode = 'rec';
+                    if (mode === 'imp') impress.push(l);
+                    else if (mode === 'rec') recs.push(l);
+                });
+                var out = [];
+                if (impress.length) out.push('【診斷結論】\n- ' + impress.slice(0, 6).join('\n- '));
+                if (recs.length) out.push('【醫師建議】\n- ' + recs.slice(0, 6).join('\n- '));
+                if (!out.length) out.push(clean.slice(0, 8).join('\n'));
+                return out.join('\n\n');
+            }
+            return clean.slice(0, 10).join('\n');
         }
         function extractOcrFields(text) {
             var raw = String(text || '').replace(/\r/g, '');
@@ -6507,43 +6598,21 @@
             doctor = (doctor || '').replace(/^[:：\s]+/, '');
             doctor = doctor.split(payRe)[0].split(addrRe)[0].replace(/[|:：].*$/, '').trim();
             if (/Cash|Change|HKD|HK\$|找錢|付現/i.test(doctor)) doctor = '';
-            var skip = /(Address|Tel|Phone|Fax|Email|Website|www\.|http|Flat|Floor|Road|Street|Hong Kong|地址|電話|電郵|傳真|Cash|Change)/i;
-            var notes = [];
-            var start = false;
-            for (var i = 0; i < lines.length; i++) {
-                var l = lines[i];
-                if (/(Consultation|診斷|建議|病情|主訴|Assessment|Treatment|處方|明細|Item)/i.test(l)) start = true;
-                if (!start) continue;
-                if (skip.test(l) || payRe.test(l)) continue;
-                if (l === clinic || l === doctor) continue;
-                notes.push(l);
-            }
-            if (!notes.length) {
-                notes = lines.filter(function(l) {
-                    if (l === clinic || (clinic && l.indexOf(clinic) === 0)) return false;
-                    if (doctor && l.indexOf(doctor) !== -1) return false;
-                    if (skip.test(l) || payRe.test(l) || addrRe.test(l)) return false;
-                    if (/(Date|日期|Doctor|Clinic)/i.test(l)) return false;
-                    return l.length >= 3;
-                }).slice(0, 6);
-            }
-            var title = '看診紀錄';
-            if (/疫苗|針|vaccin/i.test(blob)) title = '疫苗／打針紀錄';
-            else if (/血|生化|CBC|化驗/i.test(blob)) title = '化驗報告';
-            else if (/Consultation/i.test(blob)) title = 'Consultation';
+            var kind = classifyMedicalDoc(blob);
+            var title = buildSmartOcrTitle(kind, blob);
+            var noteText = buildStructuredOcrNotes(kind, lines, blob, clinic, doctor);
             var amount = '';
             var cleanedAmt = blob.replace(/(?:Cash|Change|找續|找錢|付現|現金)[:：\s]*HKD?\s*\$?\s*[0-9.,]+/ig, '');
             var tot = cleanedAmt.match(/(?:Grand\s*Total|Total(?:\s*Amount)?|總金額|合計|總計)\s*[:：]?\s*(?:HKD|HK\$|\$)?\s*([0-9]{1,6}(?:\.[0-9]{1,2})?)/i);
             if (tot) amount = tot[1];
             if (amount) amount = Number(amount).toFixed(2);
-            var noteText = notes.join('\n').trim();
-            if (noteText && (skip.test(noteText) || noteText === clinic)) noteText = '';
+            if (noteText && noteText === clinic) noteText = '';
             var petName = extractPetNameFromText(blob);
             if (!petName) {
                 var maybe = blob.match(/[\u4e00-\u9fff]{2,6}(?=\s*(?:年齡|歲|公|母|貓|狗|品種))/);
                 if (maybe && maybe[0] !== clinic) petName = maybe[0];
             }
-            return { clinic: clinic, date: date, doctor: doctor, notes: noteText.slice(0, 400), title: title, amount: amount, petName: petName };
+            return { clinic: clinic, date: date, doctor: doctor, notes: noteText.slice(0, 1600), title: title, amount: amount, petName: petName, kind: kind };
         }
 
         function pickEditReportFiles() {

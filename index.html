@@ -17,6 +17,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
 
     <style>
         /* ===== 全域重置 ===== */
@@ -38,6 +39,23 @@
         /* ===== 寵物卡片 ===== */
         .pet-card { transition: all 0.2s ease; cursor: pointer; background: white; border-radius: 1rem; padding: 0.85rem 1rem; border: 1px solid #e5ece8; }
         .pet-card h3 { font-size: 1rem; }
+        .flip-card { background: transparent; padding: 0; border: none; height: 236px; width: 168px; flex: 0 0 168px; perspective: 1000px; }
+        .pet-scroll { display: flex; gap: 0.7rem; overflow-x: auto; padding: 2px 2px 10px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
+        .pet-scroll .flip-card { scroll-snap-align: start; }
+        .flip-avatar img { width: 100%; height: 180px; object-fit: cover; object-position: center; display: block; }
+        .flip-card:hover { transform: none; box-shadow: none; }
+        .flip-inner { position: relative; width: 100%; height: 100%; transition: transform 0.55s cubic-bezier(.2,.7,.2,1); transform-style: preserve-3d; }
+        .flip-card.is-flipped .flip-inner { transform: rotateY(180deg); }
+        .flip-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 1.15rem; overflow: hidden; border: 1px solid #e5ece8; background: #fff; }
+        .flip-front { display: flex; flex-direction: column; }
+        .flip-back { transform: rotateY(180deg); padding: 0.9rem 1rem; display: flex; flex-direction: column; }
+        .flip-card.active .flip-face, .flip-card.is-active .flip-face { border-color: #3da881; box-shadow: 0 0 0 1px #a7f3d0; }
+        .flip-avatar { height: 180px; width: 100%; overflow: hidden; flex: 0 0 180px; background: linear-gradient(135deg, #f0f4f1 0%, #e2e9e3 100%); position: relative; cursor: pointer; }
+        .flip-avatar-ph { width: 100%; height: 180px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f0f4f1 0%, #e2e9e3 100%); }
+        .flip-avatar-ph i { font-size: 2rem; color: #8aa094; opacity: 0.25; }
+        .flip-avatar-hover { position: absolute; inset: 0; background: rgba(45, 143, 111, 0.42); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; letter-spacing: 0.02em; opacity: 0; transition: opacity 0.18s ease; pointer-events: none; }
+        .flip-avatar:hover .flip-avatar-hover { opacity: 1; }
+        .flip-front-meta { height: 56px; flex: 0 0 56px; display: flex; flex-direction: column; justify-content: center; padding: 0.35rem 0.6rem 0.45rem; }
         @media (max-width: 767px) {
             .report-item .report-actions { display: none; }
             .report-item { padding: 0.65rem !important; }
@@ -48,8 +66,12 @@
         .report-item:hover { background-color: #f0faf5; border-color: #6ecba5; }
 
         /* ===== 按鈕 ===== */
-        .add-pet-btn-small { padding: 0.4rem 1.2rem; background: #3da881; color: white; border-radius: 9999px; font-size: 0.85rem; font-weight: 600; border: none; cursor: pointer; transition: 0.15s; }
-        .add-pet-btn-small:hover { opacity: 0.9; transform: translateY(-1px); }
+        .add-pet-btn-small { padding: 0.4rem 1.2rem; background: #fff; color: #2d8f6f; border-radius: 9999px; font-size: 0.85rem; font-weight: 600; border: 1.5px solid #3da881; cursor: pointer; transition: 0.15s; }
+        .add-pet-btn-small:hover { background: #f0faf5; transform: translateY(-1px); }
+        .btn-primary-pill { padding: 0.4rem 1.2rem; background: #3da881; color: #fff; border-radius: 9999px; font-size: 0.85rem; font-weight: 600; border: none; cursor: pointer; transition: 0.15s; }
+        .btn-primary-pill:hover { background: #2d8f6f; transform: translateY(-1px); }
+        .btn-secondary-pill { padding: 0.4rem 1.2rem; background: #fff; color: #2d8f6f; border-radius: 9999px; font-size: 0.85rem; font-weight: 600; border: 1.5px solid #3da881; cursor: pointer; transition: 0.15s; }
+        .btn-secondary-pill:hover { background: #f0faf5; }
         .feature-section { background: white; border-radius: 2rem; padding: 3rem 2rem; border: 1px solid #e5ece8; }
         .drop-zone { border: 2px dashed #d1d5db; border-radius: 1rem; padding: 1.25rem 1rem; min-height: 110px; text-align: center; cursor: pointer; transition: 0.2s; background: #fafafa; }
         .more-btn { width: 32px; height: 32px; border-radius: 999px; border: 1px solid #e5e7eb; background: #fff; color: #6b7280; display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; line-height: 1; cursor: pointer; }
@@ -334,9 +356,12 @@
                                 <span class="demo-step-badge">假資料 · 非真實病歷</span>
                             </h2>
                         </div>
-                        <button onclick="openAddPetModalDemo()" class="add-pet-btn-small">新增寵物</button>
+                        <div class="flex gap-2 flex-wrap">
+                            <button type="button" onclick="openCaptureUpload(true)" class="btn-primary-pill">📷 拍照／一鍵建檔</button>
+                            <button onclick="openAddPetModalDemo()" class="btn-secondary-pill">＋新增毛孩</button>
+                        </div>
                     </div>
-                    <div id="petList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div id="petList" class="pet-scroll">
                         <!-- 示範寵物 1：豆豆 -->
                         <div class="pet-card border-gray-100 demo-pet-select active" data-pet-id="demo1" onclick="selectDemoPet('demo1')">
                             <div class="flex gap-3">
@@ -393,7 +418,7 @@
                             <span id="demoSelectedPetName" class="text-sm font-normal text-gray-500 ml-2">（全部毛孩）</span>
                         </h3>
                         <div class="flex gap-2 flex-wrap">
-                            <button onclick="openUploadModalDemo()" class="bg-[#3da881] hover:bg-[#2d8f6f] text-white px-4 py-1.5 rounded-full text-sm font-medium transition">＋ 上傳報告</button>
+                            <button onclick="openUploadModalDemo()" class="btn-secondary-pill">＋ 上傳報告</button>
                             <button onclick="exportDemoMedicalPdf()" class="bg-white hover:bg-[#f0faf5] border border-[#3da881] text-[#2d8f6f] px-4 py-1.5 rounded-full text-sm font-medium transition">匯出 PDF</button>
                             <button onclick="toggleDemoSelectMode()" class="border border-gray-300 hover:bg-gray-50 px-4 py-1.5 rounded-full text-sm font-medium transition" id="demoToggleSelectBtn">批量操作</button>
                         </div>
@@ -409,7 +434,7 @@
                         <button onclick="deleteDemoSelectedReports()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-1 rounded-full text-sm font-medium transition">刪除所選報告</button>
                         <button onclick="exitDemoSelectMode()" class="text-gray-400 hover:text-gray-600 text-sm">取消</button>
                     </div>
-                    <input id="demoReportSearch" type="search" placeholder="搜尋報告標題、內容、診所、醫生…" oninput="renderDemoReports()" class="w-full px-4 py-2 border border-gray-200 rounded-2xl text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
+                    <input id="demoReportSearch" type="search" placeholder="搜尋報告標題、內容、診所、醫生…" oninput="demoSelectedReports.clear();renderDemoReports();updateDemoSelectedCount();" class="w-full px-4 py-2 border border-gray-200 rounded-2xl text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
                     <div id="reportListContainer" class="space-y-2 max-h-[400px] overflow-y-auto pr-1"></div>
                 </div>
             </div>
@@ -642,14 +667,15 @@
                     <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-paw text-[#3da881] mr-2"></i>我的毛孩</h2>
                     <div class="flex gap-2 flex-wrap">
                     <button type="button" onclick="openMemberTrash()" class="px-3 py-1.5 border border-gray-300 rounded-full text-sm">回收桶</button>
-                    <button id="memberAddPetBtn" onclick="openAddPetModal()" class="add-pet-btn-small">＋新增毛孩</button>
+                    <button type="button" onclick="openCaptureUpload(false)" class="btn-primary-pill">📷 拍照／一鍵建檔</button>
+                    <button id="memberAddPetBtn" onclick="openAddPetModal()" class="btn-secondary-pill">＋新增毛孩</button>
                     </div>
                 </div>
                 <p id="memberPetCapacity" class="hidden"></p>
                 <p id="memberPetCapacityHint" class="hidden"></p>
                 <button type="button" id="overQuotaBanner" onclick="openOverQuotaModal()" class="hidden w-full mb-3 text-left px-3 py-2 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-xs"></button>
                 <input id="memberPetSearch" type="search" placeholder="搜尋毛孩名字或授權碼…" oninput="memberPetPage=1;renderMemberPets()" class="w-full px-4 py-2 border border-gray-200 rounded-2xl text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
-                <div id="memberPetList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+                <div id="memberPetList" class="pet-scroll"></div>
                 <div id="memberPetPager" class="flex flex-wrap items-center justify-center gap-2 mt-3"></div>
             </div>
             <div class="p-6 bg-gradient-to-r from-[#f0faf5]/30 to-white">
@@ -657,7 +683,7 @@
                     <h3 class="text-lg font-bold text-gray-700"><i class="fa-regular fa-folder-open text-[#3da881] mr-2"></i><span id="memberSelectedPetName">病歷報告</span></h3>
                     <span id="memberReportCapacity" class="hidden"></span>
                     <div class="flex gap-2 flex-wrap">
-                        <button id="memberUploadReportBtn" onclick="openUploadModal()" class="bg-[#3da881] hover:bg-[#2d8f6f] text-white px-4 py-1.5 rounded-full text-sm font-medium transition">＋ 上傳報告</button>
+                        <button id="memberUploadReportBtn" onclick="openUploadModal()" class="btn-secondary-pill">＋ 上傳報告</button>
                         <button onclick="exportMedicalHistoryPdf()" class="bg-white hover:bg-[#f0faf5] border border-[#3da881] text-[#2d8f6f] px-4 py-1.5 rounded-full text-sm font-medium transition">匯出 PDF</button>
                         <button id="memberToggleSelectModeBtn" onclick="toggleMemberSelectMode()" class="border border-gray-300 hover:bg-gray-50 px-4 py-1.5 rounded-full text-sm font-medium transition">批量操作</button>
                     </div>
@@ -673,7 +699,7 @@
                     <button onclick="deleteMemberSelectedReports()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-1 rounded-full text-sm font-medium transition">刪除所選報告</button>
                     <button onclick="exitMemberSelectMode()" class="text-gray-400 hover:text-gray-600 text-sm">取消</button>
                 </div>
-                <input id="memberReportSearch" type="search" placeholder="搜尋報告標題、內容、診所、醫生…" oninput="renderMemberReports()" class="w-full px-4 py-2 border border-gray-200 rounded-2xl text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
+                <input id="memberReportSearch" type="search" placeholder="搜尋報告標題、內容、診所、醫生…" oninput="onMemberReportSearch()" class="w-full px-4 py-2 border border-gray-200 rounded-2xl text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
                 <div id="memberReportListContainer" class="space-y-2 pr-1"></div>
                 <div id="memberReportPager" class="flex flex-wrap items-center justify-center gap-2 mt-3"></div>
                 <div id="memberReportLimitHint" class="text-xs text-gray-400 mt-2 text-center"></div>
@@ -1291,6 +1317,10 @@
     <div id="petModal" class="modal">
         <div class="modal-content fade-in">
             <h3 id="petModalTitle" class="text-xl font-bold text-[#2d8f6f] mb-4">新增寵物</h3>
+            <div class="mb-3 text-center">
+                <div id="petFormPhotoPreview" class="mx-auto mb-2 w-28 h-28 rounded-2xl overflow-hidden bg-[#eef8f3] flex items-center justify-center text-3xl">🐾</div>
+                <button type="button" onclick="pickPetFormPhoto(false)" class="text-sm text-[#2d8f6f] font-medium">📷 變更毛孩頭像</button>
+            </div>
             <p class="text-xs text-gray-400 mb-2">基本資料</p>
             <input id="petName" type="text" placeholder="寵物名字 *" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
             <input id="petSpecies" type="text" placeholder="種類 (狗／貓／其他)" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
@@ -1317,11 +1347,6 @@
                     <input id="petVaccineNext" type="date" class="px-4 py-2.5 border border-gray-200 rounded-2xl text-sm">
                 </div>
             </div>
-            <div id="petAddonPayBox" class="hidden mb-3 p-3 rounded-2xl border border-amber-200 bg-amber-50">
-                <p class="text-sm font-semibold text-amber-800 mb-1">加購毛孩 · +HK$5／月</p>
-                <p class="text-xs text-gray-600 mb-2">請上載轉數快／PayMe 入數紙。核實前額度不會增加。</p>
-                <input id="petAddonReceipt" type="file" accept=".jpg,.jpeg,.png,.pdf" class="w-full text-xs">
-            </div>
             <div class="flex gap-2.5 mt-1">
                 <button onclick="closePetModal()" class="flex-1 py-2.5 border border-gray-300 rounded-2xl text-sm hover:bg-gray-50 transition">取消</button>
                 <button id="savePetBtnAction" class="flex-1 py-2.5 bg-[#3da881] text-white rounded-2xl font-medium text-sm hover:bg-[#2d8f6f] transition">儲存</button>
@@ -1333,8 +1358,9 @@
     <div id="uploadModal" class="modal">
         <div class="modal-content fade-in">
             <h3 class="text-lg font-bold text-gray-800 mb-3">新增病歷報告</h3>
-            <label class="text-xs text-gray-500 mb-1 block">屬於邊隻寵物（可自動辨識／新建）</label>
-            <select id="uploadPetSelect" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6ecba5]"></select>
+            <label class="text-xs text-gray-500 mb-1 block">屬於邊隻毛孩</label>
+            <select id="uploadPetSelect" onchange="onUploadPetSelectChange()" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6ecba5]"></select>
+            <input id="uploadNewPetName" type="text" placeholder="請輸入新毛孩名字" class="hidden w-full px-4 py-2.5 border border-[#6ecba5] rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
             <input id="reportTitle" type="text" placeholder="標題 *" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
             <div class="date-input-wrapper mb-2.5">
                 <label>日期</label>
@@ -1361,10 +1387,49 @@
         </div>
     </div>
 
+    <div id="captureGuideModal" class="modal" style="z-index:1190;">
+        <div class="modal-content fade-in" style="max-width:420px;text-align:center;">
+            <h3 class="text-lg font-bold text-[#2d8f6f] mb-2">拍照 / 一鍵 AI 自動建檔</h3>
+            <p class="text-sm text-gray-600 leading-relaxed mb-4">請上傳診所病歷、收據或檢查報告，AI 將自動為您辨識並建檔。</p>
+            <div class="flex gap-2">
+                <button type="button" onclick="closeCaptureGuide()" class="flex-1 py-2.5 border rounded-2xl text-sm">取消</button>
+                <button type="button" onclick="pickCaptureFile()" class="flex-1 py-2.5 bg-[#3da881] text-white rounded-2xl text-sm">選擇檔案 / 拍攝照片</button>
+            </div>
+        </div>
+    </div>
+    <div id="ocrPreviewModal" class="modal" style="z-index:1200;">
+        <div class="modal-content fade-in" style="max-width:420px;">
+            <h3 class="text-lg font-bold text-[#2d8f6f] mb-2">預覽確認辨識結果</h3>
+            <div id="ocrPreviewLoading" class="hidden text-center py-6 text-sm text-[#2d8f6f]">AI 解析中…</div>
+            <div id="ocrPreviewFields">
+                <label class="text-xs text-gray-500 mb-1 block">毛孩名字</label>
+                <input id="ocrPreviewPetName" type="text" placeholder="例如：茶茶" class="w-full px-4 py-2.5 border rounded-2xl mb-2.5 text-sm">
+                <label class="text-xs text-gray-500 mb-1 block">病歷標題</label>
+                <input id="ocrPreviewTitle" type="text" placeholder="例如：Consultation" class="w-full px-4 py-2.5 border rounded-2xl mb-2.5 text-sm">
+                <label class="text-xs text-gray-500 mb-1 block">診所名稱</label>
+                <input id="ocrPreviewClinic" type="text" placeholder="例如：Pawsitive Care Vet Clinic" class="w-full px-4 py-2.5 border rounded-2xl mb-2.5 text-sm">
+                <label class="text-xs text-gray-500 mb-1 block">主診醫生</label>
+                <input id="ocrPreviewDoctor" type="text" placeholder="例如：Dr. Kwan Hoi Ling Helen" class="w-full px-4 py-2.5 border rounded-2xl mb-2.5 text-sm">
+                <label class="text-xs text-gray-500 mb-1 block">日期</label>
+                <input id="ocrPreviewDate" type="date" class="w-full px-4 py-2.5 border rounded-2xl mb-2.5 text-sm">
+                <label class="text-xs text-gray-500 mb-1 block">詳細內容／備註</label>
+                <textarea id="ocrPreviewNotes" rows="4" placeholder="診斷備註、藥物摘要" class="w-full px-4 py-2.5 border rounded-2xl mb-3 text-sm"></textarea>
+            </div>
+            <div class="flex gap-2">
+                <button type="button" onclick="closeOcrPreviewModal()" class="flex-1 py-2 border rounded-2xl text-sm">取消</button>
+                <button type="button" id="ocrPreviewOk" onclick="applyOcrPreviewConfirm()" class="flex-1 py-2 bg-[#3da881] text-white rounded-2xl text-sm">確認套用並儲存</button>
+            </div>
+        </div>
+    </div>
+    <input type="file" id="petPhotoFile" class="hidden" accept="image/*,.heic,.heif,image/heic,image/heif" onchange="onPetPhotoPicked(event)">
+    <input type="file" id="captureFileInput" class="hidden" accept="image/*,application/pdf" capture="environment" onchange="onCaptureFilePicked(event)">
+
     <!-- 會員版 - 編輯報告 -->
     <div id="editReportModal" class="modal">
         <div class="modal-content fade-in">
             <h3 class="text-lg font-bold text-gray-800 mb-3">編輯報告</h3>
+            <label class="text-xs text-gray-500 mb-1 block">屬於毛孩</label>
+            <select id="editReportPetSelect" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6ecba5]"></select>
             <input id="editReportTitle" type="text" placeholder="標題 *" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
             <div class="date-input-wrapper mb-2.5">
                 <label>日期</label>
@@ -1458,11 +1523,8 @@
         <div class="modal-content fade-in">
             <h3 class="text-xl font-bold text-center text-[#2d8f6f] mb-4">登入</h3>
             <p class="text-center text-xs text-gray-500 mb-4">登入你的帳戶，繼續管理毛孩健康檔案</p>
-            <button onclick="handleGoogleLogin()" class="w-full py-2.5 border border-gray-300 rounded-2xl text-sm font-medium hover:bg-gray-50 transition flex items-center justify-center gap-2 mb-2">
+            <button onclick="handleGoogleLogin()" class="w-full py-2.5 border border-gray-300 rounded-2xl text-sm font-medium hover:bg-gray-50 transition flex items-center justify-center gap-2 mb-3">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-5 h-5"> 使用 Google 一鍵登入
-            </button>
-            <button onclick="handleAppleLogin()" class="w-full py-2.5 border border-gray-300 rounded-2xl text-sm font-medium hover:bg-gray-50 transition flex items-center justify-center gap-2 mb-3">
-                <i class="fa-brands fa-apple text-lg"></i> 使用 Apple 一鍵登入
             </button>
             <div class="flex items-center gap-3 my-3">
                 <hr class="flex-1 border-gray-200"><span class="text-xs text-gray-400">或使用電郵登入</span><hr class="flex-1 border-gray-200">
@@ -1544,8 +1606,9 @@
         <div class="modal-content fade-in">
             <h3 class="text-lg font-bold text-gray-800 mb-3">上傳報告</h3>
             <p class="text-xs text-gray-400 mb-2">示範體驗模式</p>
-            <label class="text-xs text-gray-500 mb-1 block">屬於邊隻寵物 *</label>
-            <select id="uploadPetSelectDemo" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6ecba5]"></select>
+            <label class="text-xs text-gray-500 mb-1 block">屬於邊隻毛孩</label>
+            <select id="uploadPetSelectDemo" onchange="onUploadPetSelectDemoChange()" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6ecba5]"></select>
+            <input id="uploadNewPetNameDemo" type="text" placeholder="請輸入新毛孩名字" class="hidden w-full px-4 py-2.5 border border-[#6ecba5] rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
             <input id="reportTitleDemo" type="text" placeholder="標題 *" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
             <div class="date-input-wrapper mb-2.5">
                 <label>日期</label>
@@ -1574,6 +1637,10 @@
     <div id="petModalDemo" class="modal">
         <div class="modal-content fade-in">
             <h3 class="text-xl font-bold text-[#2d8f6f] mb-2">新增寵物</h3>
+            <div class="mb-3 text-center">
+                <div id="petFormPhotoPreviewDemo" class="mx-auto mb-2 w-28 h-28 rounded-2xl overflow-hidden bg-[#eef8f3] flex items-center justify-center text-3xl">🐾</div>
+                <button type="button" onclick="pickPetFormPhoto(true)" class="text-sm text-[#2d8f6f] font-medium">📷 變更毛孩頭像</button>
+            </div>
             <p class="text-xs text-gray-400 mb-2">示範體驗模式 · 基本資料</p>
             <input id="petNameDemo" type="text" placeholder="寵物名字 *" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
             <input id="petSpeciesDemo" type="text" placeholder="種類 (狗／貓／其他)" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
@@ -1612,6 +1679,8 @@
         <div class="modal-content fade-in">
             <h3 class="text-lg font-bold text-gray-800 mb-3">✏️ 編輯報告</h3>
             <p class="text-xs text-gray-400 mb-3">示範體驗模式</p>
+            <label class="text-xs text-gray-500 mb-1 block">屬於毛孩</label>
+            <select id="editReportPetSelectDemo" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm"></select>
             <input id="editReportTitleDemo" type="text" placeholder="標題 *" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
             <div class="grid grid-cols-2 gap-2.5 mb-2.5">
                 <input id="editReportClinicDemo" type="text" placeholder="診所名稱 (選填)" class="px-4 py-2.5 border border-gray-200 rounded-2xl text-sm">
@@ -1784,6 +1853,12 @@
         var demoSelectedReports = new Set();
         var demoEditingReport = null;
         var demoUploadMode = false;
+        try {
+            var _lp = JSON.parse(localStorage.getItem('pawDemoPets') || 'null');
+            if (Array.isArray(_lp) && _lp.length) demoPets = _lp;
+            var _lr = JSON.parse(localStorage.getItem('pawDemoReports') || 'null');
+            if (Array.isArray(_lr) && _lr.length) demoReportsData = _lr;
+        } catch (e) {}
 
         const GB = 1073741824;
         const PLAN_LIMITS = {
@@ -1806,6 +1881,19 @@
                 price: 'HK$78', annualPrice: 'HK$780', navBadge: '大家庭', badgeClass: 'badge-pro',
                 maxStorageBytes: 10 * GB, extraPetFee: 5, allowFullReport: true }
         };
+        PLAN_LIMITS.family = PLAN_LIMITS.longterm;
+        PLAN_LIMITS.basic = PLAN_LIMITS.standard;
+        PLAN_LIMITS.light = PLAN_LIMITS.lite;
+        function normalizePlanKey(p) {
+            var k = String(p || '').toLowerCase();
+            if (k === 'family' || k === 'pro' || k === '大家庭' || k === '大家庭版') return 'longterm';
+            if (k === 'basic' || k === '基礎' || k === '基礎版') return 'standard';
+            if (k === 'light' || k === '輕量' || k === '輕量版') return 'lite';
+            if (k === 'volunteer' || k === '義工') return 'volunteer';
+            if (k === 'adopt') return 'adopt';
+            if (PLAN_LIMITS[k]) return k;
+            return 'longterm';
+        }
         var FAMILY_HARD_CAP = 10;
         var VOLUNTEER_HARD_CAP = 50;
         var extraPetsPurchased = 0;
@@ -1831,7 +1919,8 @@
             return y;
         }
         function getPlanLimits() {
-            var base = PLAN_LIMITS[currentPlan] || PLAN_LIMITS.standard;
+            currentPlan = normalizePlanKey(currentPlan);
+            var base = PLAN_LIMITS[currentPlan] || PLAN_LIMITS.longterm;
             var extra = extraPetsPurchased || 0;
             var raw = extra;
             if (currentPlan === 'volunteer') raw = extra;
@@ -2052,6 +2141,302 @@
             }
             if (navigator.clipboard) navigator.clipboard.writeText(code);
             showToast('授權碼 ' + code + ' 已複製', 'success');
+        }
+        var flippedPetIds = {};
+        var pendingPhotoPetId = null;
+        var pendingPhotoDemo = false;
+        function petAvatarEmoji(pet) {
+            var s = String((pet && pet.species || '') + (pet && pet.name || ''));
+            if (/貓|cat/i.test(s)) return '🐱';
+            if (/狗|犬|dog/i.test(s)) return '🐶';
+            return '🐾';
+        }
+        function petAvatarPlaceholder() {
+            return '<div class="flip-avatar-ph"><i class="fa-solid fa-paw"></i></div>';
+        }
+        function petAvatarHtml(pet) {
+            var src = (pet && (pet.photoUrl || pet.photo)) || '';
+            var core = src
+                ? '<img src="' + String(src).replace(/"/g, '') + '" alt="" style="width:100%;height:180px;object-fit:cover;object-position:center;display:block;">'
+                : petAvatarPlaceholder();
+            return core + '<div class="flip-avatar-hover">📷 變更相片</div>';
+        }
+        function flipPetCard(id) {
+            flippedPetIds[id] = !flippedPetIds[id];
+            var el = document.querySelector('.flip-card[data-pet-id="' + id + '"]');
+            if (el) el.classList.toggle('is-flipped', !!flippedPetIds[id]);
+        }
+        function onPetCardLeave(id) { if (flippedPetIds[id]) flipPetCard(id); }
+        function onPetFlipCardClick(ev, id, demo) {
+            if (ev.target.closest('button, a, input')) return;
+            flipPetCard(id);
+            if (demo) selectDemoPet(id);
+            else selectMemberPet(id);
+        }
+        function buildPetFlipCardHtml(pet, opts) {
+            opts = opts || {};
+            var demo = !!opts.demo;
+            var reports = opts.reportCount || 0;
+            var over = !!opts.overQuota;
+            var details = [];
+            if (pet.species) details.push(pet.species);
+            if (pet.breed) details.push(pet.breed);
+            if (pet.gender) details.push(pet.gender === '男' ? '男仔' : (pet.gender === '女' ? '女仔' : pet.gender));
+            var code = pet.shareCode || (demo ? ('DEMO' + String(pet.id || '').slice(-4).toUpperCase()) : '未產生');
+            var editFn = demo ? ("openEditPetDemo('" + pet.id + "')") : ("openAddPetModal('" + pet.id + "')");
+            var delFn = demo ? ("deletePetDemo('" + pet.id + "')") : ("deletePet('" + pet.id + "')");
+            var copyFn = demo ? ("navigator.clipboard&&navigator.clipboard.writeText('" + code + "')") : ("copyPetShareCode('" + pet.id + "')");
+            return '<div class="flip-card pet-card ' + (opts.selected ? 'is-active active' : '') + (over ? ' opacity-90' : '') + (flippedPetIds[pet.id] ? ' is-flipped' : '') + '" data-pet-id="' + pet.id + '" onclick="onPetFlipCardClick(event,\'' + pet.id + '\',' + (demo ? 'true' : 'false') + ')" onmouseleave="onPetCardLeave(\'' + pet.id + '\')">' +
+                '<div class="flip-inner"><div class="flip-face flip-front"><div class="flip-avatar" onclick="event.stopPropagation(); startPetPhotoChange(\'' + pet.id + '\',' + (demo ? 'true' : 'false') + ')">' + petAvatarHtml(pet) + '</div>' +
+                '<div class="flip-front-meta"><div class="font-bold text-[#2d8f6f] truncate">' + (pet.name || '未命名毛孩') + '</div>' +
+                '<div class="text-[11px] text-gray-500 truncate">' + (details.join(' · ') || '點擊翻開名片') + '</div></div></div>' +
+                '<div class="flip-face flip-back">' +
+                '<div class="flex justify-between items-center gap-2 mb-2"><div class="font-bold text-[#2d8f6f] text-sm truncate">' + (pet.name || '') + ' 的設定</div>' +
+                '<button type="button" class="text-gray-400 text-sm" onclick="event.stopPropagation(); flipPetCard(\'' + pet.id + '\')">↩️</button></div>' +
+                (over ? '<p class="text-[11px] text-amber-700">🔒 超出配額（唯讀）</p>' : '') +
+                '<p class="text-xs text-[#3da881]">' + reports + ' 份報告</p>' +
+                '<div class="text-xs text-gray-600 mt-2">授權碼 <span class="font-mono font-bold">' + code + '</span> <button type="button" class="underline text-[#2d8f6f]" onclick="event.stopPropagation(); ' + copyFn + '">複製</button></div>' +
+                '<button type="button" class="mt-2 w-full text-xs border border-[#3da881] text-[#2d8f6f] rounded-full py-1" onclick="event.stopPropagation(); startPetPhotoChange(\'' + pet.id + '\',' + (demo ? 'true' : 'false') + ')">📷 上傳／變更相片</button>' +
+                '<div class="mt-auto pt-2 flex gap-2">' +
+                '<button type="button" class="flex-1 text-xs border rounded-full py-1" onclick="event.stopPropagation(); ' + editFn + '">編輯</button>' +
+                '<button type="button" class="flex-1 text-xs border border-red-200 text-red-500 rounded-full py-1" onclick="event.stopPropagation(); ' + delFn + '">刪除</button>' +
+                '</div></div></div></div>';
+        }
+        var photoUploadTimes = [];
+        function isHeicFile(file) {
+            var n = String(file && file.name || '').toLowerCase();
+            var t = String(file && file.type || '').toLowerCase();
+            return n.endsWith('.heic') || n.endsWith('.heif') || t.indexOf('heic') !== -1 || t.indexOf('heif') !== -1;
+        }
+        function checkPhotoRateLimit() {
+            var now = Date.now();
+            photoUploadTimes = photoUploadTimes.filter(function(t) { return now - t < 60000; });
+            if (photoUploadTimes.length >= 3) {
+                showToast('請稍後再更換相片（每分鐘最多 3 次）', 'warning');
+                return false;
+            }
+            photoUploadTimes.push(now);
+            return true;
+        }
+        function convertHeicIfNeeded(file) {
+            if (!isHeicFile(file)) return Promise.resolve(file);
+            if (typeof heic2any === 'undefined') return Promise.reject(new Error('未載入 HEIC 轉碼'));
+            return heic2any({ blob: file, toType: 'image/jpeg', quality: 0.8 }).then(function(out) {
+                var blob = out instanceof Blob ? out : (out && out[0]);
+                return new File([blob], String(file.name || 'photo').replace(/\.hei[cf]$/i, '.jpg'), { type: 'image/jpeg' });
+            });
+        }
+        function compressImageFile(file, maxEdge, quality) {
+            maxEdge = maxEdge || 800;
+            quality = quality || 0.75;
+            return new Promise(function(resolve, reject) {
+                var url = URL.createObjectURL(file);
+                var img = new Image();
+                img.onload = function() {
+                    var w = img.naturalWidth || img.width;
+                    var h = img.naturalHeight || img.height;
+                    var scale = Math.min(1, maxEdge / Math.max(w, h));
+                    var cw = Math.max(1, Math.round(w * scale));
+                    var ch = Math.max(1, Math.round(h * scale));
+                    var canvas = document.createElement('canvas');
+                    canvas.width = cw; canvas.height = ch;
+                    canvas.getContext('2d').drawImage(img, 0, 0, cw, ch);
+                    URL.revokeObjectURL(url);
+                    var q = quality;
+                    var dataUrl = canvas.toDataURL('image/jpeg', q);
+                    while (dataUrl.length > 270000 && q > 0.5) {
+                        q -= 0.08;
+                        dataUrl = canvas.toDataURL('image/jpeg', q);
+                    }
+                    resolve(dataUrl);
+                };
+                img.onerror = function() { URL.revokeObjectURL(url); reject(new Error('圖片無法讀取')); };
+                img.src = url;
+            });
+        }
+        function persistDemoPetsLocal() {
+            try { localStorage.setItem('pawDemoPets', JSON.stringify(demoPets || [])); } catch (e) {}
+            try { localStorage.setItem('pawDemoReports', JSON.stringify(demoReportsData || [])); } catch (e) {}
+        }
+        function loadDemoPetsLocal() {
+            try {
+                var p = JSON.parse(localStorage.getItem('pawDemoPets') || 'null');
+                if (Array.isArray(p) && p.length) demoPets = p;
+                var r = JSON.parse(localStorage.getItem('pawDemoReports') || 'null');
+                if (Array.isArray(r) && r.length) demoReportsData = r;
+            } catch (e) {}
+        }
+        function persistPetPhoto(petId, dataUrl, demo) {
+            if (demo) { persistDemoPetsLocal(); return Promise.resolve(dataUrl); }
+            if (!currentUser || !currentUser.uid || !storage) {
+                try { localStorage.setItem('pawPetPhoto_' + petId, dataUrl); } catch (e) {}
+                return Promise.resolve(dataUrl);
+            }
+            var path = 'users/' + currentUser.uid + '/pets/' + petId + '/avatar_' + petId + '.jpg';
+            return fetch(dataUrl).then(function(res) { return res.blob(); }).then(function(blob) {
+                return storage.ref(path).put(blob, { contentType: 'image/jpeg' });
+            }).then(function(snap) { return snap.ref.getDownloadURL(); }).then(function(url) {
+                return db.collection('users').doc(currentUser.uid).collection('pets').doc(petId).set({ photo: url, photoUrl: url }, { merge: true }).then(function() { return url; });
+            }).catch(function() {
+                return db.collection('users').doc(currentUser.uid).collection('pets').doc(petId).set({ photo: dataUrl, photoUrl: dataUrl }, { merge: true }).then(function() { return dataUrl; });
+            });
+        }
+        function startPetPhotoChange(petId, demo) {
+            pendingPhotoPetId = String(petId || '');
+            pendingPhotoDemo = !!demo;
+            var fi = document.getElementById('petPhotoFile');
+            if (!fi) return;
+            fi.value = '';
+            fi.click();
+        }
+        function applyPetPhotoToDom(petId, dataUrl) {
+            document.querySelectorAll('.flip-card[data-pet-id="' + petId + '"] .flip-avatar').forEach(function(el) {
+                var img = el.querySelector('img');
+                if (img) { img.src = dataUrl; return; }
+                el.innerHTML = '<img src="' + String(dataUrl).replace(/"/g, '') + '" alt="" style="width:100%;height:180px;object-fit:cover;object-position:center;display:block;">' +
+                    '<div class="flip-avatar-hover">📷 變更相片</div>';
+            });
+        }
+        function onPetPhotoPicked(ev) {
+            var file = ev.target && ev.target.files && ev.target.files[0];
+            var petId = pendingPhotoPetId; var demo = pendingPhotoDemo;
+            if (!file || !petId) return;
+            if (file.size > 10 * 1024 * 1024) { showToast('檔案過大，請選擇小於 10MB 的照片', 'warning'); return; }
+            var okType = (file.type && file.type.indexOf('image/') === 0) || isHeicFile(file);
+            if (!okType) { showToast('請選擇圖片檔', 'warning'); return; }
+            if (!checkPhotoRateLimit()) return;
+            showToast('處理相片中…', 'info');
+            convertHeicIfNeeded(file).then(function(imgFile) {
+                return compressImageFile(imgFile, 800, 0.75);
+            }).then(function(dataUrl) {
+                if (petId === '__form_demo__' || petId === '__form_member__') {
+                    pendingPetFormPhoto = dataUrl;
+                    setPetFormPreview(dataUrl, petId === '__form_demo__');
+                    showToast('已選擇頭像，儲存後套用', 'success');
+                    return;
+                }
+                if (demo) {
+                    var dp = (demoPets || []).find(function(p) { return String(p.id) === String(petId); });
+                    if (dp) { dp.photo = dataUrl; dp.photoUrl = dataUrl; }
+                    flippedPetIds[petId] = true;
+                    persistDemoPetsLocal();
+                    renderDemoPets();
+                    applyPetPhotoToDom(petId, dataUrl);
+                    showToast('已更新相片', 'success');
+                    return;
+                }
+                var pet = (pets || []).find(function(p) { return String(p.id) === String(petId); });
+                if (pet) { pet.photo = dataUrl; pet.photoUrl = dataUrl; }
+                flippedPetIds[petId] = true;
+                renderMemberPets();
+                applyPetPhotoToDom(petId, dataUrl);
+                persistPetPhoto(petId, dataUrl, false).then(function(url) {
+                    if (pet && url) { pet.photo = url; pet.photoUrl = url; applyPetPhotoToDom(petId, url); }
+                    showToast('已更新相片', 'success');
+                });
+            }).catch(function(err) {
+                showToast((err && err.message) || '相片處理失敗', 'error');
+            });
+        }
+        var captureAutoSaveMode = false;
+        var pendingOcrFields = {};
+        var pendingCaptureFile = null;
+        function setOcrPreviewLoading(on) {
+            var load = document.getElementById('ocrPreviewLoading');
+            var fields = document.getElementById('ocrPreviewFields');
+            var ok = document.getElementById('ocrPreviewOk');
+            if (load) load.classList.toggle('hidden', !on);
+            if (fields) fields.classList.toggle('hidden', !!on);
+            if (ok) ok.disabled = !!on;
+        }
+        function openOcrPreviewModal() {
+            var m = document.getElementById('ocrPreviewModal');
+            if (m) m.classList.add('show');
+        }
+        function openCaptureUpload(demo) {
+            captureAutoSaveMode = true;
+            demoUploadMode = !!demo;
+            pendingCaptureFile = null;
+            pendingOcrFields = {};
+            closeOcrPreviewModal();
+            captureAutoSaveMode = true;
+            demoUploadMode = !!demo;
+            var um = document.getElementById('uploadModal');
+            if (um) um.classList.remove('show');
+            var g = document.getElementById('captureGuideModal');
+            if (g) g.classList.add('show');
+        }
+        function closeCaptureGuide() {
+            var g = document.getElementById('captureGuideModal');
+            if (g) g.classList.remove('show');
+            captureAutoSaveMode = false;
+        }
+        function pickCaptureFile() {
+            captureAutoSaveMode = true;
+            var g = document.getElementById('captureGuideModal');
+            if (g) g.classList.remove('show');
+            var fi = document.getElementById('captureFileInput');
+            if (!fi) return;
+            fi.value = '';
+            fi.setAttribute('accept', 'image/*,application/pdf');
+            fi.setAttribute('capture', 'environment');
+            fi.click();
+        }
+        var pendingPetFormPhoto = '';
+        function setPetFormPreview(url, demo) {
+            var box = document.getElementById(demo ? 'petFormPhotoPreviewDemo' : 'petFormPhotoPreview');
+            if (!box) return;
+            if (url) box.innerHTML = '<img src="' + String(url).replace(/"/g, '') + '" alt="" style="width:100%;height:100%;object-fit:cover;object-position:center;">';
+            else box.textContent = '🐾';
+        }
+        function pickPetFormPhoto(demo) {
+            pendingPhotoPetId = demo ? '__form_demo__' : '__form_member__';
+            pendingPhotoDemo = !!demo;
+            var fi = document.getElementById('petPhotoFile');
+            if (fi) { fi.value = ''; fi.click(); }
+        }
+        function onCaptureFilePicked(ev) {
+            var file = ev.target && ev.target.files && ev.target.files[0];
+            if (!file) { captureAutoSaveMode = false; return; }
+            pendingCaptureFile = file;
+            uploadedFiles = [file];
+            openOcrPreviewModal();
+            setOcrPreviewLoading(true);
+            var ready = isHeicFile(file) ? convertHeicIfNeeded(file) : Promise.resolve(file);
+            ready.then(function(f) {
+                pendingCaptureFile = f;
+                uploadedFiles = [f];
+                return extractReportText(f);
+            }).then(function(text) {
+                pendingOcrFields = extractOcrFields(text || '');
+                fillOcrPreviewFields(pendingOcrFields);
+                setOcrPreviewLoading(false);
+            }).catch(function() {
+                pendingOcrFields = {};
+                setOcrPreviewLoading(false);
+                showToast('未能自動辨識，請自行填寫', 'warning');
+            });
+        }
+        function fillOcrPreviewFields(fields) {
+            fields = fields || {};
+            lastOcrPetName = cleanExtractedPetName(fields.petName || lastOcrPetName || '');
+            var pn = document.getElementById('ocrPreviewPetName');
+            var pt = document.getElementById('ocrPreviewTitle');
+            var pc = document.getElementById('ocrPreviewClinic');
+            var pdoc = document.getElementById('ocrPreviewDoctor');
+            var pd = document.getElementById('ocrPreviewDate');
+            var pnotes = document.getElementById('ocrPreviewNotes');
+            if (pn) pn.value = lastOcrPetName;
+            if (pt) pt.value = fields.title || 'Consultation';
+            if (pc) pc.value = fields.clinic || '';
+            if (pdoc) pdoc.value = fields.doctor || '';
+            if (pd) pd.value = fields.date || new Date().toISOString().slice(0, 10);
+            if (pnotes) pnotes.value = fields.notes || '';
+        }
+        function closeAllModals() {
+            document.querySelectorAll('.modal.show').forEach(function(m) { m.classList.remove('show'); });
+            demoUploadMode = false;
+            if (typeof closeOcrPreviewModal === 'function') closeOcrPreviewModal();
         }
         function regeneratePetShareCode(petId) {
             var pet = pets.find(function(p) { return p.id === petId; });
@@ -2566,7 +2951,7 @@
                             isTrialActive = false;
                         }
                         userUsedPromoCode = String(data.promoCode || '').toUpperCase();
-                        if (data.plan) currentPlan = data.plan;
+                        if (data.plan) currentPlan = normalizePlanKey(data.plan);
                         extraPetsPurchased = data.extraPets || 0;
                         extraPetPending = data.extraPetPending === true;
                         memberMaxPetsOverride = data.maxPets || null;
@@ -3776,30 +4161,7 @@
                 }
             }
             container.innerHTML = slice.map(function(pet) {
-                var details = [];
-                if (pet.species) details.push(pet.species);
-                if (pet.breed) details.push(pet.breed);
-                if (pet.gender) details.push(pet.gender === '男' ? '男仔' : (pet.gender === '女' ? '女仔' : pet.gender));
-                var detailText = details.join(' · ');
-                return `
-                    <div class="pet-card ${memberSelectedPetId === pet.id ? 'ring-2 ring-[#3da881]' : 'border-gray-100'} ${isPetOverQuota(pet.id) ? 'opacity-90' : ''}" onclick="selectMemberPet('${pet.id}')">
-                        <div class="flex justify-between items-start gap-2">
-                            <div>
-                                <h3 class="font-bold text-[#2d8f6f]">${pet.name}${pet.pendingApproval ? ' <span class="text-xs font-medium text-amber-700">審核中</span>' : ''}</h3>
-                                ${isPetOverQuota(pet.id) ? '<p class="text-[11px] text-amber-700 mt-0.5">🔒 已超出方案配額（僅供查看）</p>' : ''}
-                                <p class="text-xs text-gray-500">${detailText || ''}</p>
-                            </div>
-                            <div class="flex items-center gap-1" onclick="event.stopPropagation();">
-                                ${isPetOverQuota(pet.id) ? '<button type="button" title="升級解鎖" onclick="openOverQuotaModal()" class="mini-icon-btn"><i class="fa-solid fa-lock"></i></button>' : '<button type="button" title="編輯" onclick="openAddPetModal(\'' + pet.id + '\')" class="mini-icon-btn"><i class="fa-regular fa-pen-to-square"></i></button>'}
-                                <button type="button" title="刪除" onclick="deletePet('${pet.id}')" class="mini-icon-btn danger"><i class="fa-regular fa-trash-can"></i></button>
-                            </div>
-                        </div>
-                        <p class="text-xs text-[#3da881] mt-1">${(petReports[pet.id] || []).length} 份報告</p>
-                        <div class="text-xs text-gray-600 mt-1">授權碼 <span class="font-mono font-bold tracking-widest">${pet.shareCode || '未產生'}</span>
-                            <button onclick="event.stopPropagation(); copyPetShareCode('${pet.id}')" class="underline text-[#2d8f6f] ml-1">複製</button>
-                        </div>
-                    </div>
-                `;
+                return buildPetFlipCardHtml(pet, { demo: false, selected: memberSelectedPetId === pet.id, reportCount: (petReports[pet.id] || []).length, overQuota: isPetOverQuota(pet.id) });
             }).join('');
             renderMemberPetFilters();
         }
@@ -3818,6 +4180,8 @@
 
         function selectMemberPet(petId) {
             memberSelectedPetId = petId;
+            memberReportPage = 1;
+            resetMemberReportSelection();
             selectedPetId = (petId === 'all') ? null : petId;
             var up = document.getElementById('memberUploadReportBtn');
             if (up) {
@@ -3876,11 +4240,10 @@
             var btn = document.getElementById('memberReportSortBtn');
             if (btn) btn.textContent = memberReportNewestFirst ? '按日期：最新 ⇅' : '按日期：最舊 ⇅';
             memberReportPage = 1;
+            resetMemberReportSelection();
             renderMemberReports();
         }
-        function renderMemberReports() {
-            var container = document.getElementById('memberReportListContainer');
-            if (!container) return;
+        function collectVisibleMemberReports() {
             var reports = [];
             if (!memberSelectedPetId || memberSelectedPetId === 'all') {
                 pets.forEach(function(pet) {
@@ -3900,19 +4263,54 @@
             }
             var qEl = document.getElementById('memberReportSearch');
             var q = (qEl && qEl.value ? qEl.value.trim().toLowerCase() : '');
-            if (q) {
-                reports = reports.filter(function(r) { return reportMatchesQuery(r, q); });
-            }
+            if (q) reports = reports.filter(function(r) { return reportMatchesQuery(r, q); });
             reports.sort(function(a, b) {
                 var ta = reportSortTime(a);
                 var tb = reportSortTime(b);
                 return memberReportNewestFirst ? (tb - ta) : (ta - tb);
             });
+            return reports;
+        }
+        function currentMemberReportPageRows() {
+            var reports = collectVisibleMemberReports();
+            var start = (memberReportPage - 1) * MEMBER_REPORT_PAGE_SIZE;
+            return reports.slice(start, start + MEMBER_REPORT_PAGE_SIZE);
+        }
+        function resetMemberReportSelection() {
+            if (memberSelectedReports) memberSelectedReports.clear();
+            var sel = document.getElementById('memberSelectAllReports');
+            if (sel) sel.checked = false;
+            updateMemberSelectedCount();
+        }
+        function goMemberReportPage(n) {
+            memberReportPage = n;
+            resetMemberReportSelection();
+            renderMemberReports();
+        }
+        function onMemberReportSearch() {
+            memberReportPage = 1;
+            resetMemberReportSelection();
+            renderMemberReports();
+        }
+        function syncMemberSelectAllCheckbox(pageRows) {
+            var sel = document.getElementById('memberSelectAllReports');
+            if (!sel) return;
+            var rows = pageRows || currentMemberReportPageRows();
+            sel.checked = !!(rows.length && rows.every(function(r) { return memberSelectedReports.has(r.id); }));
+        }
+        function renderMemberReports() {
+            var container = document.getElementById('memberReportListContainer');
+            if (!container) return;
+            var reports = collectVisibleMemberReports();
+            var qEl = document.getElementById('memberReportSearch');
+            var q = (qEl && qEl.value ? qEl.value.trim() : '');
             if (reports.length === 0) {
                 container.innerHTML =
                     '<div class="text-center py-6 text-gray-400 text-sm">' + (q ? '沒有符合「' + qEl.value.trim() + '」的報告' : '尚無病歷報告，點擊「上傳報告」') + '</div>';
                 var emptyPg = document.getElementById('memberReportPager');
                 if (emptyPg) emptyPg.innerHTML = '';
+                syncMemberSelectAllCheckbox([]);
+                updateMemberSelectedCount();
                 return;
             }
             var pages = Math.max(1, Math.ceil(reports.length / MEMBER_REPORT_PAGE_SIZE));
@@ -3924,11 +4322,11 @@
             if (pager) {
                 if (pages <= 1) pager.innerHTML = '';
                 else {
-                    var btns = '<button type="button" class="px-3 py-1 text-sm border rounded-full" onclick="memberReportPage--;renderMemberReports()">上一頁</button>';
+                    var btns = '<button type="button" class="px-3 py-1 text-sm border rounded-full" onclick="goMemberReportPage(Math.max(1, memberReportPage-1))">上一頁</button>';
                     for (var pi = 1; pi <= pages; pi++) {
-                        btns += '<button type="button" class="px-3 py-1 text-sm rounded-full ' + (pi === memberReportPage ? 'bg-[#3da881] text-white' : 'border') + '" onclick="memberReportPage=' + pi + ';renderMemberReports()">' + pi + '</button>';
+                        btns += '<button type="button" class="px-3 py-1 text-sm rounded-full ' + (pi === memberReportPage ? 'bg-[#3da881] text-white' : 'border') + '" onclick="goMemberReportPage(' + pi + ')">' + pi + '</button>';
                     }
-                    btns += '<button type="button" class="px-3 py-1 text-sm border rounded-full" onclick="memberReportPage++;renderMemberReports()">下一頁</button>';
+                    btns += '<button type="button" class="px-3 py-1 text-sm border rounded-full" onclick="goMemberReportPage(memberReportPage+1)">下一頁</button>';
                     pager.innerHTML = btns;
                 }
             }
@@ -3990,6 +4388,7 @@
                 }
             }
             updateMemberSelectedCount();
+            syncMemberSelectAllCheckbox(pageRows);
         }
 
         // ================================================================
@@ -4080,19 +4479,21 @@
             if (memberSelectedReports.has(reportId)) memberSelectedReports.delete(reportId);
             else memberSelectedReports.add(reportId);
             updateMemberSelectedCount();
-            var reports = petReports[memberSelectedPetId] || [];
-            var selectAll = document.getElementById('memberSelectAllReports');
-            if (selectAll) selectAll.checked = memberSelectedReports.size === reports.length && reports.length > 0;
+            syncMemberSelectAllCheckbox();
             renderMemberReports();
         }
 
         function toggleMemberSelectAllReports() {
-            var reports = petReports[memberSelectedPetId] || [];
             var selectAll = document.getElementById('memberSelectAllReports');
-            if (selectAll.checked) reports.forEach(function(r) { memberSelectedReports.add(r.id); });
-            else memberSelectedReports.clear();
+            var rows = currentMemberReportPageRows();
+            if (selectAll && selectAll.checked) {
+                rows.forEach(function(r) { if (r && r.id) memberSelectedReports.add(r.id); });
+            } else {
+                memberSelectedReports.clear();
+            }
             renderMemberReports();
             updateMemberSelectedCount();
+            syncMemberSelectAllCheckbox(rows);
         }
 
         function updateMemberSelectedCount() {
@@ -4458,6 +4859,12 @@
             var r = petReports[petId]?.find(function(x) { return x.id === reportId; });
             if (r) {
                 editingReportMeta = { petId: petId, reportId: reportId };
+                var eps = document.getElementById('editReportPetSelect');
+                if (eps) {
+                    eps.innerHTML = (pets || []).map(function(p) {
+                        return '<option value="' + p.id + '"' + (p.id === petId ? ' selected' : '') + '>' + p.name + '</option>';
+                    }).join('');
+                }
                 document.getElementById('editReportTitle').value = r.title;
                 document.getElementById('editReportDate').value = r.date;
                 if (document.getElementById('editReportClinic')) document.getElementById('editReportClinic').value = r.clinic || '';
@@ -4527,6 +4934,19 @@
                 reports[idx].amount = (document.getElementById('editReportAmount') && document.getElementById('editReportAmount').value.trim()) || '';
                 reports[idx].description = document.getElementById('editReportDesc').value.trim() || '';
                 reports[idx].files = allFiles;
+                var newPetId = ((document.getElementById('editReportPetSelect') || {}).value) || editingReportMeta.petId;
+                if (newPetId && newPetId !== editingReportMeta.petId) {
+                    var moved = reports.splice(idx, 1)[0];
+                    if (!petReports[newPetId]) petReports[newPetId] = [];
+                    moved.petId = newPetId;
+                    moved.petName = ((pets || []).find(function(p){ return p.id === newPetId; }) || {}).name || moved.petName;
+                    petReports[newPetId].unshift(moved);
+                    editingReportMeta.petId = newPetId;
+                    idx = 0;
+                    reports = petReports[newPetId];
+                } else {
+                    reports[idx].petName = ((pets || []).find(function(p){ return p.id === editingReportMeta.petId; }) || {}).name || reports[idx].petName;
+                }
                 
                 if (currentUser.uid) {
                     var petId = editingReportMeta.petId;
@@ -4593,7 +5013,7 @@
                 '<div class="space-y-3">' +
                     '<div><div class="text-xs font-medium text-gray-400 mb-1">標題</div><div class="text-base font-bold text-gray-800">' + (report.title || '') + '</div></div>' +
                     '<div><div class="text-xs font-medium text-gray-400 mb-1">日期</div><div class="text-sm font-semibold text-gray-800">' + (report.date || '') + '</div></div>' +
-                    '<div><div class="text-xs font-medium text-gray-400 mb-1">寵物</div><div class="text-sm text-gray-700">' + (pet ? pet.name : '未知') + (pet && pet.species ? ' · ' + pet.species : '') + '</div></div>' +
+                    '<div><div class="text-xs font-medium text-gray-400 mb-1">屬於毛孩</div><div class="text-sm text-gray-700">' + (report.petName || (pet ? pet.name : '未知')) + (pet && pet.species ? ' · ' + pet.species : '') + '</div></div>' +
                     '<div class="grid grid-cols-2 gap-2">' +((report.clinic) ? '<div><div class="text-xs font-medium text-gray-400 mb-1">診所</div><div class="text-sm text-gray-800">' + report.clinic + '</div></div>' : '') +((report.doctor) ? '<div><div class="text-xs font-medium text-gray-400 mb-1">醫生</div><div class="text-sm text-gray-800">' + report.doctor + '</div></div>' : '') +'</div>' +'<div><div class="text-xs font-medium text-gray-400 mb-1">詳細內容</div><div class="text-base text-gray-700 bg-white p-3 rounded-xl border border-gray-100 leading-relaxed whitespace-pre-wrap">' + (report.description || '') + '</div></div>' +
                     '<div><div class="text-xs font-medium text-gray-400 mb-1">附件 <span class="text-gray-400 font-normal">（點擊預覽 · 右側下載）</span></div>' + filesHtml + '</div>' +
                 '</div>';
@@ -4965,19 +5385,25 @@
             return db.collection('users').doc(currentUser.uid).get().then(function(doc) {
                 var d = doc.data() || {};
                 var paid = !!(d.hasPaid || d.paymentStatus === 'confirmed');
+                var trial = !!(d.isTrialActive || d.membershipStatus === 'trial' || isTrialActive);
                 var extra = d.extraPets || 0;
-                var plan = d.plan || currentPlan || 'lite';
-                var base = (PLAN_LIMITS[plan] || PLAN_LIMITS.lite).petLimit || 0;
-                var quota = paid ? (base + extra) : extra;
-                if (d.maxPets && Number(d.maxPets) > 0 && paid) quota = Number(d.maxPets);
+                var plan = normalizePlanKey(d.plan || currentPlan || 'longterm');
+                var base = (PLAN_LIMITS[plan] || PLAN_LIMITS.longterm).petLimit || 0;
+                var quota = extra;
+                if (plan === 'volunteer') quota = extra;
+                else quota = base + extra;
+                if (d.maxPets && Number(d.maxPets) > quota) quota = Number(d.maxPets);
+                if (!paid && !trial && plan === 'volunteer') quota = extra;
                 return db.collection('users').doc(currentUser.uid).collection('pets').get().then(function(ps) {
                     var live = 0;
                     ps.forEach(function(p) {
                         var pd = p.data() || {};
                         if (!pd.is_deleted && !pd.isDeleted && !pd.pendingApproval) live++;
                     });
-                    var cap = (plan === 'volunteer') ? VOLUNTEER_HARD_CAP : ((plan === 'longterm' || plan === 'pro') ? FAMILY_HARD_CAP : quota);
+                    var cap = (plan === 'volunteer') ? VOLUNTEER_HARD_CAP : FAMILY_HARD_CAP;
+                    if (plan === 'lite') cap = Math.max(base, extra + base);
                     if (quota > cap) quota = cap;
+                    if (plan !== 'volunteer' && (paid || trial) && live < cap && live < Math.max(quota, base)) return;
                     if (live >= quota) {
                         throw new Error('QUOTA: 配額不足（' + live + '/' + quota + '），請先付款加購');
                     }
@@ -5017,13 +5443,14 @@
             else openPaymentModal();
         }
         function openFirstPetPayGate() {
+            if (currentPlan !== 'volunteer' && (isTrialActive || hasPaid)) {
+                showToast('已達目前方案毛孩上限（' + countActivePets() + ' / ' + (getPlanLimits().petLimit || 5) + '）', 'warning');
+                return;
+            }
             if (extraPetPending) {
                 showToast('入數紙審核中，核實後將自動開通額度。', 'warning');
                 return;
             }
-            var n = countActivePets();
-            var y = getPlanLimits().petLimit || 0;
-            showToast('目前配額 ' + n + ' / ' + y + '，請先完成 PayMe／轉數快付款後先可新增毛孩', 'warning');
             if (currentPlan === 'volunteer') openVolunteerAddonPay(1);
             else openPaymentModal();
         }
@@ -5368,6 +5795,7 @@
         }
         function proceedOpenPetForm(petId) {
             editingPetId = petId;
+            pendingPetFormPhoto = '';
             document.getElementById('petModalTitle').innerText = petId ? '編輯寵物' : '新增寵物';
             if (petId) {
                 var pet = pets.find(function(p) { return p.id === petId; });
@@ -5387,6 +5815,8 @@
                     document.getElementById('petCareNote').value = pet.careNote || '';
                     document.getElementById('petVaccineName').value = pet.vaccineName || '';
                     document.getElementById('petVaccineNext').value = pet.vaccineNext || '';
+                    pendingPetFormPhoto = pet.photoUrl || pet.photo || '';
+                    setPetFormPreview(pendingPetFormPhoto, false);
                 }
             } else {
                 document.getElementById('petName').value = '';
@@ -5404,6 +5834,8 @@
                 document.getElementById('petCareNote').value = '';
                 document.getElementById('petVaccineName').value = '';
                 document.getElementById('petVaccineNext').value = '';
+                pendingPetFormPhoto = '';
+                setPetFormPreview('', false);
             }
             document.getElementById('petModal').classList.add('show');
         }
@@ -5443,6 +5875,7 @@
                 vaccineName: document.getElementById('petVaccineName').value.trim() || '',
                 vaccineNext: document.getElementById('petVaccineNext').value || ''
             };
+            if (pendingPetFormPhoto) { newPetData.photo = pendingPetFormPhoto; newPetData.photoUrl = pendingPetFormPhoto; }
             
             if (editingPetId) {
                 var idx = pets.findIndex(function(p) { return p.id === editingPetId; });
@@ -5501,6 +5934,9 @@
         // 上傳報告（會員版）
         // ================================================================
         function openUploadModal() {
+            captureAutoSaveMode = false;
+            closeOcrPreviewModal();
+            captureAutoSaveMode = false;
             if (demoUploadMode) {
                 openMemberUploadFormForDemo();
                 return;
@@ -5541,27 +5977,138 @@
             demoUploadMode = false;
         }
         var lastOcrPetName = '';
+        function cleanExtractedPetName(raw) {
+            var n = String(raw || '').replace(/\s+/g, ' ').trim();
+            n = n.replace(/doctor\s*name/ig, ' ').replace(/\bdr\.?\b/ig, ' ');
+            n = n.replace(/vet(?:erinarian)?/ig, ' ').replace(/醫生(?:姓名|名稱|名字)?/g, ' ');
+            n = n.replace(/clinic(?:\s*name)?/ig, ' ').replace(/hospital/ig, ' ');
+            n = n.replace(/診所(?:名稱|名字)?/g, ' ').replace(/動物醫院/g, ' ');
+            n = n.replace(/[:：,，]/g, ' ').replace(/[0-9]/g, ' ').replace(/\s+/g, ' ').trim();
+            return n.slice(0, 16);
+        }
         function fillUploadPetSelect() {
             var sel = document.getElementById('uploadPetSelect');
             if (!sel) return;
-            var cur = selectedPetId || memberSelectedPetId;
-            if (cur === 'all') cur = pets[0] ? pets[0].id : '__auto__';
-            if (!cur) cur = '__auto__';
-            var html = '<option value="__auto__"' + (cur === '__auto__' ? ' selected' : '') + '>自動辨識／新建毛孩</option>';
-            html += pets.map(function(pet) {
+            var list = (typeof demoUploadMode !== 'undefined' && demoUploadMode) ? (demoPets || []) : (pets || []);
+            var cur = demoUploadMode ? demoSelectedPetId : (selectedPetId || memberSelectedPetId);
+            if (cur === 'all' || cur === '__auto__' || cur === '__new__') cur = list[0] ? list[0].id : '__new__';
+            if (!cur) cur = list[0] ? list[0].id : '__new__';
+            var html = list.map(function(pet) {
                 return '<option value="' + pet.id + '"' + (pet.id === cur ? ' selected' : '') + '>' + pet.name + '</option>';
             }).join('');
+            html += '<option value="__new__"' + (cur === '__new__' ? ' selected' : '') + '>+ 輸入新毛孩名字</option>';
             sel.innerHTML = html;
+            toggleUploadNewPetInput();
+        }
+        function toggleUploadNewPetInput() {
+            var sel = document.getElementById('uploadPetSelect');
+            var inp = document.getElementById('uploadNewPetName');
+            if (!inp) return;
+            var show = sel && (sel.value === '__new__' || sel.value === '__auto__');
+            inp.classList.toggle('hidden', !show);
+            if (show) { inp.focus(); }
+        }
+        function onUploadPetSelectChange() { toggleUploadNewPetInput(); }
+        function fillUploadPetSelectDemo() {
+            var sel = document.getElementById('uploadPetSelectDemo');
+            if (!sel) return;
+            var list = demoPets || [];
+            var cur = (demoSelectedPetId && demoSelectedPetId !== 'all') ? demoSelectedPetId : (list[0] && list[0].id) || '__new__';
+            var html = list.map(function(pet) {
+                return '<option value="' + pet.id + '"' + (pet.id === cur ? ' selected' : '') + '>' + pet.name + '</option>';
+            }).join('');
+            html += '<option value="__new__"' + (cur === '__new__' ? ' selected' : '') + '>+ 輸入新毛孩名字</option>';
+            sel.innerHTML = html;
+            toggleUploadNewPetInputDemo();
+        }
+        function toggleUploadNewPetInputDemo() {
+            var sel = document.getElementById('uploadPetSelectDemo');
+            var inp = document.getElementById('uploadNewPetNameDemo');
+            if (!inp) return;
+            var show = sel && sel.value === '__new__';
+            inp.classList.toggle('hidden', !show);
+            if (show) inp.focus();
+        }
+        function onUploadPetSelectDemoChange() { toggleUploadNewPetInputDemo(); }
+        function resolveNewPetNameFromUpload() {
+            var inp = document.getElementById('uploadNewPetName');
+            return cleanExtractedPetName((inp && inp.value) || '') || lastOcrPetName || '';
         }
         function extractPetNameFromText(text) {
             var blob = String(text || '');
             var m = blob.match(/(?:Pet\s*Name|Patient(?:\s*Name)?|Animal\s*Name|動物名稱|寵物(?:名字|名稱)?|毛孩(?:名字|名稱)?)\s*[:：]\s*([^\n,]{1,20})/i);
-            if (m) return m[1].replace(/[0-9]/g, '').replace(/\s+/g, ' ').trim();
+            if (m) return cleanExtractedPetName(m[1]);
             return '';
         }
+        function ensureDemoPetByName(nameHint) {
+            var name = cleanExtractedPetName(nameHint || lastOcrPetName) || '未命名毛孩';
+            var found = (demoPets || []).find(function(p) { return String(p.name || '').toLowerCase() === name.toLowerCase(); });
+            if (found) return found.id;
+            var newId = 'demo_' + Date.now();
+            demoPets.push({ id: newId, name: name, species: '', breed: '', gender: '', age: '', shareCode: 'D' + String(Date.now()).slice(-5) });
+            demoSelectedPetId = newId;
+            renderDemoPets();
+            if (typeof renderDemoPetFilters === 'function') renderDemoPetFilters();
+            showToast('已建立毛孩「' + name + '」', 'success');
+            return newId;
+        }
+        function closeOcrPreviewModal() {
+            var m = document.getElementById('ocrPreviewModal');
+            if (m) m.classList.remove('show');
+            captureAutoSaveMode = false;
+            setOcrPreviewLoading(false);
+        }
+        function applyOcrPreviewConfirm() {
+            var name = cleanExtractedPetName((document.getElementById('ocrPreviewPetName') || {}).value || '');
+            var title = ((document.getElementById('ocrPreviewTitle') || {}).value || '').trim() || (pendingOcrFields && pendingOcrFields.title) || 'Consultation';
+            var clinic = ((document.getElementById('ocrPreviewClinic') || {}).value || '').trim();
+            var doctor = ((document.getElementById('ocrPreviewDoctor') || {}).value || '').trim();
+            var date = ((document.getElementById('ocrPreviewDate') || {}).value || '').trim() || new Date().toISOString().slice(0, 10);
+            var notes = ((document.getElementById('ocrPreviewNotes') || {}).value || '').trim();
+            lastOcrPetName = name || '未命名毛孩';
+            pendingOcrFields = Object.assign({}, pendingOcrFields || {}, { petName: lastOcrPetName, title: title, clinic: clinic, doctor: doctor, date: date, notes: notes });
+            function afterPet(id) {
+                if (demoUploadMode) { demoSelectedPetId = id; }
+                else { selectedPetId = id; memberSelectedPetId = id; }
+                autoSaveOcrReport(id);
+            }
+            if (demoUploadMode) afterPet(ensureDemoPetByName(lastOcrPetName));
+            else ensurePetByName(lastOcrPetName).then(afterPet).catch(function(){ closeOcrPreviewModal(); showToast('未能建立毛孩', 'error'); });
+        }
+        function autoSaveOcrReport(petId) {
+            var f = pendingOcrFields || {};
+            var title = f.title || 'Consultation';
+            var date = f.date || new Date().toISOString().slice(0, 10);
+            var clinic = f.clinic || '';
+            var doctor = f.doctor || '';
+            var amount = f.amount || '';
+            var desc = f.notes || '';
+            var files = pendingCaptureFile ? [pendingCaptureFile.name] : ((uploadedFiles || []).map(function(x){ return x.name || x; }));
+            if (demoUploadMode) {
+                var dp = (demoPets || []).find(function(p) { return p.id === petId; });
+                demoReportsData.push({ id: 'demo_r_' + Date.now(), petId: petId, petName: (dp && dp.name) || lastOcrPetName, title: title, date: date, desc: desc, description: desc, clinic: clinic, doctor: doctor, amount: amount, files: files });
+                demoReportCount = demoReportsData.length;
+                persistDemoPetsLocal();
+                renderDemoPets(); renderDemoReports();
+            } else {
+                var pet = (pets || []).find(function(p) { return p.id === petId; });
+                var newReport = { id: generateId(), title: title, date: date, description: desc, clinic: clinic, doctor: doctor, amount: amount, files: files, createdAt: new Date(), petId: petId, petName: (pet && pet.name) || lastOcrPetName };
+                if (!petReports[petId]) petReports[petId] = [];
+                petReports[petId].unshift(newReport);
+                renderMemberPets(); renderMemberReports();
+                if (currentUser && currentUser.uid) {
+                    db.collection('users').doc(currentUser.uid).collection('pets').doc(petId).collection('reports').doc(newReport.id).set(newReport).catch(function(){});
+                    if (pendingCaptureFile && storage) storage.ref(reportStoragePath(petId, pendingCaptureFile.name, false)).put(pendingCaptureFile).catch(function(){});
+                }
+            }
+            captureAutoSaveMode = false;
+            pendingCaptureFile = null;
+            closeOcrPreviewModal();
+            if (typeof closeUploadModal === 'function') closeUploadModal();
+            showToast('已建立「' + lastOcrPetName + '」並歸檔病歷', 'success');
+        }
         function ensurePetByName(nameHint) {
-            var name = String(nameHint || lastOcrPetName || '').trim() || '未命名毛孩';
-            name = name.replace(/[\\/:*?"<>|]/g, '').slice(0, 20);
+            var name = cleanExtractedPetName(nameHint || lastOcrPetName) || '未命名毛孩';
             var found = (pets || []).find(function(p) { return String(p.name || '').toLowerCase() === name.toLowerCase(); });
             if (found) return Promise.resolve(found.id);
             if (isPetQuotaFull()) return Promise.reject(new Error('QUOTA'));
@@ -5594,8 +6141,13 @@
                 var sel = document.getElementById('uploadPetSelect');
                 var target = (sel && sel.value) ? sel.value : (selectedPetId || memberSelectedPetId);
                 if (!uid) { showToast('請先登入再儲存報告', 'warning'); return; }
+                if (target === '__new__' || target === '__auto__') {
+                    var typed = resolveNewPetNameFromUpload();
+                    if (!typed) { showToast('請輸入新毛孩名字', 'warning'); return; }
+                    lastOcrPetName = typed;
+                }
                 if (btn) { btn.dataset.busy = '1'; btn.disabled = true; btn.textContent = '儲存中…'; }
-                var resolvePet = (!target || target === 'all' || target === '__auto__')
+                var resolvePet = (!target || target === 'all' || target === '__auto__' || target === '__new__')
                     ? ensurePetByName(lastOcrPetName)
                     : Promise.resolve(target);
                 resolvePet.then(function(resolvedId) {
@@ -5614,7 +6166,7 @@
                     var amount = (document.getElementById('reportAmount') && document.getElementById('reportAmount').value.trim()) || '';
                     var files = Array.isArray(uploadedFiles) ? uploadedFiles.slice() : [];
                     var fileNames = files.map(function(f) { return f.name; });
-                    var newReport = { id: generateId(), title: title, date: date, description: desc, clinic: clinic, doctor: doctor, amount: amount, files: fileNames, createdAt: new Date() };
+                    var newReport = { id: generateId(), title: title, date: date, description: desc, clinic: clinic, doctor: doctor, amount: amount, files: fileNames, createdAt: new Date(), petId: target, petName: ((pets || []).find(function(p){ return p.id === target; }) || {}).name || lastOcrPetName || '' };
                     var fileWarn = '';
                     var uploadOne = function(file) {
                         if (!storage || !isAllowedReportFile(file)) {
@@ -5689,7 +6241,7 @@
                         '<span class="text-green-500">✅</span> ' + file.name + ' <span class="text-gray-400">(' +
                         (file.size / 1024).toFixed(1) + ' KB)</span>';
                     list.appendChild(div);
-                    runReportOcr(file);
+                    if (!captureAutoSaveMode) runReportOcr(file);
                 } else {
                     var div = document.createElement('div');
                     div.className = 'flex items-center gap-2 py-1';
@@ -5746,6 +6298,13 @@
         function applyOcrToReportForm(text) {
             if (!text) return;
             var fields = extractOcrFields(text);
+            pendingOcrFields = fields;
+            lastOcrPetName = cleanExtractedPetName(fields.petName || lastOcrPetName || '');
+            if (captureAutoSaveMode) {
+                fillOcrPreviewFields(fields);
+                setOcrPreviewLoading(false);
+                return;
+            }
             var dateEl = document.getElementById('reportDate');
             var descEl = document.getElementById('reportDesc');
             var titleEl = document.getElementById('reportTitle');
@@ -5756,17 +6315,8 @@
             if (doctorEl && fields.doctor && !doctorEl.value) doctorEl.value = fields.doctor;
             var amtEl = document.getElementById('reportAmount');
             if (amtEl && fields.amount && !amtEl.value) amtEl.value = fields.amount;
-            if (titleEl && !titleEl.value) titleEl.value = fields.title || ('看診紀錄' + (fields.date ? (' - ' + fields.date) : ''));
+            if (titleEl && !titleEl.value) titleEl.value = fields.title || 'Consultation';
             if (descEl && !descEl.value.trim() && fields.notes) descEl.value = fields.notes;
-            lastOcrPetName = fields.petName || lastOcrPetName || '';
-            if (lastOcrPetName) {
-                var hit = (pets || []).find(function(p) { return String(p.name || '').toLowerCase() === lastOcrPetName.toLowerCase(); });
-                var sel = document.getElementById('uploadPetSelect');
-                if (sel) {
-                    if (hit) sel.value = hit.id;
-                    else sel.value = '__auto__';
-                }
-            }
         }
         function normalizeOcrDate(raw) {
             if (!raw) return '';
@@ -6350,6 +6900,7 @@
         // ✅ 問題5已修復：試用期已結束嘅提示同限制
        function showMemberPets() {
             window.pendingOpenAdmin = false;
+            if (typeof closeAllModals === 'function') closeAllModals();
             document.getElementById('mainContent').classList.add('hidden');
             var ad = document.getElementById('adminDashboard');
             if (ad) ad.classList.add('hidden');
@@ -8017,25 +8568,8 @@
             }
             
             container.innerHTML = demoPets.map(function(pet) {
-                var genderLabel = pet.gender === '男' ? '男仔' : (pet.gender === '女' ? '女仔' : (pet.gender || ''));
-                var details = [pet.species, pet.breed, (pet.age ? pet.age + '歲' : ''), (pet.weight ? pet.weight + ' kg' : ''), genderLabel].filter(Boolean).join(' · ');
                 var reportCount = demoReportsData.filter(function(r) { return r.petId === pet.id; }).length;
-                var isActive = demoSelectedPetId === pet.id ? 'active' : '';
-                return `
-                    <div class="pet-card border-gray-100 demo-pet-select ${isActive}" data-pet-id="${pet.id}" onclick="selectDemoPet('${pet.id}')">
-                        <div class="flex justify-between items-start gap-2">
-                            <div>
-                                <h3 class="font-bold text-[#2d8f6f]">${pet.name}</h3>
-                                <p class="text-gray-500 text-xs">${details}</p>
-                            </div>
-                            <div class="flex items-center gap-1">
-                                <button type="button" title="編輯" onclick="event.stopPropagation(); openEditPetDemo('${pet.id}')" class="mini-icon-btn"><i class="fa-regular fa-pen-to-square"></i></button>
-                                <button type="button" title="刪除" onclick="event.stopPropagation(); deletePetDemo('${pet.id}')" class="mini-icon-btn danger"><i class="fa-regular fa-trash-can"></i></button>
-                            </div>
-                        </div>
-                        <p class="text-xs text-[#3da881] mt-1">${reportCount} 份報告</p>
-                    </div>
-                `;
+                return buildPetFlipCardHtml(pet, { demo: true, selected: demoSelectedPetId === pet.id, reportCount: reportCount });
             }).join('');
         }
 
@@ -8114,6 +8648,7 @@
                             ${isInSelectMode ? `<input type="checkbox" class="report-checkbox" data-report-id="${r.id}" ${demoSelectedReports.has(r.id) ? 'checked' : ''} onchange="toggleDemoReportSelection('${r.id}')">` : ''}
                             <div class="report-content" onclick="${isInSelectMode ? '' : `openReportDetailDemoById('${r.id}')`}" style="cursor:pointer;">
                                 <div class="font-bold text-sm">${reportDisplayTitle(r)}</div>
+                                <div class="text-xs text-gray-400">${r.petName ? ('屬於毛孩：' + r.petName) : ''}</div>
                                 <div class="text-xs text-gray-400 mt-0.5">${r.date || ''}</div>
                                 <div class="text-xs text-gray-500">${reportMetaLine(r)}</div>
                                 <div class="text-sm text-gray-600 leading-relaxed mt-1">${r.desc || ''}</div>
@@ -8124,7 +8659,7 @@
                                     <summary class="more-btn">⋯</summary>
                                     <div class="menu-panel">
                                         <button type="button" onclick="exportDemoOneReport('${r.id}')">匯出此份 PDF</button>
-                                        <button type="button" onclick="openDemoLockModal('copy')">編輯</button>
+                                        <button type="button" onclick="openEditReportDemoById('${r.id}')">編輯</button>
                                         <button type="button" onclick="copyReportDemoById('${r.id}')">複製</button>
                                         <button type="button" onclick="deleteReportDemo('${r.id}')" class="text-red-600">刪除</button>
                                     </div>
@@ -8156,6 +8691,8 @@
             document.getElementById('petCareNoteDemo').value = '';
             document.getElementById('petVaccineNameDemo').value = '';
             document.getElementById('petVaccineNextDemo').value = '';
+            pendingPetFormPhoto = '';
+            setPetFormPreview('', true);
             
             var titleEl = document.querySelector('#petModalDemo .text-xl.font-bold');
             if (titleEl) titleEl.textContent = '新增寵物';
@@ -8199,7 +8736,9 @@
                 blood: blood,
                 careNote: careNote,
                 vaccineName: vaccineName,
-                vaccineNext: vaccineNext
+                vaccineNext: vaccineNext,
+                photo: pendingPetFormPhoto || '',
+                photoUrl: pendingPetFormPhoto || ''
             };
             demoPets.push(newPet);
             demoPetCount = demoPets.length;
@@ -8212,6 +8751,7 @@
             var saveBtn = document.querySelector('#petModalDemo button.bg-\\[\\#3da881\\]');
             if (saveBtn) saveBtn.onclick = savePetDemo;
             
+            persistDemoPetsLocal();
             renderDemoPets();
             selectDemoPet(newPet.id);
             showToast('✅ 已新增寵物「' + name + '」', 'success');
@@ -8241,6 +8781,8 @@
             document.getElementById('petCareNoteDemo').value = pet.careNote || '';
             document.getElementById('petVaccineNameDemo').value = pet.vaccineName || '';
             document.getElementById('petVaccineNextDemo').value = pet.vaccineNext || '';
+            pendingPetFormPhoto = pet.photoUrl || pet.photo || '';
+            setPetFormPreview(pendingPetFormPhoto, true);
             
             var titleEl = document.querySelector('#petModalDemo .text-xl.font-bold');
             if (titleEl) titleEl.textContent = '編輯寵物';
@@ -8251,6 +8793,7 @@
                     var newName = document.getElementById('petNameDemo').value.trim();
                     if (!newName) { alert('請填寫寵物名字'); return; }
                     pet.name = newName;
+                    if (pendingPetFormPhoto) { pet.photo = pendingPetFormPhoto; pet.photoUrl = pendingPetFormPhoto; }
                     pet.species = document.getElementById('petSpeciesDemo').value.trim() || '未知';
                     if (document.getElementById('petWeightDemo')) pet.weight = document.getElementById('petWeightDemo').value.trim();
                     pet.breed = document.getElementById('petBreedDemo').value.trim() || '';
@@ -8332,6 +8875,9 @@
                 alertDemoReportLimit();
                 return;
             }
+            captureAutoSaveMode = false;
+            closeOcrPreviewModal();
+            captureAutoSaveMode = false;
             demoUploadMode = true;
             uploadedFiles = [];
             demoUploadedFiles = [];
@@ -8345,13 +8891,7 @@
             if (document.getElementById('reportAmount')) document.getElementById('reportAmount').value = '';
             var hint = document.getElementById('ocrHint');
             if (hint) { hint.classList.add('hidden'); hint.textContent = ''; }
-            var sel = document.getElementById('uploadPetSelect');
-            if (sel) {
-                var curD = (demoSelectedPetId && demoSelectedPetId !== 'all') ? demoSelectedPetId : (demoPets[0] && demoPets[0].id);
-                sel.innerHTML = demoPets.map(function(pet) {
-                    return '<option value="' + pet.id + '"' + (pet.id === curD ? ' selected' : '') + '>' + pet.name + '</option>';
-                }).join('');
-            }
+            fillUploadPetSelect();
             document.getElementById('uploadModal').classList.add('show');
         }
        function openUploadModalDemo() {
@@ -8364,9 +8904,13 @@
             }
             var sel = document.getElementById('uploadPetSelect');
             var targetPet = (sel && sel.value) ? sel.value : demoSelectedPetId;
-            if (!targetPet || targetPet === 'all') {
-                alert('⚠️ 請選擇一隻寵物再上傳報告。');
-                return;
+            if (targetPet === '__new__' || targetPet === '__auto__' || !targetPet || targetPet === 'all') {
+                var typed = resolveNewPetNameFromUpload();
+                if (!typed && (targetPet === '__new__' || targetPet === '__auto__')) {
+                    showToast('請輸入新毛孩名字', 'warning');
+                    return;
+                }
+                targetPet = ensureDemoPetByName(typed || lastOcrPetName);
             }
             var title = document.getElementById('reportTitle').value.trim() || ('看診紀錄 - ' + new Date().toISOString().slice(0,10));
             var date = document.getElementById('reportDate').value || new Date().toISOString().slice(0, 10);
@@ -8378,6 +8922,7 @@
             demoReportsData.push({
                 id: 'demo_r_' + Date.now(),
                 petId: targetPet,
+                petName: ((demoPets || []).find(function(p){ return p.id === targetPet; }) || {}).name || lastOcrPetName || '',
                 title: title,
                 date: date,
                 desc: desc,
@@ -8389,10 +8934,11 @@
             });
             demoReportCount = demoReportsData.length;
             demoSelectedPetId = targetPet;
+            persistDemoPetsLocal();
             renderDemoReports();
             renderDemoPets();
             closeUploadModal();
-            showToast('已帶入示範報告（示範模式不會永久儲存）', 'success');
+            showToast('已帶入示範報告', 'success');
         }
 
         function confirmUploadDemo() {
@@ -8402,6 +8948,11 @@
     }
     var selD = document.getElementById('uploadPetSelectDemo');
     var targetPet = (selD && selD.value) ? selD.value : demoSelectedPetId;
+    if (targetPet === '__new__') {
+        var typedD = cleanExtractedPetName(((document.getElementById('uploadNewPetNameDemo') || {}).value) || '');
+        if (!typedD) { showToast('請輸入新毛孩名字', 'warning'); return; }
+        targetPet = ensureDemoPetByName(typedD);
+    }
     if (!targetPet || targetPet === 'all') {
         alert('⚠️ 請選擇一隻寵物再上傳報告。');
         return;
@@ -8499,6 +9050,12 @@
             var r = getDemoReportById(reportId);
             if (!r) { showToast('找不到報告', 'error'); return; }
             demoEditingReport = { id: r.id, petId: r.petId, title: r.title, date: r.date, desc: r.desc, files: r.files || [] };
+            var eds = document.getElementById('editReportPetSelectDemo');
+            if (eds) {
+                eds.innerHTML = (demoPets || []).map(function(p) {
+                    return '<option value="' + p.id + '"' + (p.id === r.petId ? ' selected' : '') + '>' + p.name + '</option>';
+                }).join('');
+            }
             document.getElementById('editReportTitleDemo').value = r.title || '';
             document.getElementById('editReportDateDemo').value = r.date || '';
             if (document.getElementById('editReportClinicDemo')) document.getElementById('editReportClinicDemo').value = r.clinic || '';
@@ -8557,7 +9114,12 @@
             demoReportsData[idx].desc = newDesc;
             demoReportsData[idx].clinic = (document.getElementById('editReportClinicDemo') && document.getElementById('editReportClinicDemo').value.trim()) || '';
             demoReportsData[idx].doctor = (document.getElementById('editReportDoctorDemo') && document.getElementById('editReportDoctorDemo').value.trim()) || '';
+            var np = ((document.getElementById('editReportPetSelectDemo') || {}).value) || demoReportsData[idx].petId;
+            demoReportsData[idx].petId = np;
+            var npn = ((demoPets || []).find(function(p){ return p.id === np; }) || {}).name;
+            if (npn) demoReportsData[idx].petName = npn;
             
+            persistDemoPetsLocal();
             renderDemoReports();
             renderDemoPets();
             showToast('✅ 已更新報告「' + newTitle + '」', 'success');
@@ -8656,18 +9218,28 @@
                 '<div class="space-y-3">' +
                     '<div><div class="text-xs font-medium text-gray-400 mb-1">標題</div><div class="text-base font-bold text-gray-800" id="rdTitle"></div></div>' +
                     '<div><div class="text-xs font-medium text-gray-400 mb-1">日期</div><div class="text-sm font-semibold text-gray-800" id="rdDate"></div></div>' +
+                    '<div><div class="text-xs font-medium text-gray-400 mb-1">屬於毛孩</div><div class="text-sm text-gray-700" id="rdPet"></div></div>' +
                     '<div><div class="text-xs font-medium text-gray-400 mb-1">詳細內容</div><div class="text-sm text-gray-700 bg-white p-3 rounded-xl border border-gray-100" id="rdDesc"></div></div>' +
                     '<div><div class="text-xs font-medium text-gray-400 mb-1">附件 <span class="text-gray-400 font-normal">（點擊預覽 · 右側下載）</span></div>' + filesHtml + '</div>' +
                 '</div>';
             document.getElementById('rdTitle').textContent = title;
             document.getElementById('rdDate').textContent = date;
+            var rdPet = document.getElementById('rdPet');
+            if (rdPet) {
+                var dp = (demoPets || []).find(function(p) { return p.id === r.petId; });
+                rdPet.textContent = r.petName || (dp && dp.name) || '未指定';
+            }
             document.getElementById('rdDesc').textContent = desc;
             document.getElementById('reportDetailModal').classList.add('show');
 
             var lockSel = document.getElementById('reportDetailContent');
             if (lockSel) lockSel.classList.add('demo-lock-select');
             window.demoDetailOpen = true;
-            document.getElementById('detailEditBtn').onclick = function() { openDemoLockModal('copy'); };
+            document.getElementById('detailEditBtn').onclick = function() {
+                var rid = r && r.id;
+                closeReportDetailModal();
+                if (rid) openEditReportDemoById(rid);
+            };
             document.getElementById('detailCopyBtn').onclick = function() { openDemoLockModal('copy'); };
             document.getElementById('detailDownloadBtn').onclick = function() { openDemoLockModal('download'); };
         }

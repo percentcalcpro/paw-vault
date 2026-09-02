@@ -58,6 +58,12 @@
         .flip-photo-btn { position: absolute; top: 10px; right: 10px; width: 36px; height: 36px; border-radius: 50%; border: none; background: #ffffff; box-shadow: 0 2px 6px rgba(0,0,0,0.15); color: #374151; display: flex; align-items: center; justify-content: center; opacity: 1; pointer-events: auto; transition: transform 0.15s ease; cursor: pointer; z-index: 2; padding: 0; }
         .flip-photo-btn svg { display: block; }
         .flip-photo-btn:hover { transform: scale(1.08); }
+        .flip-check-btn { position: absolute; top: 10px; left: 10px; z-index: 3; width: 22px; height: 22px; border-radius: 50%; border: 2px solid #cbd5e1; background: rgba(255,255,255,0.8); color: #fff; display: none; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; cursor: pointer; opacity: 0; transition: opacity 0.18s ease, background 0.15s ease, border-color 0.15s ease; padding: 0; }
+        .pet-manage-on .flip-check-btn { display: flex; opacity: 1; }
+        .flip-check-btn.is-on { background: #10b981; border-color: #10b981; }
+        .flip-card.is-checked .flip-face { border-color: #3da881; box-shadow: 0 0 0 2px #86efac; }
+        .pet-batch-bar { display: none; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin: 0 0 0.75rem; }
+        .pet-batch-bar.show { display: flex; }
         .flip-front-meta { height: 56px; flex: 0 0 56px; display: flex; flex-direction: column; justify-content: center; padding: 0.35rem 0.6rem 0.45rem; }
         @media (max-width: 767px) {
             .report-item .report-actions { display: none; }
@@ -111,8 +117,9 @@
         /* ===== 報告相關 ===== */
         .report-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: #3da881; margin-right: 0.5rem; }
         .select-all-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: #3da881; margin-right: 0.5rem; }
-        .report-select-mode { background: #fef3c7; border-radius: 1rem; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; display: none !important; }
-        .report-select-mode.show { display: flex !important; }
+        .report-select-mode { display: none !important; }
+        .report-float-bar { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(12px); z-index: 40; display: none; align-items: center; gap: 0.75rem; flex-wrap: wrap; padding: 0.55rem 0.9rem; border-radius: 9999px; background: rgba(30, 41, 59, 0.92); backdrop-filter: blur(8px); color: #e2e8f0; box-shadow: 0 10px 30px rgba(15,23,42,0.25); max-width: calc(100vw - 24px); }
+        .report-float-bar.show { display: flex !important; transform: translateX(-50%) translateY(0); }
         .limit-warning { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 1rem; padding: 0.8rem 1.2rem; display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
         .limit-warning .icon { color: #dc2626; font-size: 1.2rem; }
         .limit-warning .text { font-size: 0.85rem; color: #7f1d1d; }
@@ -361,9 +368,14 @@
                             </h2>
                         </div>
                         <div class="flex gap-2 flex-wrap">
+                            <button type="button" id="demoPetManageBtn" onclick="togglePetManageMode(true)" class="px-3 py-1.5 border border-gray-300 rounded-full text-sm">管理</button>
                             <button type="button" onclick="openCaptureUpload(true)" class="btn-primary-pill">📷 拍照／一鍵建檔</button>
                             <button onclick="openAddPetModalDemo()" class="btn-secondary-pill">＋新增毛孩</button>
                         </div>
+                    </div>
+                    <div id="demoPetBatchBar" class="pet-batch-bar">
+                        <button type="button" id="demoPetSelectAllBtn" onclick="toggleSelectAllPets(true)" class="px-3 py-1.5 border border-gray-300 rounded-full text-sm">全選</button>
+                        <button type="button" id="demoPetBatchDeleteBtn" onclick="deleteSelectedPets(true)" class="px-3 py-1.5 border border-gray-200 rounded-full text-sm text-gray-400" disabled>移至回收桶 (0)</button>
                     </div>
                     <div id="petList" class="pet-scroll">
                         <!-- 示範寵物 1：豆豆 -->
@@ -407,7 +419,7 @@
                     </div>
                     <!-- 顯示全部按鈕 - 放喺 #petList 外面 -->
                     <div id="demoPetFilterBar" class="mt-3 flex flex-wrap gap-2">
-                        <button onclick="selectDemoPet('all')" class="text-xs bg-[#3da881] text-white hover:bg-[#2d8f6f] px-3 py-1 rounded-full transition">📋 顯示全部</button>
+                        <button onclick="selectDemoPet('all')" class="text-xs bg-[#3da881] text-white hover:bg-[#2d8f6f] px-3 py-1 rounded-full transition">顯示全部</button>
                         <button onclick="selectDemoPet('demo1')" class="text-xs border border-gray-300 hover:border-[#3da881] px-3 py-1 rounded-full transition">豆豆</button>
                         <button onclick="selectDemoPet('demo2')" class="text-xs border border-gray-300 hover:border-[#3da881] px-3 py-1 rounded-full transition">咪咪</button>
                     </div>
@@ -427,16 +439,13 @@
                             <button onclick="toggleDemoSelectMode()" class="border border-gray-300 hover:bg-gray-50 px-4 py-1.5 rounded-full text-sm font-medium transition" id="demoToggleSelectBtn">批量操作</button>
                         </div>
                     </div>
-                    <!-- 選擇報告模式 Bar -->
-                    <div id="demoReportSelectMode" class="report-select-mode mb-3" style="display:none !important;">
-                        <label class="flex items-center text-sm font-medium text-gray-700">
-                            <input type="checkbox" id="demoSelectAllReports" class="select-all-checkbox" onchange="toggleDemoSelectAllReports()"> 全選
-                        </label>
-                        <span class="info" id="demoSelectedCountDisplay">已選 0 份報告</span>
-                        <button onclick="copyDemoSelectedReports()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-1 rounded-full text-sm font-medium transition">複製所選報告</button>
-                        <button onclick="downloadDemoSelectedReports()" class="bg-[#3da881] hover:bg-[#2d8f6f] text-white px-4 py-1 rounded-full text-sm font-medium transition">分享/下載原檔</button>
-                        <button onclick="deleteDemoSelectedReports()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-1 rounded-full text-sm font-medium transition">刪除所選報告</button>
-                        <button onclick="exitDemoSelectMode()" class="text-gray-400 hover:text-gray-600 text-sm">取消</button>
+                    <div id="demoReportSelectMode" class="report-float-bar">
+                        <button type="button" onclick="toggleDemoSelectAllReports(true)" class="text-sm text-white/90">全選</button>
+                        <span id="demoSelectedCountDisplay" class="text-sm text-slate-200">已選擇 0 項目</span>
+                        <button type="button" onclick="copyDemoSelectedReports()" class="px-3 py-1 rounded-full bg-white/10 text-white text-sm">複製</button>
+                        <button type="button" onclick="downloadDemoSelectedReports()" class="px-3 py-1 rounded-full bg-[#3da881] text-white text-sm">分享/下載</button>
+                        <button type="button" onclick="deleteDemoSelectedReports()" class="px-3 py-1 rounded-full text-red-300 text-sm">刪除</button>
+                        <button type="button" onclick="exitDemoSelectMode()" class="text-slate-300 text-sm px-1">✕</button>
                     </div>
                     <input id="demoReportSearch" type="search" placeholder="搜尋報告標題、內容、診所、醫生…" oninput="demoSelectedReports.clear();renderDemoReports();updateDemoSelectedCount();" class="w-full px-4 py-2 border border-gray-200 rounded-2xl text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
                     <div id="reportListContainer" class="space-y-2 max-h-[400px] overflow-y-auto pr-1"></div>
@@ -670,7 +679,7 @@
                 <div class="flex justify-between items-center flex-wrap gap-3 mb-2">
                     <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-paw text-[#3da881] mr-2"></i>我的毛孩</h2>
                     <div class="flex gap-2 flex-wrap">
-                    <button type="button" onclick="openMemberTrash()" class="px-3 py-1.5 border border-gray-300 rounded-full text-sm">回收桶</button>
+                    <button type="button" id="memberPetManageBtn" onclick="togglePetManageMode(false)" class="px-3 py-1.5 border border-gray-300 rounded-full text-sm">管理</button>
                     <button type="button" onclick="openCaptureUpload(false)" class="btn-primary-pill">📷 拍照／一鍵建檔</button>
                     <button id="memberAddPetBtn" onclick="openAddPetModal()" class="btn-secondary-pill">＋新增毛孩</button>
                     </div>
@@ -679,6 +688,11 @@
                 <p id="memberPetCapacityHint" class="hidden"></p>
                 <button type="button" id="overQuotaBanner" onclick="openOverQuotaModal()" class="hidden w-full mb-3 text-left px-3 py-2 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-xs"></button>
                 <input id="memberPetSearch" type="search" placeholder="搜尋毛孩名字或授權碼…" oninput="memberPetPage=1;renderMemberPets()" class="w-full px-4 py-2 border border-gray-200 rounded-2xl text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
+                <div id="memberPetBatchBar" class="pet-batch-bar">
+                    <button type="button" id="memberPetSelectAllBtn" onclick="toggleSelectAllPets(false)" class="px-3 py-1.5 border border-gray-300 rounded-full text-sm">全選</button>
+                    <button type="button" id="memberPetBatchDeleteBtn" onclick="deleteSelectedPets(false)" class="px-3 py-1.5 border border-gray-200 rounded-full text-sm text-gray-400" disabled>移至回收桶 (0)</button>
+                    <button type="button" onclick="openMemberTrash()" class="px-3 py-1.5 border border-gray-300 rounded-full text-sm">回收桶</button>
+                </div>
                 <div id="memberPetList" class="pet-scroll"></div>
                 <div id="memberPetPager" class="flex flex-wrap items-center justify-center gap-2 mt-3"></div>
             </div>
@@ -693,15 +707,13 @@
                     </div>
                 </div>
                 <div id="memberPetFilters" class="flex flex-wrap gap-2 mb-3"></div>
-                <div id="memberReportSelectMode" class="report-select-mode mb-3">
-                    <label class="flex items-center text-sm font-medium text-gray-700">
-                        <input type="checkbox" id="memberSelectAllReports" class="select-all-checkbox" onchange="toggleMemberSelectAllReports()"> 全選
-                    </label>
-                    <span class="info" id="memberSelectedCountDisplay">已選 0 份報告</span>
-                    <button onclick="copyMemberSelectedReports()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-1 rounded-full text-sm font-medium transition">複製所選報告</button>
-                    <button id="memberDownloadOriginalBtn" onclick="downloadMemberSelectedReports()" class="bg-[#3da881] hover:bg-[#2d8f6f] text-white px-4 py-1 rounded-full text-sm font-medium transition">分享/下載原檔</button>
-                    <button onclick="deleteMemberSelectedReports()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-1 rounded-full text-sm font-medium transition">刪除所選報告</button>
-                    <button onclick="exitMemberSelectMode()" class="text-gray-400 hover:text-gray-600 text-sm">取消</button>
+                <div id="memberReportSelectMode" class="report-float-bar">
+                    <button type="button" onclick="toggleMemberSelectAllReports(true)" class="text-sm text-white/90">全選</button>
+                    <span id="memberSelectedCountDisplay" class="text-sm text-slate-200">已選擇 0 項目</span>
+                    <button type="button" onclick="copyMemberSelectedReports()" class="px-3 py-1 rounded-full bg-white/10 text-white text-sm">複製</button>
+                    <button type="button" id="memberDownloadOriginalBtn" onclick="downloadMemberSelectedReports()" class="px-3 py-1 rounded-full bg-[#3da881] text-white text-sm">分享/下載</button>
+                    <button type="button" onclick="deleteMemberSelectedReports()" class="px-3 py-1 rounded-full text-red-300 text-sm">刪除</button>
+                    <button type="button" onclick="exitMemberSelectMode()" class="text-slate-300 text-sm px-1">✕</button>
                 </div>
                 <input id="memberReportSearch" type="search" placeholder="搜尋報告標題、內容、診所、醫生…" oninput="onMemberReportSearch()" class="w-full px-4 py-2 border border-gray-200 rounded-2xl text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
                 <div id="memberReportListContainer" class="space-y-2 pr-1"></div>
@@ -2150,6 +2162,10 @@
             showToast('授權碼 ' + code + ' 已複製', 'success');
         }
         var flippedPetIds = {};
+        var memberCheckedPetIds = {};
+        var demoCheckedPetIds = {};
+        var petManageModeMember = false;
+        var petManageModeDemo = false;
         var pendingPhotoPetId = null;
         var pendingPhotoDemo = false;
         function petAvatarEmoji(pet) {
@@ -2175,10 +2191,89 @@
         }
         function onPetCardLeave(id) { if (flippedPetIds[id]) flipPetCard(id); }
         function onPetFlipCardClick(ev, id, demo) {
-            if (ev.target.closest('button, a, input')) return;
+            if (ev.target.closest('button, a, input, .flip-check, .flip-check-btn')) return;
             flipPetCard(id);
             if (demo) selectDemoPet(id);
             else selectMemberPet(id);
+        }
+        function petCheckedMap(demo) { return demo ? demoCheckedPetIds : memberCheckedPetIds; }
+        function togglePetChecked(id, demo, on) {
+            var map = petCheckedMap(demo);
+            if (on == null) on = !map[id];
+            if (on) map[id] = true; else delete map[id];
+            var card = document.querySelector('.flip-card[data-pet-id="' + id + '"]');
+            if (card) {
+                card.classList.toggle('is-checked', !!on);
+                var b = card.querySelector('.flip-check-btn');
+                if (b) { b.classList.toggle('is-on', !!on); b.textContent = on ? '✓' : ''; }
+            }
+            updatePetBatchBar(demo);
+        }
+        function togglePetManageMode(demo) {
+            if (demo) petManageModeDemo = !petManageModeDemo;
+            else petManageModeMember = !petManageModeMember;
+            if ((demo && !petManageModeDemo) || (!demo && !petManageModeMember)) {
+                var map = petCheckedMap(demo);
+                Object.keys(map).forEach(function(k){ delete map[k]; });
+            }
+            if (demo) renderDemoPets(); else renderMemberPets();
+            updatePetBatchBar(demo);
+        }
+        function currentPetIds(demo) {
+            return demo ? (demoPets || []).map(function(p){ return p.id; }) : (pets || []).map(function(p){ return p.id; });
+        }
+        function toggleSelectAllPets(demo) {
+            var map = petCheckedMap(demo);
+            var ids = currentPetIds(demo);
+            var allOn = ids.length && ids.every(function(id){ return map[id]; });
+            ids.forEach(function(id){ if (allOn) delete map[id]; else map[id] = true; });
+            if (demo) renderDemoPets(); else renderMemberPets();
+            updatePetBatchBar(demo);
+        }
+        function updatePetBatchBar(demo) {
+            var on = demo ? petManageModeDemo : petManageModeMember;
+            var map = petCheckedMap(demo);
+            var n = Object.keys(map).length;
+            var manageBtn = document.getElementById(demo ? 'demoPetManageBtn' : 'memberPetManageBtn');
+            var bar = document.getElementById(demo ? 'demoPetBatchBar' : 'memberPetBatchBar');
+            var list = document.getElementById(demo ? 'petList' : 'memberPetList');
+            var allBtn = document.getElementById(demo ? 'demoPetSelectAllBtn' : 'memberPetSelectAllBtn');
+            var delBtn = document.getElementById(demo ? 'demoPetBatchDeleteBtn' : 'memberPetBatchDeleteBtn');
+            if (manageBtn) manageBtn.textContent = on ? '完成' : '管理';
+            if (bar) bar.classList.toggle('show', !!on);
+            if (list) list.classList.toggle('pet-manage-on', !!on);
+            var ids = currentPetIds(demo);
+            var allOn = ids.length && ids.every(function(id){ return map[id]; });
+            if (allBtn) allBtn.textContent = allOn ? '取消全選' : '全選';
+            if (delBtn) {
+                delBtn.textContent = '移至回收桶 (' + n + ')';
+                delBtn.disabled = n === 0;
+                delBtn.className = n
+                    ? 'px-3 py-1.5 rounded-full text-sm bg-[#fee2e2] text-[#dc2626]'
+                    : 'px-3 py-1.5 border border-gray-200 rounded-full text-sm text-gray-400';
+            }
+        }
+        function deleteSelectedPets(demo) {
+            var map = petCheckedMap(demo);
+            var ids = Object.keys(map);
+            if (!ids.length) return;
+            appConfirm('確定要將已選擇的 ' + ids.length + ' 隻毛孩移至回收桶嗎？', {
+                title: '刪除確認',
+                okText: '確認刪除',
+                cancelText: '取消',
+                danger: true
+            }).then(function(ok) {
+                if (!ok) return;
+                ids.forEach(function(id) {
+                    if (demo) removeDemoPetSilent(id);
+                    else removeMemberPetSilent(id);
+                    delete map[id];
+                });
+                if (demo) { renderDemoPets(); renderDemoReports(); }
+                else { renderMemberPets(); renderMemberReports(); updatePlanDisplay(); }
+                updatePetBatchBar(demo);
+                showToast('已將 ' + ids.length + ' 隻毛孩移入回收桶', 'success');
+            });
         }
         function buildPetFlipCardHtml(pet, opts) {
             opts = opts || {};
@@ -2193,8 +2288,10 @@
             var editFn = demo ? ("openEditPetDemo('" + pet.id + "')") : ("openAddPetModal('" + pet.id + "')");
             var delFn = demo ? ("deletePetDemo('" + pet.id + "')") : ("deletePet('" + pet.id + "')");
             var copyFn = demo ? ("navigator.clipboard&&navigator.clipboard.writeText('" + code + "')") : ("copyPetShareCode('" + pet.id + "')");
-            return '<div class="flip-card pet-card ' + (opts.selected ? 'is-active active' : '') + (over ? ' opacity-90' : '') + (flippedPetIds[pet.id] ? ' is-flipped' : '') + '" data-pet-id="' + pet.id + '" onclick="onPetFlipCardClick(event,\'' + pet.id + '\',' + (demo ? 'true' : 'false') + ')" onmouseleave="onPetCardLeave(\'' + pet.id + '\')">' +
-                '<div class="flip-inner"><div class="flip-face flip-front"><div class="flip-avatar">' + petAvatarHtml(pet, demo) + '</div>' +
+            var boxOn = !!(demo ? demoCheckedPetIds[pet.id] : memberCheckedPetIds[pet.id]);
+            return '<div class="flip-card pet-card ' + (opts.selected ? 'is-active active' : '') + (boxOn ? ' is-checked' : '') + (over ? ' opacity-90' : '') + (flippedPetIds[pet.id] ? ' is-flipped' : '') + '" data-pet-id="' + pet.id + '" onclick="onPetFlipCardClick(event,\'' + pet.id + '\',' + (demo ? 'true' : 'false') + ')" onmouseleave="onPetCardLeave(\'' + pet.id + '\')">' +
+                '<div class="flip-inner"><div class="flip-face flip-front"><button type="button" class="flip-check-btn' + (boxOn ? ' is-on' : '') + '" onclick="event.stopPropagation(); togglePetChecked(\'' + pet.id + '\',' + (demo ? 'true' : 'false') + ')">' + (boxOn ? '✓' : '') + '</button>' +
+                '<div class="flip-avatar">' + petAvatarHtml(pet, demo) + '</div>' +
                 '<div class="flip-front-meta"><div class="font-bold text-[#2d8f6f] truncate">' + (pet.name || '未命名毛孩') + '</div>' +
                 '<div class="text-[11px] text-gray-500 truncate">' + (details.join(' · ') || '點擊翻開名片') + '</div></div></div>' +
                 '<div class="flip-face flip-back">' +
@@ -2276,6 +2373,8 @@
             demoSelectedReports = new Set();
             isDemoSelectMode = false;
             flippedPetIds = {};
+            demoCheckedPetIds = {};
+            petManageModeDemo = false;
             persistDemoPetsLocal();
             if (typeof closeAllModals === 'function') closeAllModals();
             renderDemoPets();
@@ -4155,6 +4254,7 @@
                 var emptyPetPg = document.getElementById('memberPetPager');
                 if (emptyPetPg) emptyPetPg.innerHTML = '';
                 renderMemberPetFilters();
+                updatePetBatchBar(false);
                 return;
             }
             var qEl = document.getElementById('memberPetSearch');
@@ -4183,6 +4283,7 @@
                 return buildPetFlipCardHtml(pet, { demo: false, selected: memberSelectedPetId === pet.id, reportCount: (petReports[pet.id] || []).length, overQuota: isPetOverQuota(pet.id) });
             }).join('');
             renderMemberPetFilters();
+            updatePetBatchBar(false);
         }
 
         function renderMemberPetFilters() {
@@ -4477,18 +4578,13 @@
         // ================================================================
         function toggleMemberSelectMode() {
             isMemberSelectMode = !isMemberSelectMode;
-            var bar = document.getElementById('memberReportSelectMode');
             var btn = document.getElementById('memberToggleSelectModeBtn');
             if (isMemberSelectMode) {
                 memberSelectedReports.clear();
-                bar.classList.add('show');
-                bar.classList.remove('hidden');
-                btn.textContent = '取消選擇';
+                if (btn) btn.textContent = '完成';
             } else {
-                bar.classList.remove('show');
-                bar.classList.add('hidden');
                 memberSelectedReports.clear();
-                btn.textContent = '選擇報告';
+                if (btn) btn.textContent = '批量操作';
             }
             renderMemberReports();
             updateMemberSelectedCount();
@@ -4503,32 +4599,29 @@
         }
 
         function toggleMemberSelectAllReports() {
-            var selectAll = document.getElementById('memberSelectAllReports');
             var rows = currentMemberReportPageRows();
-            if (selectAll && selectAll.checked) {
-                rows.forEach(function(r) { if (r && r.id) memberSelectedReports.add(r.id); });
-            } else {
-                memberSelectedReports.clear();
-            }
+            var allOn = rows.length && rows.every(function(r) { return r && memberSelectedReports.has(r.id); });
+            if (allOn) memberSelectedReports.clear();
+            else rows.forEach(function(r) { if (r && r.id) memberSelectedReports.add(r.id); });
             renderMemberReports();
             updateMemberSelectedCount();
-            syncMemberSelectAllCheckbox(rows);
         }
 
         function updateMemberSelectedCount() {
-            document.getElementById('memberSelectedCountDisplay').textContent = '已選 ' + memberSelectedReports.size +
-                ' 份報告';
+            var n = memberSelectedReports.size;
+            var el = document.getElementById('memberSelectedCountDisplay');
+            if (el) el.textContent = '已選擇 ' + n + ' 項目';
+            var bar = document.getElementById('memberReportSelectMode');
+            if (bar) bar.classList.toggle('show', isMemberSelectMode && n > 0);
         }
 
         function exitMemberSelectMode() {
             isMemberSelectMode = false;
             memberSelectedReports.clear();
-            var bar = document.getElementById('memberReportSelectMode');
             var btn = document.getElementById('memberToggleSelectModeBtn');
-            bar.classList.remove('show');
-            bar.classList.add('hidden');
-            btn.textContent = '選擇報告';
+            if (btn) btn.textContent = '批量操作';
             renderMemberReports();
+            updateMemberSelectedCount();
         }
 
         // ================================================================
@@ -5203,25 +5296,30 @@
         // ================================================================
         // 寵物 CRUD（會員版）
         // ================================================================
-        function deletePet(petId) {
-            if (!confirm('確定刪除這隻寵物？將移入回收桶，30 天內可還原。')) return;
+        function removeMemberPetSilent(petId) {
             var idx = pets.findIndex(function(p) { return p.id === petId; });
-            if (idx !== -1) {
-                pets.splice(idx, 1);
-                delete petReports[petId];
-                if (selectedPetId === petId) { selectedPetId = pets.length ? pets[0].id : null; }
-                if (memberSelectedPetId === petId) { memberSelectedPetId = pets.length ? pets[0].id : null; }
-                if (currentUser.uid) {
-                    db.collection('users').doc(currentUser.uid).collection('pets').doc(petId).set({ is_deleted: true, deletedAt: new Date() }, { merge: true })
-                        .then(function() { showToast('已移入回收桶', 'success'); })
-                        .catch(function(err) { console.warn('刪除失敗:', err); showToast('刪除失敗', 'error'); });
-                }
+            if (idx === -1) return;
+            pets.splice(idx, 1);
+            delete petReports[petId];
+            delete memberCheckedPetIds[petId];
+            if (selectedPetId === petId) { selectedPetId = pets.length ? pets[0].id : null; }
+            if (memberSelectedPetId === petId) { memberSelectedPetId = pets.length ? pets[0].id : null; }
+            if (currentUser && currentUser.uid) {
+                db.collection('users').doc(currentUser.uid).collection('pets').doc(petId).set({ is_deleted: true, deletedAt: new Date() }, { merge: true }).catch(function(){});
+            }
+        }
+        function deletePet(petId) {
+            appConfirm('確定刪除這隻寵物？將移入回收桶，30 天內可還原。', { title: '刪除確認', okText: '確認刪除', danger: true }).then(function(ok) {
+                if (!ok) return;
+                removeMemberPetSilent(petId);
                 renderPets();
                 renderReports();
                 renderMemberPets();
                 renderMemberReports();
                 updatePlanDisplay();
-            }
+                updatePetBatchBar(false);
+                showToast('已移入回收桶', 'success');
+            });
         }
 
         // ✅ 問題4已修復：新增寵物按儲存有反應
@@ -8632,6 +8730,7 @@
                 var reportCount = demoReportsData.filter(function(r) { return r.petId === pet.id; }).length;
                 return buildPetFlipCardHtml(pet, { demo: true, selected: demoSelectedPetId === pet.id, reportCount: reportCount });
             }).join('');
+            updatePetBatchBar(true);
         }
 
         // ✅ 問題6已修復：預設顯示全部報告
@@ -8898,24 +8997,26 @@
                 return;
             }
             
-            if (!window.confirm('確定刪除「' + pet.name + '」及其所有報告嗎？')) return;
-            
-            // 刪除寵物
+            appConfirm('確定刪除「' + pet.name + '」及其所有報告嗎？', { title: '刪除確認', okText: '確認刪除', danger: true }).then(function(ok) {
+                if (!ok) return;
+                removeDemoPetSilent(petId);
+                renderDemoPets();
+                renderDemoReports();
+                updatePetBatchBar(true);
+                showToast('已刪除「' + pet.name + '」', 'success');
+            });
+        }
+        function removeDemoPetSilent(petId) {
             demoPets = demoPets.filter(function(p) { return p.id !== petId; });
-            // 刪除相關報告
             demoReportsData = demoReportsData.filter(function(r) { return r.petId !== petId; });
             demoPetCount = demoPets.length;
             demoReportCount = demoReportsData.length;
-            
-            // 如果當前選中的是被刪嘅寵物，切回全部
+            delete demoCheckedPetIds[petId];
             if (demoSelectedPetId === petId) {
                 demoSelectedPetId = 'all';
-                document.getElementById('demoSelectedPetName').textContent = '（全部毛孩）';
+                var lab = document.getElementById('demoSelectedPetName');
+                if (lab) lab.textContent = '（全部毛孩）';
             }
-            
-            renderDemoPets();
-            renderDemoReports();
-            showToast('✅ 已刪除「' + pet.name + '」', 'success');
         }
 
         // ✅ 問題7已修復：上傳報告每隻寵物上限 5 份
@@ -9382,23 +9483,15 @@
         // ===== 體驗版 - 選擇報告模式 =====
         function toggleDemoSelectMode() {
             isDemoSelectMode = !isDemoSelectMode;
-            var bar = document.getElementById('demoReportSelectMode');
             var btn = document.getElementById('demoToggleSelectBtn');
             if (isDemoSelectMode) {
                 demoSelectedReports.clear();
-                bar.style.display = 'flex !important';
-                bar.classList.add('show');
-                bar.classList.remove('hidden');
-                btn.textContent = '取消選擇';
-                renderDemoReports();
+                if (btn) btn.textContent = '完成';
             } else {
-                bar.classList.remove('show');
-                bar.classList.add('hidden');
-                bar.style.display = 'none !important';
                 demoSelectedReports.clear();
-                btn.textContent = '選擇報告';
-                renderDemoReports();
+                if (btn) btn.textContent = '批量操作';
             }
+            renderDemoReports();
             updateDemoSelectedCount();
         }
 
@@ -9409,8 +9502,6 @@
             var reports = (demoSelectedPetId === 'all') 
                 ? demoReportsData 
                 : demoReportsData.filter(function(r) { return r.petId === demoSelectedPetId; });
-            var selectAll = document.getElementById('demoSelectAllReports');
-            if (selectAll) selectAll.checked = demoSelectedReports.size === reports.length && reports.length > 0;
             renderDemoReports();
         }
 
@@ -9418,26 +9509,26 @@
             var reports = (demoSelectedPetId === 'all') 
                 ? demoReportsData 
                 : demoReportsData.filter(function(r) { return r.petId === demoSelectedPetId; });
-            var selectAll = document.getElementById('demoSelectAllReports');
-            if (selectAll && selectAll.checked) reports.forEach(function(r) { demoSelectedReports.add(r.id); });
-            else demoSelectedReports.clear();
+            var allOn = reports.length && reports.every(function(r) { return demoSelectedReports.has(r.id); });
+            if (allOn) demoSelectedReports.clear();
+            else reports.forEach(function(r) { demoSelectedReports.add(r.id); });
             renderDemoReports();
             updateDemoSelectedCount();
         }
 
         function updateDemoSelectedCount() {
-            document.getElementById('demoSelectedCountDisplay').textContent = '已選 ' + demoSelectedReports.size + ' 份報告';
+            var n = demoSelectedReports.size;
+            var el = document.getElementById('demoSelectedCountDisplay');
+            if (el) el.textContent = '已選擇 ' + n + ' 項目';
+            var bar = document.getElementById('demoReportSelectMode');
+            if (bar) bar.classList.toggle('show', isDemoSelectMode && n > 0);
         }
 
         function exitDemoSelectMode() {
             isDemoSelectMode = false;
             demoSelectedReports.clear();
-            var bar = document.getElementById('demoReportSelectMode');
             var btn = document.getElementById('demoToggleSelectBtn');
-            bar.classList.remove('show');
-            bar.classList.add('hidden');
-            bar.style.display = 'none !important';
-            btn.textContent = '選擇報告';
+            if (btn) btn.textContent = '批量操作';
             renderDemoReports();
             updateDemoSelectedCount();
         }

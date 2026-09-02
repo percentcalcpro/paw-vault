@@ -26,6 +26,8 @@
         
         /* ===== Modal ===== */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 1000; padding: 1rem; align-items: center; justify-content: center; }
+        .modal-preview { z-index: 2000 !important; }
+        .modal-top { z-index: 3000 !important; }
         .modal.show { display: flex !important; align-items: center; justify-content: center; }
         .modal-content { background: white; border-radius: 2rem; max-width: 480px; width: 100%; padding: 2rem; max-height: 90vh; overflow-y: auto; margin: auto; }
         .modal-content-wide { max-width: 960px; }
@@ -1445,12 +1447,12 @@
                 <p class="text-sm font-medium text-gray-700 mb-1">現有附件：</p>
                 <div id="editExistingFilesList" class="flex flex-wrap gap-2"></div>
             </div>
-            <div id="editDropZone" class="drop-zone mb-3">
+            <div id="editDropZone" class="drop-zone mb-3" onclick="pickEditReportFiles()">
                 <div class="icon">📎</div>
                 <div class="text">將檔案拖放到這裡，或點擊選擇檔案（新增附件）</div>
                 <div class="sub">支援 PDF / JPEG / PNG</div>
-                <input type="file" id="editFileInput" class="hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" multiple>
             </div>
+            <input type="file" id="editFileInput" class="hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,image/*,application/pdf" multiple onchange="handleEditFiles(this.files)">
             <div id="editFileList" class="text-xs text-gray-500 mb-3"></div>
             <div class="flex gap-2.5">
                 <button onclick="closeEditModal()" class="flex-1 py-2.5 border border-gray-300 rounded-2xl text-sm hover:bg-gray-50 transition">取消</button>
@@ -1460,7 +1462,7 @@
     </div>
 
     <!-- 自訂確認 -->
-    <div id="appConfirmModal" class="modal">
+    <div id="appConfirmModal" class="modal modal-top">
         <div class="modal-content fade-in" style="max-width:360px;text-align:center;">
             <h3 id="appConfirmTitle" class="text-lg font-bold text-gray-800 mb-2 hidden"></h3>
             <p id="appConfirmMessage" class="text-sm text-gray-700 leading-relaxed mb-5"></p>
@@ -1489,12 +1491,12 @@
     </div>
 
     <!-- 附件預覽 -->
-    <div id="attachmentPreviewModal" class="modal">
+    <div id="attachmentPreviewModal" class="modal modal-preview">
         <div class="modal-content modal-content-attachment fade-in">
             <div class="flex justify-between items-center mb-4">
                 <h3 id="attachmentPreviewTitle" class="text-lg font-bold text-gray-800">附件預覽</h3>
                 <div class="flex gap-2">
-                    <button id="attachmentDownloadBtn" onclick="downloadCurrentAttachment()" class="px-4 py-1.5 bg-[#3da881] text-white rounded-full text-sm font-medium hover:bg-[#2d8f6f] transition"><i class="fa-solid fa-download mr-1"></i>下載</button>
+                    <button type="button" id="attachmentDownloadBtn" onclick="event.preventDefault();event.stopPropagation();downloadCurrentAttachment(event)" class="px-4 py-1.5 bg-[#3da881] text-white rounded-full text-sm font-medium hover:bg-[#2d8f6f] transition"><i class="fa-solid fa-download mr-1"></i>下載</button>
                     <i onclick="closeAttachmentPreview()" class="fa-solid fa-xmark text-2xl cursor-pointer text-gray-400 hover:text-gray-600"></i>
                 </div>
             </div>
@@ -1593,7 +1595,7 @@
         </div>
     </div>
 
-    <div id="demoLockModal" class="modal">
+    <div id="demoLockModal" class="modal modal-top">
         <div class="modal-content fade-in" style="max-width:400px;text-align:center;">
             <h3 class="text-lg font-bold text-gray-800 mb-2">🔒 示範體驗限制</h3>
             <p id="demoLockText" class="text-sm text-gray-600 leading-relaxed mb-5">此為示範模式，暫不開放複製與下載原檔。免費註冊成為會員即可享用完整功能！</p>
@@ -1678,7 +1680,8 @@
     <div id="editReportModalDemo" class="modal">
         <div class="modal-content fade-in">
             <h3 class="text-lg font-bold text-gray-800 mb-3">✏️ 編輯報告</h3>
-            <p class="text-xs text-gray-400 mb-3">示範體驗模式</p>
+            <p class="text-xs text-gray-400 mb-1">示範體驗模式</p>
+            <p class="text-[11px] text-gray-500 mb-3">🔒 示範上傳僅供個人預覽，關閉視窗後自動清除，不會保存在伺服器</p>
             <label class="text-xs text-gray-500 mb-1 block">屬於毛孩</label>
             <select id="editReportPetSelectDemo" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm"></select>
             <input id="editReportTitleDemo" type="text" placeholder="標題 *" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
@@ -1695,12 +1698,12 @@
                 <p class="text-sm font-medium text-gray-700 mb-1">現有附件：</p>
                 <div id="editExistingFilesListDemo" class="flex flex-wrap gap-2"></div>
             </div>
-            <div id="editDropZoneDemo" class="drop-zone mb-3">
+            <div id="editDropZoneDemo" class="drop-zone mb-3" onclick="pickEditReportFilesDemo()">
                 <div class="icon">📎</div>
                 <div class="text">將檔案拖放到這裡，或點擊選擇檔案（新增附件）</div>
                 <div class="sub">支援 PDF / JPEG / PNG</div>
-                <input type="file" id="editFileInputDemo" class="hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" multiple>
             </div>
+            <input type="file" id="editFileInputDemo" class="hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,image/*,application/pdf" multiple onchange="handleEditFilesDemo(this.files)">
             <div id="editFileListDemo" class="text-xs text-gray-500 mb-3"></div>
             <div class="flex gap-2.5">
                 <button onclick="closeEditReportDemo()" class="flex-1 py-2.5 border border-gray-300 rounded-2xl text-sm hover:bg-gray-50 transition">取消</button>
@@ -1792,6 +1795,8 @@
         let selectedPaymentMethod = 'payme';
         let lastCopiedText = '';
         let filesToRemove = [];
+        let demoEditUploadedFiles = [];
+        let demoFilesToRemove = [];
         let currentAttachmentFile = '';
         let currentAttachmentPetId = '';
 
@@ -4801,7 +4806,12 @@
                     else { title.textContent = ''; title.classList.add('hidden'); }
                 }
                 msg.textContent = message;
-                if (ok) ok.textContent = opts.okText || '確定';
+                if (ok) {
+                    ok.textContent = opts.okText || '確定';
+                    ok.className = opts.danger
+                        ? 'flex-1 py-2.5 bg-red-500 text-white rounded-2xl text-sm hover:bg-red-600'
+                        : 'flex-1 py-2.5 bg-[#3da881] text-white rounded-2xl text-sm hover:bg-[#2d8f6f]';
+                }
                 if (cancel) cancel.textContent = opts.cancelText || '取消';
                 modal.classList.add('show');
                 function cleanup(val) {
@@ -4890,7 +4900,7 @@
                             '<button type="button" class="flex items-center gap-2 text-left flex-1 min-w-0 text-sm text-gray-800" onclick="previewAttachment(\'' + safe + '\',\'' + petId + '\')">' +
                                 '<i class="fa-regular ' + icon + '"></i><span class="truncate">' + f + '</span>' +
                                 '<i class="fa-solid fa-eye text-xs text-gray-400"></i></button>' +
-                            '<span class="remove-file-btn shrink-0" onclick="markFileForRemoval(\'' + safe + '\', this)" title="移除"><i class="fa-solid fa-xmark"></i></span>';
+                            '<button type="button" class="shrink-0 w-8 h-8 rounded-full text-red-500 hover:bg-red-50" onclick="markFileForRemoval(\'' + safe + '\', this)" title="刪除附件"><i class="fa-solid fa-trash-can"></i></button>';
                         existingFilesDiv.appendChild(row);
                     });
                 } else {
@@ -4901,11 +4911,18 @@
         }
 
         function markFileForRemoval(filename, el) {
-            if (!confirm('移除附件：' + filename + '？')) return;
-            filesToRemove.push(filename);
-            el.closest('.existing-file-item').style.opacity = '0.3';
-            el.closest('.existing-file-item').style.textDecoration = 'line-through';
-            el.style.display = 'none';
+            appConfirm('確定要移除「' + filename + '」嗎？此操作無法復原。', {
+                title: '刪除附件確認',
+                okText: '確認刪除',
+                cancelText: '取消',
+                danger: true
+            }).then(function(ok) {
+                if (!ok) return;
+                filesToRemove.push(filename);
+                var row = el.closest('.existing-file-item');
+                if (row) { row.style.opacity = '0.3'; row.style.textDecoration = 'line-through'; }
+                el.style.display = 'none';
+            });
         }
 
         function closeEditModal() {
@@ -5095,15 +5112,19 @@
                 });
             }
             return ref.getDownloadURL().then(function(url) {
-                var a = document.createElement('a');
-                a.href = url;
-                a.download = filename || 'download';
-                a.target = '_blank';
-                a.rel = 'noopener';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+                return fetch(url).then(function(res) {
+                    if (!res.ok) throw new Error('fetch fail');
+                    return res.blob();
+                }).then(function(blob) {
+                    saveBlobToDevice(blob, filename);
+                });
             });
+        }
+        function bringAttachmentPreviewFront() {
+            var m = document.getElementById('attachmentPreviewModal');
+            if (!m) return;
+            m.classList.add('modal-preview', 'show');
+            if (m.parentNode) m.parentNode.appendChild(m);
         }
         function downloadFile(filename, petId) {
             petId = petId || selectedPetId || memberSelectedPetId;
@@ -5130,7 +5151,7 @@
             var title = document.getElementById('attachmentPreviewTitle');
             title.textContent = '📎 ' + filename;
             container.innerHTML = '<div class="text-center py-8 text-gray-400"><i class="fa-solid fa-spinner fa-spin text-2xl"></i><br><span class="text-sm">載入中...</span></div>';
-            document.getElementById('attachmentPreviewModal').classList.add('show');
+            bringAttachmentPreviewFront();
 
             getReportDownloadURL(petId, filename).then(function(url) {
                 var isPdf = filename.toLowerCase().endsWith('.pdf');
@@ -5152,10 +5173,14 @@
             document.getElementById('attachmentPreviewContainer').innerHTML = '';
         }
 
-        function downloadCurrentAttachment() {
+        function downloadCurrentAttachment(ev) {
+            if (ev && ev.stopPropagation) ev.stopPropagation();
+            bringAttachmentPreviewFront();
             if (window.demoDetailOpen || demoUploadMode) { openDemoLockModal('download'); return; }
             if (currentAttachmentFile && currentAttachmentPetId) {
-                downloadFile(currentAttachmentFile);
+                downloadFile(currentAttachmentFile, currentAttachmentPetId).then(function() {
+                    bringAttachmentPreviewFront();
+                });
             } else {
                 showToast('無法下載', 'error');
             }
@@ -6409,20 +6434,42 @@
             return { clinic: clinic, date: date, doctor: doctor, notes: noteText.slice(0, 400), title: title, amount: amount, petName: petName };
         }
 
-        function setupEditDropZone() {
-            var dz = document.getElementById('editDropZone');
+        function pickEditReportFiles() {
             var fi = document.getElementById('editFileInput');
-            if (!dz) return;
-            dz.addEventListener('click', function() { fi.click(); });
-            dz.addEventListener('dragover', function(e) { e.preventDefault();
-                dz.classList.add('dragover'); });
-            dz.addEventListener('dragleave', function() { dz.classList.remove('dragover'); });
-            dz.addEventListener('drop', function(e) {
-                e.preventDefault();
-                dz.classList.remove('dragover');
-                handleEditFiles(e.dataTransfer.files);
-            });
-            fi.addEventListener('change', function(e) { handleEditFiles(e.target.files); });
+            if (fi) { fi.value = ''; fi.click(); }
+        }
+        function pickEditReportFilesDemo() {
+            var fi = document.getElementById('editFileInputDemo');
+            if (fi) { fi.value = ''; fi.click(); }
+        }
+        function setupEditDropZone() {
+            function bind(dzId, onFiles) {
+                var dz = document.getElementById(dzId);
+                if (!dz || dz.dataset.bound === '1') return;
+                dz.dataset.bound = '1';
+                dz.addEventListener('dragover', function(e) { e.preventDefault(); dz.classList.add('dragover'); });
+                dz.addEventListener('dragleave', function() { dz.classList.remove('dragover'); });
+                dz.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    dz.classList.remove('dragover');
+                    onFiles(e.dataTransfer.files);
+                });
+            }
+            bind('editDropZone', handleEditFiles);
+            bind('editDropZoneDemo', handleEditFilesDemo);
+        }
+        function handleEditFilesDemo(files) {
+            var list = document.getElementById('editFileListDemo');
+            if (!list || !files) return;
+            for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+                if (!isAllowedReportFile(file) && !(file.type && (file.type.indexOf('image/') === 0 || file.type === 'application/pdf'))) {
+                    list.insertAdjacentHTML('beforeend', '<div class="py-1 text-red-500">❌ ' + file.name + ' 不支援</div>');
+                    continue;
+                }
+                demoEditUploadedFiles.push(file);
+                list.insertAdjacentHTML('beforeend', '<div class="py-1 text-green-700">✅ ' + file.name + ' <span class="text-gray-400">(' + (file.size / 1024).toFixed(1) + ' KB)</span></div>');
+            }
         }
 
         function handleEditFiles(files) {
@@ -8025,7 +8072,7 @@
             if (!container || !title) { showToast('無法開啟預覽', 'error'); return; }
             title.textContent = '此筆申請入數圖';
             container.innerHTML = '<div class="text-center py-6 text-gray-400">載入中...</div>';
-            document.getElementById('attachmentPreviewModal').classList.add('show');
+            bringAttachmentPreviewFront();
             var col = kind === 'addon' ? 'addons' : 'payments';
             if (!recId || recId === 'userflag') {
                 return adminViewReceiptHistory(uid);
@@ -8052,7 +8099,7 @@
             if (!container || !title) return;
             title.textContent = '入數紀錄';
             container.innerHTML = '<div class="text-center py-6 text-gray-400">載入中...</div>';
-            document.getElementById('attachmentPreviewModal').classList.add('show');
+            bringAttachmentPreviewFront();
             var items = [];
             Promise.all([
                 db.collection('users').doc(uid).collection('payments').get(),
@@ -9076,7 +9123,7 @@
                         '<button type="button" class="flex items-center gap-2 text-left flex-1 min-w-0 text-sm text-gray-800" onclick="previewDemoFile(\'' + safe + '\')">' +
                             '<i class="fa-regular ' + icon + '"></i><span class="truncate">' + f + '</span>' +
                             '<i class="fa-solid fa-eye text-xs text-gray-400"></i></button>' +
-                        '<span class="text-gray-400 text-xs shrink-0">(示範)</span>';
+                        '<button type="button" class="shrink-0 w-8 h-8 rounded-full text-red-500 hover:bg-red-50" onclick="markDemoFileForRemoval(\'' + safe + '\', this)" title="刪除附件"><i class="fa-solid fa-trash-can"></i></button>';
                     existingFilesDiv.appendChild(row);
                 });
             } else {
@@ -9085,6 +9132,8 @@
             
             document.getElementById('editFileListDemo').innerHTML = '';
             document.getElementById('editFileInputDemo').value = '';
+            demoEditUploadedFiles = [];
+            demoFilesToRemove = [];
             document.getElementById('editReportModalDemo').classList.add('show');
         }
 
@@ -9095,9 +9144,25 @@
             showToast('找不到報告', 'error');
         }
 
+        function markDemoFileForRemoval(filename, el) {
+            appConfirm('確定要移除「' + filename + '」嗎？此操作無法復原。', {
+                title: '刪除附件確認',
+                okText: '確認刪除',
+                cancelText: '取消',
+                danger: true
+            }).then(function(ok) {
+                if (!ok) return;
+                demoFilesToRemove.push(filename);
+                var row = el.closest('.existing-file-item');
+                if (row) { row.style.opacity = '0.3'; row.style.textDecoration = 'line-through'; }
+                el.style.display = 'none';
+            });
+        }
         function closeEditReportDemo() {
             document.getElementById('editReportModalDemo').classList.remove('show');
             demoEditingReport = null;
+            demoEditUploadedFiles = [];
+            demoFilesToRemove = [];
         }
 
         function saveEditReportDemo() {
@@ -9109,6 +9174,9 @@
             var idx = demoReportsData.findIndex(function(r) { return r.id === demoEditingReport.id; });
             if (idx === -1) { showToast('找不到報告', 'error'); return; }
             
+            var remain = (demoReportsData[idx].files || []).filter(function(f) { return demoFilesToRemove.indexOf(f) === -1; });
+            var added = demoEditUploadedFiles.map(function(f) { return f.name || f; });
+            demoReportsData[idx].files = remain.concat(added);
             demoReportsData[idx].title = newTitle;
             demoReportsData[idx].date = newDate;
             demoReportsData[idx].desc = newDesc;
@@ -9270,8 +9338,8 @@
             currentAttachmentFile = filename;
             currentAttachmentPetId = null;
             var dlBtn = document.getElementById('attachmentDownloadBtn');
-            if (dlBtn) dlBtn.onclick = function() { openDemoLockModal('download'); };
-            document.getElementById('attachmentPreviewModal').classList.add('show');
+            if (dlBtn) dlBtn.onclick = function(e) { if (e) e.stopPropagation(); bringAttachmentPreviewFront(); openDemoLockModal('download'); };
+            bringAttachmentPreviewFront();
         }
 
         function openReportDetailDemo(title, date, desc, files) {

@@ -666,12 +666,11 @@
                 <div>
                     <div class="flex flex-wrap items-center gap-2">
                         <h3 id="memberName" class="text-xl font-bold text-gray-800">寵物主人</h3>
-                        <button type="button" onclick="openPaymentModal()" class="px-2.5 py-1 border border-[#3da881] text-[#2d8f6f] rounded-full text-xs">續費/升級</button>
                     </div>
                     <p id="memberEmail" class="hidden"></p>
                     <div class="mt-3 p-4 rounded-2xl bg-[#f0faf5] border border-[#d4ede2] text-sm text-gray-700 space-y-1.5">
-                        <div>方案：<span id="accountPlanName">基礎版方案</span></div>
-                        <div>狀態：<span id="accountPlanStatus">生效中</span></div>
+                        <div>方案：<span id="accountPlanDot">🟢</span> <span id="accountPlanName">基礎版方案</span></div>
+                        <div>狀態：<span id="accountPlanStatus">[ 生效中 ]</span></div>
                         <div>有效期：<span id="accountPlanDates">—</span></div>
                     </div>
                     <span id="memberPlanBadge" class="hidden"></span>
@@ -696,9 +695,10 @@
                 </div>
             </div>
             <div class="mt-5 space-y-2">
-                <button type="button" onclick="openSettingsSub('name')" class="w-full py-2.5 border border-gray-200 rounded-2xl text-sm text-left px-4">常用名稱</button>
-                <button type="button" onclick="openChangeEmailModal()" class="w-full py-2.5 border border-gray-200 rounded-2xl text-sm text-left px-4">電子郵件</button>
-                <button type="button" onclick="openSettingsSub('password')" class="w-full py-2.5 border border-gray-200 rounded-2xl text-sm text-left px-4">密碼</button>
+                <button type="button" onclick="openEditNameModal()" class="w-full py-2.5 border border-gray-200 rounded-2xl text-sm text-left px-4 flex items-center justify-between">常用名稱 <span class="text-gray-400">✏️</span></button>
+                <button type="button" onclick="openChangeEmailModal()" class="w-full py-2.5 border border-gray-200 rounded-2xl text-sm text-left px-4 flex items-center justify-between">電子郵件 <span class="text-gray-400">✏️</span></button>
+                <button type="button" onclick="openChangePasswordModal()" class="w-full py-2.5 border border-gray-200 rounded-2xl text-sm text-left px-4 flex items-center justify-between">密碼 <span class="text-gray-400">✏️</span></button>
+                <button type="button" onclick="openPaymentModal()" class="w-full py-2.5 bg-[#3da881] text-white rounded-2xl text-sm font-medium">續費 / 升級</button>
             </div>
             <button type="button" onclick="downloadAccountBackup()" class="w-full mt-4 py-2.5 border border-[#3da881] text-[#2d8f6f] rounded-2xl text-sm">一鍵打包備份所有資料</button>
         </div>
@@ -1300,25 +1300,7 @@
         </div>
     </div>
 
-    <!-- 設定 -->
-    <div id="settingsModal" class="modal">
-        <div class="modal-content fade-in" style="max-width:440px;">
-            <h3 class="text-xl font-bold text-[#2d8f6f] mb-4">帳戶設定</h3>
-            <div class="mb-4 p-3 rounded-2xl bg-[#f0faf5] border border-[#d4ede2] text-sm text-gray-700 space-y-1">
-                <div><span class="text-gray-400">電郵</span>　<span id="settingsEmailDisplay">—</span></div>
-                <div><span class="text-gray-400">方案</span>　<span id="settingsPlanDisplay">—</span></div>
-                <div><span class="text-gray-400">狀態</span>　<span id="settingsStatusDisplay">—</span></div>
-                <div><span class="text-gray-400">有效期</span>　<span id="settingsDateDisplay">—</span></div>
-            </div>
-            <div class="space-y-2.5">
-                <button onclick="openSettingsSub('name')" class="w-full py-2.5 border border-gray-300 rounded-2xl text-sm hover:bg-gray-50 transition text-left px-4 flex items-center gap-3"><i class="fa-regular fa-user text-[#3da881] w-5"></i> 修改顯示名稱</button>
-                <button onclick="openSettingsSub('password')" class="w-full py-2.5 border border-gray-300 rounded-2xl text-sm hover:bg-gray-50 transition text-left px-4 flex items-center gap-3"><i class="fa-solid fa-lock text-[#3da881] w-5"></i> 修改密碼</button>
-                <button onclick="openChangeEmailModal()" class="w-full py-2.5 border border-gray-300 rounded-2xl text-sm hover:bg-gray-50 transition text-left px-4 flex items-center gap-3">更換電郵</button>
-                <button type="button" onclick="downloadAccountBackup()" class="w-full py-2.5 border border-[#3da881] text-[#2d8f6f] rounded-2xl text-sm hover:bg-[#f0faf5] transition text-left px-4">一鍵打包備份所有資料</button>
-            </div>
-            <button onclick="closeSettingsModal()" class="w-full mt-4 py-2.5 bg-[#3da881] text-white rounded-2xl font-medium text-sm hover:bg-[#2d8f6f] transition">關閉</button>
-        </div>
-    </div>
+    <div id="settingsModal" class="hidden" aria-hidden="true"></div>
 
     <!-- 修改密碼 -->
     <div id="changePasswordModal" class="modal">
@@ -3106,13 +3088,15 @@
             var planName = planBadgeText((getPlanLimits() && getPlanLimits().label) || '');
             var badge = document.getElementById('memberPlanBadge');
             var setBadge = function(text) { if (badge) badge.textContent = text; };
-            var setAccountCard = function(planText, statusText, dateText) {
+            var setAccountCard = function(planText, statusText, dateText, trial) {
                 var n = document.getElementById('accountPlanName');
                 var s = document.getElementById('accountPlanStatus');
                 var d = document.getElementById('accountPlanDates');
+                var dot = document.getElementById('accountPlanDot');
                 if (n) n.textContent = planText;
                 if (s) s.textContent = statusText;
                 if (d) d.textContent = dateText;
+                if (dot) dot.textContent = trial ? '🟡' : '🟢';
             };
             var forceTrial = isTrialActive || (typeof paymentStatus !== 'undefined' && (paymentStatus === 'trial' || paymentStatus === 'pending_review'));
             if (forceTrial && !hasPaid) {
@@ -3121,7 +3105,7 @@
                 if (range) range.textContent = '';
                 setDays(getTrialDaysLeft(), false);
                 setBadge(planName + '免費試用中 · 尚餘 ' + getTrialDaysLeft() + ' 天');
-                setAccountCard('試用版方案', '[ 試用中 ]', '至 ' + short(trialEndDate) + '（尚餘 ' + getTrialDaysLeft() + ' 天）');
+                setAccountCard('試用版方案', '[ 試用中 ]', '至 ' + short(trialEndDate) + '（尚餘 ' + getTrialDaysLeft() + ' 天）', true);
             } else if (hasPaid && planEndDate) {
                 var graceEnd = new Date(planEndDate);
                 graceEnd.setDate(graceEnd.getDate() + MEMBERSHIP_GRACE_DAYS);
@@ -3133,7 +3117,7 @@
                 setDays(left, !stillActive);
                 lab.textContent = '';
                 setBadge(planName + (stillActive ? '生效中' : '已到期') + ' · 尚餘 ' + left + ' 天');
-                setAccountCard(planName, stillActive ? '[ 生效中 ]' : '[ 已到期 ]', (short(planStartDate || trialStartDate) + ' 至 ' + short(planEndDate) + '（尚餘 ' + left + ' 天）'));
+                setAccountCard(planName, stillActive ? '[ 生效中 ]' : '[ 已到期 ]', (short(planStartDate || trialStartDate) + ' 至 ' + short(planEndDate) + '（尚餘 ' + left + ' 天）'), false);
                 if (!stillActive && badge) badge.style.background = '#fff7ed';
             } else if (hasPaid && !planEndDate) {
                 title.textContent = planName + ' · 已付費生效中';
@@ -3148,7 +3132,7 @@
                 if (range) range.textContent = '';
                 setDays(getTrialDaysLeft(), false);
                 setBadge(planName + '免費試用中 · 尚餘 ' + getTrialDaysLeft() + ' 天');
-                setAccountCard('試用版方案', '[ 試用中 ]', '至 ' + short(trialEndDate) + '（尚餘 ' + getTrialDaysLeft() + ' 天）');
+                setAccountCard('試用版方案', '[ 試用中 ]', '至 ' + short(trialEndDate) + '（尚餘 ' + getTrialDaysLeft() + ' 天）', true);
             } else {
                 title.textContent = '待付款';
                 detail.textContent = trialEndDate ? ('試用已於 ' + short(trialEndDate) + ' 結束') : '請選擇方案續用';
@@ -5702,46 +5686,43 @@
             }
             return '';
         }
+        function isRealFileUrl(src) {
+            return typeof src === 'string' && /^(blob:|data:|https?:\/\/)/i.test(src);
+        }
         function triggerAnchorDownload(href, filename) {
+            if (!isRealFileUrl(href)) return false;
             var a = document.createElement('a');
             a.href = href;
             a.download = filename || 'download';
             a.rel = 'noopener';
-            a.target = '_blank';
+            a.style.display = 'none';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-            if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent || '')) {
-                try { window.open(href, '_blank'); } catch (e) {}
-            }
+            return true;
         }
-        function dataToBlobUrl(src, filename) {
+        function dataToBlobUrl(src) {
             if (!src) return Promise.resolve('');
             if (src instanceof Blob) return Promise.resolve(URL.createObjectURL(src));
             if (typeof src !== 'string') {
                 src = src.dataUrl || src.dataURL || src.base64 || src.url || src.src || '';
             }
             if (!src) return Promise.resolve('');
-            if (/^blob:/i.test(src)) return Promise.resolve(src);
-            if (/^https?:\/\//i.test(src)) return Promise.resolve(src);
+            if (/^blob:/i.test(src) || /^https?:\/\//i.test(src)) return Promise.resolve(src);
             if (/^data:/i.test(src)) {
                 return fetch(src).then(function(r) { return r.blob(); }).then(function(b) { return URL.createObjectURL(b); });
             }
-            return Promise.resolve(src);
+            return Promise.resolve('');
         }
         function downloadAttachmentSmart(file, petId) {
-            var name = (typeof file === 'string') ? file : (file && (file.name || file.filename || 'attachment'));
-            var local = (typeof file === 'string') ? findLocalAttachmentData(file, petId) : (file && (file.dataUrl || file.dataURL || file.base64 || file.url || file.src || file.blob));
-            var src = local || (typeof file === 'string' ? file : '');
-            return dataToBlobUrl(src, name).then(function(url) {
-                if (url) {
-                    triggerAnchorDownload(url, name);
-                    return;
-                }
+            var name = fileDisplayName(file);
+            var local = (typeof file === 'string')
+                ? findLocalAttachmentData(file, petId)
+                : (file && (file.dataUrl || file.dataURL || file.base64 || file.url || file.src || file.blob));
+            return dataToBlobUrl(local).then(function(url) {
+                if (url && triggerAnchorDownload(url, name)) return;
                 return downloadFile(name, petId);
-            }).catch(function() {
-                if (src) window.open(src, '_blank');
-            });
+            }).catch(function() {});
         }
         function downloadFile(filename, petId) {
             petId = petId || selectedPetId || memberSelectedPetId;
@@ -6878,8 +6859,41 @@
             fi.addEventListener('change', function(e) { handleFiles(e.target.files); });
         }
 
-        function handleFiles(files) {
+        function renderUploadedFileList() {
             var list = document.getElementById('fileList');
+            if (!list) return;
+            list.innerHTML = '';
+            (uploadedFiles || []).forEach(function(f, i) {
+                var row = document.createElement('div');
+                row.className = 'flex items-center justify-between gap-2 py-1';
+                var name = (f && f.name) || 'attachment';
+                row.innerHTML = '<span class="truncate"><span class="text-green-600 font-semibold">OK</span> ' + name + '</span>' +
+                    '<button type="button" class="shrink-0 text-red-500 px-2" data-i="' + i + '" aria-label="刪除附件"><i class="fa-solid fa-trash"></i></button>';
+                row.querySelector('button').addEventListener('click', function(ev) {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    removeUploadedFile(i);
+                });
+                list.appendChild(row);
+            });
+        }
+        function clearAiFilledReportFields() {
+            ['reportTitle','reportDate','reportClinic','reportDoctor','reportAmount','reportDesc'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            var hint = document.getElementById('ocrHint');
+            if (hint) { hint.textContent = ''; hint.classList.add('hidden'); }
+        }
+        function removeUploadedFile(idx) {
+            if (idx < 0 || idx >= (uploadedFiles || []).length) return;
+            uploadedFiles.splice(idx, 1);
+            renderUploadedFileList();
+            clearAiFilledReportFields();
+            var fi = document.getElementById('fileInput');
+            if (fi) fi.value = '';
+        }
+        function handleFiles(files) {
             Array.prototype.forEach.call(files || [], function(file) {
                 var chk = canUploadFile(file);
                 var isImg = /^image\//.test(file.type || '') || /\.(jpe?g|png|webp|heic|heif)$/i.test(file.name || '');
@@ -6887,16 +6901,10 @@
                 work.then(function(out) {
                     if (chk.ok) {
                         uploadedFiles.push(out);
-                        var div = document.createElement('div');
-                        div.className = 'flex items-center gap-2 py-1';
-                        div.innerHTML = '<span class="text-green-600">OK</span> ' + out.name + ' <span class="text-gray-400">(' + (out.size / 1024).toFixed(1) + ' KB)</span>';
-                        if (list) list.appendChild(div);
+                        renderUploadedFileList();
                         if (!captureAutoSaveMode) runReportOcr(out);
                     } else {
-                        var div2 = document.createElement('div');
-                        div2.className = 'flex items-center gap-2 py-1';
-                        div2.innerHTML = '<span class="text-red-500">X</span> ' + file.name + ' <span class="text-gray-400">(' + (chk && chk.reason ? chk.reason : '不支援') + ')</span>';
-                        if (list) list.appendChild(div2);
+                        renderUploadedFileList();
                         if (isAllowedReportFile(file) && !captureAutoSaveMode) runReportOcr(file);
                     }
                 });
@@ -7818,10 +7826,7 @@
             }
         }
         function returnToSettingsIfNeeded() {
-            if (settingsSubflow) {
-                settingsSubflow = false;
-                openSettingsModal();
-            }
+            settingsSubflow = false;
         }
 
         function openEditNameModal() {
@@ -9027,34 +9032,13 @@
         }
 
         function openSettingsModal() {
-            var emailEl = document.getElementById('settingsEmailDisplay');
-            var planEl = document.getElementById('settingsPlanDisplay');
-            var statusEl = document.getElementById('settingsStatusDisplay');
-            var dateEl = document.getElementById('settingsDateDisplay');
-            if (emailEl) emailEl.textContent = currentUser.email || '—';
-            if (planEl) planEl.textContent = getPlanLimits().label + '方案';
-            if (statusEl) {
-                if (hasPaid && paymentStatus === 'pending_review') statusEl.textContent = '付款待核對（會籍暫時生效）';
-                else if (hasPaid && paymentStatus === 'confirmed') statusEl.textContent = '已確認收款';
-                else if (hasPaid) statusEl.textContent = '會籍生效中';
-                else if (isTrialActive) statusEl.textContent = '免費試用中';
-                else statusEl.textContent = '試用已結束 / 待付款';
-            }
-            if (dateEl) {
-                if (hasPaid && (planStartDate || planEndDate)) {
-                    dateEl.textContent = (planStartDate ? fmtDateHK(planStartDate) : '—') + ' 至 ' + (planEndDate ? fmtDateHK(planEndDate) : '—');
-                } else if (isTrialActive && trialEndDate) {
-                    dateEl.textContent = (trialStartDate ? fmtDateHK(trialStartDate) : '—') + ' 至 ' + fmtDateHK(trialEndDate);
-                } else if (trialEndDate) {
-                    dateEl.textContent = '試用已於 ' + fmtDateHK(trialEndDate) + ' 結束';
-                } else {
-                    dateEl.textContent = '—';
-                }
-            }
-            document.getElementById('settingsModal').classList.add('show');
+            if (typeof showMemberAccount === 'function') showMemberAccount();
         }
 
-        function closeSettingsModal() { document.getElementById('settingsModal').classList.remove('show'); }
+        function closeSettingsModal() {
+            var m = document.getElementById('settingsModal');
+            if (m) m.classList.remove('show');
+        }
         function safeZipName(s) {
             return String(s || 'file').replace(/[\\/:*?"<>|]+/g, '_').replace(/\s+/g, ' ').trim() || 'file';
         }

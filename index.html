@@ -49,7 +49,7 @@
         .flip-card:hover { transform: none; box-shadow: none; }
         .flip-inner { position: relative; width: 100%; height: 100%; transition: transform 0.55s cubic-bezier(.2,.7,.2,1); transform-style: preserve-3d; }
         .flip-card.is-flipped .flip-inner { transform: rotateY(180deg); }
-        .flip-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 1.15rem; overflow: hidden; border: 1px solid #e5ece8; background: #fff; }
+        .flip-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 20px; overflow: hidden; border: 1px solid #e5ece8; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .flip-front { display: flex; flex-direction: column; }
         .flip-back { transform: rotateY(180deg); padding: 0.9rem 1rem; display: flex; flex-direction: column; }
         .flip-card.active .flip-face, .flip-card.is-active .flip-face { border-color: #3da881; box-shadow: 0 0 0 1px #a7f3d0; }
@@ -122,6 +122,7 @@
         .report-float-bar { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%) translateY(12px); z-index: 40; display: none; align-items: center; justify-content: space-between; gap: 0.75rem; flex-direction: row; flex-wrap: nowrap; width: 92%; max-width: 560px; padding: 10px 16px; border-radius: 16px; background: #1e293b; color: #fff; box-shadow: 0 10px 30px rgba(15,23,42,0.28); overflow-x: auto; }
         .report-float-bar.show { display: flex !important; transform: translateX(-50%) translateY(0); }
         .report-float-bar .rf-left { flex: 0 0 auto; font-size: 0.85rem; color: #e2e8f0; white-space: nowrap; }
+        .report-float-bar .rf-mid { flex: 1 1 auto; display: flex; justify-content: center; }
         .report-float-bar .rf-right { display: flex; align-items: center; gap: 0.4rem; flex: 0 0 auto; }
         .report-float-bar button { white-space: nowrap; flex: 0 0 auto; }
         .limit-warning { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 1rem; padding: 0.8rem 1.2rem; display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
@@ -134,8 +135,21 @@
         .nav-link:hover { color: #2d8f6f; background: #e8f5ef; }
         .nav-link-primary { padding: 0.6rem 1.8rem; font-size: 0.95rem; font-weight: 600; color: white; background: #3da881; border-radius: 9999px; transition: 0.15s; cursor: pointer; border: none; box-shadow: 0 4px 12px rgba(61,168,129,0.3); }
         .nav-link-primary:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(61,168,129,0.4); }
-        .nav-link-b2b { padding: 0.45rem 0.9rem; font-size: 0.82rem; font-weight: 600; color: #1d4ed8; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 9999px; cursor: pointer; }
-        .nav-link-b2b:hover { background: #dbeafe; }
+        .nav-link-b2b { padding: 0.45rem 0.9rem; font-size: 0.82rem; font-weight: 600; color: #0f5132; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 9999px; cursor: pointer; }
+        .nav-link-b2b:hover { background: #d1fae5; }
+        .nav-desktop { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+        .nav-mobile-tools { display: none; align-items: center; gap: 0.45rem; }
+        .nav-hamburger { width: 40px; height: 40px; border-radius: 12px; border: 1px solid #e5e7eb; background: #fff; color: #374151; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .nav-avatar-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid #d1fae5; background: #ecfdf5; color: #0f5132; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .nav-drawer-mask { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.35); z-index: 80; }
+        .nav-drawer-mask.show { display: block; }
+        .nav-drawer { position: fixed; top: 0; right: 0; height: 100vh; width: min(82vw, 320px); background: #fff; z-index: 90; transform: translateX(100%); transition: transform 0.22s ease; box-shadow: -8px 0 24px rgba(0,0,0,0.08); padding: 1.1rem 1rem; display: flex; flex-direction: column; gap: 0.4rem; }
+        .nav-drawer.show { transform: translateX(0); }
+        .nav-drawer button { width: 100%; text-align: left; padding: 0.7rem 0.85rem; border-radius: 12px; border: none; background: transparent; color: #374151; font-weight: 600; }
+        .nav-drawer button:hover { background: #f0faf5; }
+        .kind-chip { display: inline-flex; align-items: center; font-size: 0.65rem; font-weight: 700; padding: 0.12rem 0.45rem; border-radius: 9999px; margin-right: 0.35rem; }
+        .att-chip { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.72rem; color: #374151; background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 9999px; padding: 0.15rem 0.55rem; margin-top: 0.35rem; cursor: pointer; }
+        .report-item { margin-bottom: 12px; }
         .clinic-verified-badge { display: inline-flex; align-items: center; gap: 0.3rem; background: #eff6ff; color: #2563eb; border: 1px solid #93c5fd; font-size: 0.72rem; font-weight: 600; padding: 0.2rem 0.65rem; border-radius: 9999px; white-space: nowrap; }
         .clinic-link-bar { margin-top: 0.75rem; padding: 0.7rem 0.85rem; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 0.85rem; color: #1e40af; font-size: 0.75rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
         .clinic-link-bar a, .clinic-link-bar button { color: #1d4ed8; font-weight: 700; text-decoration: underline; background: none; border: none; cursor: pointer; font-size: 0.75rem; }
@@ -312,6 +326,11 @@
             .modal-content { width: 92vw !important; max-width: 92vw !important; max-height: 85vh !important; padding: 1.1rem 1rem 0.85rem; }
             .modal { padding: 0.5rem; align-items: flex-end; }
             .modal.show { align-items: center; }
+            .nav-desktop { display: none !important; }
+            .nav-mobile-tools { display: flex !important; }
+            #adminHomeBar { display: none !important; }
+            nav.sticky { min-height: 56px; }
+            nav.sticky > div { padding-top: 0.35rem; padding-bottom: 0.35rem; }
         }
     </style>
 </head>
@@ -319,12 +338,12 @@
 
     <!-- ===== 導航欄 ===== -->
     <nav class="border-b bg-white/90 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
-        <div class="max-w-6xl mx-auto px-6 py-3 flex justify-between items-center flex-wrap gap-3">
-            <a href="#" onclick="goHome()" class="flex items-center gap-2 cursor-pointer">
-                <span class="logo-text">Paw Vault</span>
-                <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-semibold">寵物健康檔案</span>
+        <div class="max-w-6xl mx-auto px-6 py-3 flex justify-between items-center gap-3" style="min-height:56px;">
+            <a href="#" onclick="goHome();return false;" class="flex items-center gap-2 cursor-pointer">
+                <span class="logo-text">🐾 Paw Vault</span>
+                <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-semibold hidden sm:inline">寵物健康檔案</span>
             </a>
-            <div class="flex items-center gap-2 flex-wrap" id="navRightSection">
+            <div class="nav-desktop" id="navRightSection">
                 <button onclick="openClinicPartnerModal()" class="nav-link-b2b"><i class="fa-solid fa-user-doctor mr-1"></i>獸醫診所專區</button>
                 <button onclick="openPricingModal()" class="nav-link">定價方案</button>
                 <button onclick="openFaqModal()" class="nav-link">常見問題</button>
@@ -332,13 +351,25 @@
                 <button onclick="openLoginModal()" class="nav-link">登入</button>
                 <button onclick="openSignupModal()" class="nav-link-primary">免費開始使用</button>
             </div>
+            <div class="nav-mobile-tools">
+                <button type="button" class="nav-avatar-btn" onclick="onNavAvatarClick()" aria-label="帳戶">👤</button>
+                <button type="button" class="nav-hamburger" onclick="toggleNavDrawer(true)" aria-label="選單">☰</button>
+            </div>
         </div>
     </nav>
+    <div id="navDrawerMask" class="nav-drawer-mask" onclick="toggleNavDrawer(false)"></div>
+    <div id="navDrawer" class="nav-drawer" onclick="event.stopPropagation()">
+        <div class="flex items-center justify-between mb-2">
+            <strong>選單</strong>
+            <button type="button" onclick="toggleNavDrawer(false)" style="width:auto;">✕</button>
+        </div>
+        <div id="navDrawerLinks"></div>
+    </div>
 
     <!-- ===== 主頁內容（體驗版） ===== -->
     <div id="mainContent" class="main-content">
         <div id="adminHomeBar" class="hidden max-w-6xl mx-auto px-6 pt-3">
-            <button onclick="openAdminPage()" class="px-4 py-1.5 bg-indigo-600 text-white rounded-full text-sm">後台管理</button>
+            <button onclick="openAdminPage()" class="px-4 py-1.5 bg-[#0f5132] text-white rounded-full text-sm">後台管理</button>
         </div>
         <!-- Hero 區域 -->
         <div class="hero-gradient">
@@ -375,7 +406,7 @@
                         <div class="flex gap-2 flex-wrap items-center">
                             <button type="button" onclick="openCaptureUpload(true)" class="btn-primary-pill">📷 拍照／一鍵建檔</button>
                             <button onclick="openAddPetModalDemo()" class="btn-secondary-pill">＋新增毛孩</button>
-                            <button type="button" id="demoPetManageBtn" onclick="togglePetManageMode(true)" class="btn-secondary-pill">管理</button>
+                            <button type="button" id="demoPetManageBtn" onclick="handleManageBtn(true)" class="btn-secondary-pill">⚙️ 管理</button>
                         </div>
                     </div>
                     <div id="demoPetBatchBar" class="pet-batch-bar">
@@ -440,17 +471,16 @@
                         </h3>
                         <div class="flex gap-2 flex-wrap">
                             <button onclick="openUploadModalDemo()" class="btn-secondary-pill">＋ 上傳報告</button>
-                            <button onclick="openExportMenu(true)" class="bg-white hover:bg-[#f0faf5] border border-[#3da881] text-[#2d8f6f] px-4 py-1.5 rounded-full text-sm font-medium transition">📤 匯出</button>
-                            <button onclick="toggleDemoSelectMode()" class="border border-gray-300 hover:bg-gray-50 px-4 py-1.5 rounded-full text-sm font-medium transition" id="demoToggleSelectBtn">批量操作</button>
+                            <button onclick="toggleDemoSelectMode()" class="btn-secondary-pill" id="demoToggleSelectBtn">📤 批量匯出/分享</button>
                         </div>
                     </div>
                     <div id="demoReportSelectMode" class="report-float-bar">
-                        <span id="demoSelectedCountDisplay" class="rf-left">已選擇 0 項</span>
-                        <div class="rf-right">
+                        <span id="demoSelectedCountDisplay" class="rf-left">已選擇 0 份</span>
+                        <div class="rf-mid">
                             <button type="button" onclick="toggleDemoSelectAllReports(true)" class="px-3 py-1 rounded-full bg-white/10 text-white text-sm">全選</button>
-                            <button type="button" onclick="copyDemoSelectedReports()" class="px-3 py-1 rounded-full bg-white/10 text-white text-sm">複製</button>
-                            <button type="button" onclick="downloadDemoSelectedReports()" class="px-3 py-1 rounded-full bg-[#3da881] text-white text-sm">📤 分享</button>
-                            <button type="button" onclick="deleteDemoSelectedReports()" class="px-3 py-1 rounded-full text-red-300 text-sm">刪除</button>
+                        </div>
+                        <div class="rf-right">
+                            <button type="button" onclick="downloadDemoSelectedReports()" class="px-3 py-1 rounded-full bg-[#10b981] text-white text-sm font-semibold">🚀 確認匯出/分享</button>
                             <button type="button" onclick="exitDemoSelectMode()" class="text-slate-300 text-sm px-1">✕</button>
                         </div>
                     </div>
@@ -683,7 +713,7 @@
                     <div class="flex gap-2 flex-wrap items-center">
                     <button type="button" onclick="openCaptureUpload(false)" class="btn-primary-pill">📷 拍照／一鍵建檔</button>
                     <button id="memberAddPetBtn" onclick="openAddPetModal()" class="btn-secondary-pill">＋新增毛孩</button>
-                    <button type="button" id="memberPetManageBtn" onclick="togglePetManageMode(false)" class="btn-secondary-pill">管理</button>
+                    <button type="button" id="memberPetManageBtn" onclick="handleManageBtn(false)" class="btn-secondary-pill">⚙️ 管理</button>
                     </div>
                 </div>
                 <p id="memberPetCapacity" class="hidden"></p>
@@ -704,18 +734,17 @@
                     <span id="memberReportCapacity" class="hidden"></span>
                     <div class="flex gap-2 flex-wrap">
                         <button id="memberUploadReportBtn" onclick="openUploadModal()" class="btn-secondary-pill">＋ 上傳報告</button>
-                        <button onclick="openExportMenu(false)" class="bg-white hover:bg-[#f0faf5] border border-[#3da881] text-[#2d8f6f] px-4 py-1.5 rounded-full text-sm font-medium transition">📤 匯出</button>
-                        <button id="memberToggleSelectModeBtn" onclick="toggleMemberSelectMode()" class="border border-gray-300 hover:bg-gray-50 px-4 py-1.5 rounded-full text-sm font-medium transition">批量操作</button>
+                        <button id="memberToggleSelectModeBtn" onclick="toggleMemberSelectMode()" class="btn-secondary-pill">📤 批量匯出/分享</button>
                     </div>
                 </div>
                 <div id="memberPetFilters" class="flex flex-wrap gap-2 mb-3"></div>
                 <div id="memberReportSelectMode" class="report-float-bar">
-                    <span id="memberSelectedCountDisplay" class="rf-left">已選擇 0 項</span>
-                    <div class="rf-right">
+                    <span id="memberSelectedCountDisplay" class="rf-left">已選擇 0 份</span>
+                    <div class="rf-mid">
                         <button type="button" onclick="toggleMemberSelectAllReports(true)" class="px-3 py-1 rounded-full bg-white/10 text-white text-sm">全選</button>
-                        <button type="button" onclick="copyMemberSelectedReports()" class="px-3 py-1 rounded-full bg-white/10 text-white text-sm">複製</button>
-                        <button type="button" id="memberDownloadOriginalBtn" onclick="downloadMemberSelectedReports()" class="px-3 py-1 rounded-full bg-[#3da881] text-white text-sm">📤 分享</button>
-                        <button type="button" onclick="deleteMemberSelectedReports()" class="px-3 py-1 rounded-full text-red-300 text-sm">刪除</button>
+                    </div>
+                    <div class="rf-right">
+                        <button type="button" id="memberDownloadOriginalBtn" onclick="downloadMemberSelectedReports()" class="px-3 py-1 rounded-full bg-[#10b981] text-white text-sm font-semibold">🚀 確認匯出/分享</button>
                         <button type="button" onclick="exitMemberSelectMode()" class="text-slate-300 text-sm px-1">✕</button>
                     </div>
                 </div>
@@ -1493,10 +1522,10 @@
 
     <div id="exportChoiceModal" class="modal modal-top">
         <div class="modal-content fade-in" style="max-width:360px;">
-            <h3 class="text-lg font-bold text-gray-800 mb-1">匯出病歷</h3>
-            <p class="text-sm text-gray-500 mb-4">選擇匯出格式</p>
-            <button type="button" onclick="confirmExportChoice('pdf')" class="w-full mb-2 py-3 rounded-2xl border border-gray-200 text-sm font-medium hover:bg-[#f0faf5]">📄 PDF 懶人包</button>
-            <button type="button" onclick="confirmExportChoice('jpeg')" class="w-full mb-3 py-3 rounded-2xl border border-gray-200 text-sm font-medium hover:bg-[#f0faf5]">🖼️ JPEG 圖片</button>
+            <h3 class="text-lg font-bold text-gray-800 mb-1">確認匯出／分享</h3>
+            <p class="text-sm text-gray-500 mb-4">手機將優先開啟系統分享（WhatsApp／AirDrop／存檔）</p>
+            <button type="button" onclick="confirmExportChoice('pdf')" class="w-full mb-2 py-3 rounded-2xl border border-gray-200 text-sm font-medium hover:bg-[#f0faf5]">📄 生成 PDF 懶人包檔案</button>
+            <button type="button" onclick="confirmExportChoice('jpeg')" class="w-full mb-3 py-3 rounded-2xl border border-gray-200 text-sm font-medium hover:bg-[#f0faf5]">🖼️ 生成 JPEG 合成圖片</button>
             <button type="button" onclick="closeExportMenu()" class="w-full py-2.5 rounded-2xl text-sm text-gray-500">取消</button>
         </div>
     </div>
@@ -1610,6 +1639,30 @@
             <p class="text-sm text-gray-600 mb-5" id="expiryNoticeText">請付款續用後即可繼續使用。</p>
             <button onclick="closeExpiryNotice(); openPaymentModal();" class="w-full py-2.5 bg-[#3da881] text-white rounded-2xl text-sm font-medium">前往付款</button>
             <button onclick="closeExpiryNotice()" class="w-full mt-2 py-2 border border-gray-300 rounded-2xl text-sm text-gray-500">稍後</button>
+        </div>
+    </div>
+
+    <div id="manageHubModal" class="modal">
+        <div class="modal-content fade-in" style="max-width:460px;">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-lg font-bold text-gray-800">⚙️ 管理中心</h3>
+                <i class="fa-solid fa-xmark text-xl text-gray-400 cursor-pointer" onclick="closeManageHub()"></i>
+            </div>
+            <div class="flex gap-2 mb-3">
+                <button type="button" id="manageTabPets" class="flex-1 py-2 rounded-full text-sm font-semibold bg-[#10b981] text-white" onclick="showManageHubTab('pets')">🐾 毛孩檔案管理</button>
+                <button type="button" id="manageTabReports" class="flex-1 py-2 rounded-full text-sm font-semibold bg-gray-100 text-gray-600" onclick="showManageHubTab('reports')">📁 病歷報告管理</button>
+            </div>
+            <div id="manageHubPets">
+                <p class="text-xs text-gray-500 mb-3">新增、編輯、排序與刪除毛孩名片。</p>
+                <button type="button" class="btn-primary-pill w-full mb-2" onclick="closeManageHub(); manageHubDemo ? openAddPetModalDemo() : openAddPetModal();">＋ 新增毛孩</button>
+                <button type="button" class="btn-secondary-pill w-full mb-2" onclick="closeManageHub(); togglePetManageMode(manageHubDemo);">進入卡片排序／批量刪除</button>
+                <button type="button" class="btn-secondary-pill w-full" onclick="closeManageHub(); manageHubDemo ? resetDemoExperience() : openMemberTrash();">回收桶／還原範例</button>
+            </div>
+            <div id="manageHubReports" class="hidden">
+                <p class="text-xs text-gray-500 mb-3">分類標籤會按標題自動顯示。批量匯出前請先勾選報告。</p>
+                <button type="button" class="btn-primary-pill w-full mb-2" onclick="closeManageHub(); manageHubDemo ? toggleDemoSelectMode(true) : toggleMemberSelectMode(true);">📤 進入批量匯出／分享</button>
+                <button type="button" class="btn-secondary-pill w-full" onclick="closeManageHub(); manageHubDemo ? openUploadModalDemo() : openUploadModal();">＋ 上傳報告</button>
+            </div>
         </div>
     </div>
 
@@ -2277,7 +2330,7 @@
             var list = document.getElementById(demo ? 'petList' : 'memberPetList');
             var allBtn = document.getElementById(demo ? 'demoPetSelectAllBtn' : 'memberPetSelectAllBtn');
             var delBtn = document.getElementById(demo ? 'demoPetBatchDeleteBtn' : 'memberPetBatchDeleteBtn');
-            if (manageBtn) manageBtn.textContent = on ? '完成' : '管理';
+            if (manageBtn) manageBtn.textContent = on ? '完成' : '⚙️ 管理';
             if (bar) bar.classList.toggle('show', !!on);
             if (list) list.classList.toggle('pet-manage-on', !!on);
             var ids = currentPetIds(demo);
@@ -2637,6 +2690,84 @@
             if (r && r.doctor) parts.push(String(r.doctor));
             if (r && r.amount) parts.push('HKD $' + formatHkd(r.amount));
             return parts.join(' · ') || '主人自行記錄';
+        }
+        function reportKindTag(r) {
+            var blob = ((r && r.title) || '') + ' ' + ((r && r.description) || '');
+            if (/手術|拔牙|extraction|surgery|scaling|洗牙/.test(blob)) return { bg: '#fee2e2', fg: '#b91c1c', label: '手術' };
+            if (/覆診|複診|follow|recheck/.test(blob)) return { bg: '#fef9c3', fg: '#a16207', label: '覆診' };
+            if (/檢查|血液|超聲|X\s*光|檢驗|超聲波|報告/.test(blob)) return { bg: '#d1fae5', fg: '#047857', label: '檢查' };
+            return { bg: '#ecfdf5', fg: '#0f5132', label: '門診' };
+        }
+        function reportKindChipHtml(r) {
+            var k = reportKindTag(r);
+            return '<span class="kind-chip" style="background:' + k.bg + ';color:' + k.fg + ';">' + k.label + '</span>';
+        }
+        function compactAttachHtml(files, onclickJs) {
+            var n = (files && files.length) || 0;
+            if (!n) return '';
+            return '<button type="button" class="att-chip" onclick="event.stopPropagation();' + onclickJs + '">📄 附件檔案 (' + n + ')</button>';
+        }
+        var manageHubDemo = false;
+        function handleManageBtn(demo) {
+            var on = demo ? petManageModeDemo : petManageModeMember;
+            if (on) togglePetManageMode(demo);
+            else openManageHub(demo);
+        }
+        function openManageHub(demo) {
+            manageHubDemo = !!demo;
+            showManageHubTab('pets');
+            var m = document.getElementById('manageHubModal');
+            if (m) m.classList.add('show');
+        }
+        function closeManageHub() {
+            var m = document.getElementById('manageHubModal');
+            if (m) m.classList.remove('show');
+        }
+        function showManageHubTab(tab) {
+            var pets = document.getElementById('manageHubPets');
+            var reps = document.getElementById('manageHubReports');
+            var tp = document.getElementById('manageTabPets');
+            var tr = document.getElementById('manageTabReports');
+            var onPets = tab !== 'reports';
+            if (pets) pets.classList.toggle('hidden', !onPets);
+            if (reps) reps.classList.toggle('hidden', onPets);
+            if (tp) tp.className = 'flex-1 py-2 rounded-full text-sm font-semibold ' + (onPets ? 'bg-[#10b981] text-white' : 'bg-gray-100 text-gray-600');
+            if (tr) tr.className = 'flex-1 py-2 rounded-full text-sm font-semibold ' + (onPets ? 'bg-gray-100 text-gray-600' : 'bg-[#10b981] text-white');
+        }
+        function toggleNavDrawer(force) {
+            var d = document.getElementById('navDrawer');
+            var m = document.getElementById('navDrawerMask');
+            var on = typeof force === 'boolean' ? force : !(d && d.classList.contains('show'));
+            if (d) d.classList.toggle('show', on);
+            if (m) m.classList.toggle('show', on);
+            if (on) fillNavDrawer();
+        }
+        function onNavAvatarClick() {
+            if (isLoggedIn) { handleUserMenuClick('account'); toggleNavDrawer(false); }
+            else openLoginModal();
+        }
+        function fillNavDrawer() {
+            var box = document.getElementById('navDrawerLinks');
+            if (!box) return;
+            var adminBtn = isAdminUser() ? '<button type="button" onclick="toggleNavDrawer(false);openAdminPage()">後台管理</button>' : '';
+            if (isLoggedIn) {
+                box.innerHTML =
+                    '<button type="button" onclick="toggleNavDrawer(false);handleUserMenuClick(\'account\')">會員專區</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);openClinicPartnerModal()">獸醫診所專區</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);openPricingModal()">定價方案</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);openFaqModal()">常見問題</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);openContactModal()">查詢</button>' +
+                    adminBtn +
+                    '<button type="button" onclick="toggleNavDrawer(false);handleLogout()">登出</button>';
+            } else {
+                box.innerHTML =
+                    '<button type="button" onclick="toggleNavDrawer(false);openClinicPartnerModal()">獸醫診所專區</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);openPricingModal()">定價方案</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);openFaqModal()">常見問題</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);openContactModal()">查詢</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);openLoginModal()">登入</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);openSignupModal()">免費開始使用</button>';
+            }
         }
 
         // ================================================================
@@ -3587,6 +3718,7 @@
                     <button onclick="openSignupModal()" class="nav-link-primary">免費開始使用</button>
                 `;
             }
+            fillNavDrawer();
         }
 
         function toggleUserDropdown() {
@@ -4554,27 +4686,14 @@
             }
             var isInSelectMode = isMemberSelectMode;
             container.innerHTML = pageRows.map(function(r) {
-                var filesHtml = '';
-                if (r.files && r.files.length > 0) {
-                    filesHtml = '<div class="attachment-icons">';
-                    r.files.forEach(function(f) {
-                        var isPdf = f.toLowerCase().endsWith('.pdf');
-                        var isImage = f.toLowerCase().endsWith('.jpg') || f.toLowerCase().endsWith('.jpeg') || f
-                            .toLowerCase().endsWith('.png');
-                        var icon = isPdf ? 'fa-file-pdf' : (isImage ? 'fa-file-image' : 'fa-file');
-                        var cls = isPdf ? 'att-icon-pdf' : (isImage ? 'att-icon-image' : 'att-icon-file');
-                        filesHtml += '<span class="att-icon ' + cls + '"><i class="fa-regular ' + icon +
-                            '"></i> ' + f + '</span>';
-                    });
-                    filesHtml += '</div>';
-                }
                 var pid = r.petId || memberSelectedPetId;
+                var filesHtml = compactAttachHtml(r.files, "openReportDetailModal('" + pid + "','" + r.id + "')");
                 return `
                     <div class="bg-white rounded-xl p-3 shadow-sm border border-gray-100 report-item">
                         <div class="report-item-with-checkbox">
                             ${isInSelectMode ? `<input type="checkbox" class="report-checkbox" data-report-id="${r.id}" ${memberSelectedReports.has(r.id) ? 'checked' : ''} onchange="toggleMemberReportSelection('${r.id}')">` : ''}
                             <div class="report-content" onclick="${isInSelectMode ? '' : `openReportDetailModal('${pid}','${r.id}')`}">
-                                <div class="font-bold text-sm">${reportDisplayTitle(r)}${r._petName ? ' <span class="text-xs font-normal text-gray-400">· ' + r._petName + '</span>' : ''}</div>
+                                <div class="font-bold text-sm">${reportKindChipHtml(r)}${reportDisplayTitle(r)}${r._petName ? ' <span class="text-xs font-normal text-gray-400">· ' + r._petName + '</span>' : ''}</div>
                                 <div class="text-xs text-gray-400 mt-0.5">${r.date || ''}</div>
                                 <div class="text-xs text-gray-500 mt-0.5">${reportMetaLine(r)}</div>
                                 <div class="text-sm text-gray-600 leading-relaxed mt-1">${(r.description || '').substring(0, 80)}${(r.description || '').length > 80 ? '...' : ''}</div>
@@ -4678,15 +4797,18 @@
         // ================================================================
         // 會員專區選擇報告模式
         // ================================================================
-        function toggleMemberSelectMode() {
-            isMemberSelectMode = !isMemberSelectMode;
+        function toggleMemberSelectMode(forceOn) {
+            if (forceOn === true) isMemberSelectMode = true;
+            else if (forceOn === false) isMemberSelectMode = false;
+            else isMemberSelectMode = !isMemberSelectMode;
             var btn = document.getElementById('memberToggleSelectModeBtn');
             if (isMemberSelectMode) {
                 memberSelectedReports.clear();
                 if (btn) btn.textContent = '完成';
+                showToast('請勾選欲匯出的病歷報告（可點擊「全選」）', 'success');
             } else {
                 memberSelectedReports.clear();
-                if (btn) btn.textContent = '批量操作';
+                if (btn) btn.textContent = '📤 批量匯出/分享';
             }
             renderMemberReports();
             updateMemberSelectedCount();
@@ -4712,7 +4834,7 @@
         function updateMemberSelectedCount() {
             var n = memberSelectedReports.size;
             var el = document.getElementById('memberSelectedCountDisplay');
-            if (el) el.textContent = '已選擇 ' + n + ' 項';
+            if (el) el.textContent = '已選擇 ' + n + ' 份';
             var bar = document.getElementById('memberReportSelectMode');
             if (bar) bar.classList.toggle('show', isMemberSelectMode && n > 0);
         }
@@ -4721,7 +4843,7 @@
             isMemberSelectMode = false;
             memberSelectedReports.clear();
             var btn = document.getElementById('memberToggleSelectModeBtn');
-            if (btn) btn.textContent = '批量操作';
+            if (btn) btn.textContent = '📤 批量匯出/分享';
             renderMemberReports();
             updateMemberSelectedCount();
         }
@@ -9024,27 +9146,14 @@
             
             var isInSelectMode = isDemoSelectMode;
             container.innerHTML = reports.map(function(r) {
-                var filesHtml = '';
-                if (r.files && r.files.length > 0) {
-                    filesHtml = '<div class="attachment-icons">';
-                    r.files.forEach(function(f) {
-                        var isPdf = f.toLowerCase().endsWith('.pdf');
-                        var isImage = f.toLowerCase().endsWith('.jpg') || f.toLowerCase().endsWith('.jpeg') || f.toLowerCase().endsWith('.png');
-                        var icon = isPdf ? 'fa-file-pdf' : (isImage ? 'fa-file-image' : 'fa-file');
-                        var cls = isPdf ? 'att-icon-pdf' : (isImage ? 'att-icon-image' : 'att-icon-file');
-                        // 檔名也用 encode 避免特殊字元
-                        var safeFile = (f || '').replace(/'/g, "\\'");
-                        filesHtml += '<span class="att-icon ' + cls + '" onclick="event.stopPropagation(); openDemoLockModal(\'download\')" style="cursor:pointer;"><i class="fa-regular ' + icon + '"></i> ' + f + ' <i class="fa-solid fa-download text-xs ml-1"></i></span>';
-                    });
-                    filesHtml += '</div>';
-                }
+                var filesHtml = compactAttachHtml(r.files, "openReportDetailDemoById('" + r.id + "')");
                 // 全部改用 report id，避免 title/desc 有引號導致 onclick 壞掉
                 return `
                     <div class="bg-white rounded-xl p-3 shadow-sm border border-gray-100 report-item" data-report-id="${r.id}">
                         <div class="report-item-with-checkbox">
                             ${isInSelectMode ? `<input type="checkbox" class="report-checkbox" data-report-id="${r.id}" ${demoSelectedReports.has(r.id) ? 'checked' : ''} onchange="toggleDemoReportSelection('${r.id}')">` : ''}
                             <div class="report-content" onclick="${isInSelectMode ? '' : `openReportDetailDemoById('${r.id}')`}" style="cursor:pointer;">
-                                <div class="font-bold text-sm">${reportDisplayTitle(r)}</div>
+                                <div class="font-bold text-sm">${reportKindChipHtml(r)}${reportDisplayTitle(r)}</div>
                                 <div class="text-xs text-gray-400">${r.petName ? ('屬於毛孩：' + r.petName) : ''}</div>
                                 <div class="text-xs text-gray-400 mt-0.5">${r.date || ''}</div>
                                 <div class="text-xs text-gray-500">${reportMetaLine(r)}</div>
@@ -9718,15 +9827,18 @@
         }
 
         // ===== 體驗版 - 選擇報告模式 =====
-        function toggleDemoSelectMode() {
-            isDemoSelectMode = !isDemoSelectMode;
+        function toggleDemoSelectMode(forceOn) {
+            if (forceOn === true) isDemoSelectMode = true;
+            else if (forceOn === false) isDemoSelectMode = false;
+            else isDemoSelectMode = !isDemoSelectMode;
             var btn = document.getElementById('demoToggleSelectBtn');
             if (isDemoSelectMode) {
                 demoSelectedReports.clear();
                 if (btn) btn.textContent = '完成';
+                showToast('請勾選欲匯出的病歷報告（可點擊「全選」）', 'success');
             } else {
                 demoSelectedReports.clear();
-                if (btn) btn.textContent = '批量操作';
+                if (btn) btn.textContent = '📤 批量匯出/分享';
             }
             renderDemoReports();
             updateDemoSelectedCount();
@@ -9756,7 +9868,7 @@
         function updateDemoSelectedCount() {
             var n = demoSelectedReports.size;
             var el = document.getElementById('demoSelectedCountDisplay');
-            if (el) el.textContent = '已選擇 ' + n + ' 項';
+            if (el) el.textContent = '已選擇 ' + n + ' 份';
             var bar = document.getElementById('demoReportSelectMode');
             if (bar) bar.classList.toggle('show', isDemoSelectMode && n > 0);
         }
@@ -9765,7 +9877,7 @@
             isDemoSelectMode = false;
             demoSelectedReports.clear();
             var btn = document.getElementById('demoToggleSelectBtn');
-            if (btn) btn.textContent = '批量操作';
+            if (btn) btn.textContent = '📤 批量匯出/分享';
             renderDemoReports();
             updateDemoSelectedCount();
         }

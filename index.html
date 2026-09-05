@@ -25,14 +25,14 @@
         body { font-family: system-ui, -apple-system, 'Inter', 'Segoe UI', sans-serif; background: #f5faf7; min-height: 100vh; }
         
         /* ===== Modal ===== */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.25); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 1000; padding: 1rem; align-items: center; justify-content: center; }
+        .modal, .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.25); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 1000; padding: 16px; align-items: center; justify-content: center; }
         .modal-preview { z-index: 2000 !important; }
         .modal-top { z-index: 3000 !important; }
-        .modal.show { display: flex !important; align-items: center; justify-content: center; }
-        .modal-content { background: white; border-radius: 2rem; max-width: 480px; width: 100%; padding: 2rem; max-height: 85vh; overflow: hidden; margin: auto; position: relative; display: flex; flex-direction: column; }
-        .modal-content > *:not(.modal-sticky-actions) { flex: 0 0 auto; }
-        .modal-scroll { flex: 1 1 auto; overflow-y: auto; min-height: 0; }
-        .modal-sticky-actions { position: sticky; bottom: 0; background: #fff; z-index: 10; padding: 12px 0 0; margin-top: 0.4rem; border-top: 1px solid #eee; flex: 0 0 auto; }
+        .modal.show, .modal-overlay.show { display: flex !important; align-items: center; justify-content: center; }
+        .modal-content { background: white; border-radius: 2rem; max-width: 480px; width: 100%; padding: 1.25rem 1.25rem 0.75rem; max-height: 85vh !important; overflow: hidden !important; margin: auto; position: relative; display: flex !important; flex-direction: column !important; }
+        .modal-scroll, .modal-body { flex: 1 !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; min-height: 0; padding-bottom: 20px !important; }
+        .modal-sticky-actions, .modal-footer { position: sticky !important; bottom: 0 !important; background: #ffffff !important; z-index: 20 !important; padding: 12px 0; margin: 0; border-top: 1px solid #eee; box-shadow: 0 -4px 10px rgba(0,0,0,0.05); flex: 0 0 auto; }
+        .attachment-download-btn { width: 34px; height: 34px; border-radius: 50%; border: 1px solid #3da881; color: #2d8f6f; background: #fff; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; flex: 0 0 auto; }
         .home-quota-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; padding: 0.45rem 0.55rem; margin-bottom: 0.85rem; background: #f4faf7; border: 1px solid #d7eee3; border-radius: 9999px; }
         .home-quota-chip { font-size: 0.72rem; font-weight: 600; color: #374151; background: #fff; border-radius: 9999px; padding: 0.2rem 0.55rem; border: 1px solid #e5e7eb; }
         .home-quota-status { font-size: 0.72rem; font-weight: 700; border-radius: 9999px; padding: 0.2rem 0.6rem; }
@@ -150,8 +150,8 @@
         .nav-link:hover { color: #2d8f6f; background: #e8f5ef; }
         .nav-link-primary { padding: 0.6rem 1.8rem; font-size: 0.95rem; font-weight: 600; color: white; background: #3da881; border-radius: 9999px; transition: 0.15s; cursor: pointer; border: none; box-shadow: 0 4px 12px rgba(61,168,129,0.3); }
         .nav-link-primary:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(61,168,129,0.4); }
-        .nav-link-b2b { padding: 0.45rem 0.9rem; font-size: 0.82rem; font-weight: 600; color: #0f5132; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 9999px; cursor: pointer; }
-        .nav-link-b2b:hover { background: #d1fae5; }
+        .nav-link-b2b { padding: 0.45rem 0.9rem; font-size: 0.82rem; font-weight: 600; color: #1d4ed8; background: #eff6ff; border: 1px solid #3b82f6; border-radius: 9999px; cursor: pointer; }
+        .nav-link-b2b:hover { background: #dbeafe; }
         .nav-desktop { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
         .nav-mobile-tools { display: none; align-items: center; gap: 0.45rem; }
         .nav-hamburger { width: 40px; height: 40px; border-radius: 12px; border: 1px solid #e5e7eb; background: #fff; color: #374151; display: flex; align-items: center; justify-content: center; cursor: pointer; }
@@ -362,7 +362,6 @@
                 <button onclick="openClinicPartnerModal()" class="nav-link-b2b"><i class="fa-solid fa-user-doctor mr-1"></i>獸醫診所專區</button>
                 <button onclick="openPricingModal()" class="nav-link">定價方案</button>
                 <button onclick="openFaqModal()" class="nav-link">常見問題</button>
-                <button onclick="openContactModal()" class="nav-link">查詢</button>
                 <button onclick="openLoginModal()" class="nav-link">登入</button>
                 <button onclick="openSignupModal()" class="nav-link-primary">免費開始使用</button>
             </div>
@@ -656,7 +655,7 @@
 
         <div id="view-membership">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-[#2d8f6f]">我的會員專區</h2>
+            <h2 class="text-2xl font-bold text-[#2d8f6f]">帳戶設定</h2>
         </div>
         <div id="emailVerifyBanner" class="hidden mb-4 px-4 py-3 rounded-2xl bg-amber-50 border border-amber-200 text-sm text-amber-900 flex flex-wrap items-center justify-between gap-2">
             <span>請驗證電郵以保障帳戶安全。未驗證亦可先使用所有功能。</span>
@@ -667,17 +666,15 @@
                 <div>
                     <div class="flex flex-wrap items-center gap-2">
                         <h3 id="memberName" class="text-xl font-bold text-gray-800">寵物主人</h3>
-                        <span id="memberPlanBadge" class="plan-mini-badge">方案生效中 · 尚餘 — 天</span>
                         <button type="button" onclick="openPaymentModal()" class="px-2.5 py-1 border border-[#3da881] text-[#2d8f6f] rounded-full text-xs">續費/升級</button>
-                        <details class="quiet-menu">
-                            <summary class="px-3 py-1 border border-gray-300 text-gray-600 rounded-full text-xs hover:bg-gray-50">帳戶</summary>
-                            <div class="menu-panel">
-                                <button type="button" onclick="openSettingsModal()">設定</button>
-                                <button type="button" onclick="handleLogout()" class="text-red-600">登出</button>
-                            </div>
-                        </details>
                     </div>
-                    <p id="memberEmail" class="text-sm text-gray-500">petlover@email.com</p>
+                    <p id="memberEmail" class="hidden"></p>
+                    <div class="mt-3 p-4 rounded-2xl bg-[#f0faf5] border border-[#d4ede2] text-sm text-gray-700 space-y-1.5">
+                        <div>方案：<span id="accountPlanName">基礎版方案</span></div>
+                        <div>狀態：<span id="accountPlanStatus">生效中</span></div>
+                        <div>有效期：<span id="accountPlanDates">—</span></div>
+                    </div>
+                    <span id="memberPlanBadge" class="hidden"></span>
                     <span id="memberPlanTag" class="hidden"></span>
                     <p id="memberPendingPlanNote" class="text-xs text-gray-500 mt-1 hidden"></p>
                     <div id="membershipStatusCard" class="hidden" aria-hidden="true">
@@ -691,13 +688,19 @@
             <div class="grid grid-cols-2 gap-3 mt-5">
                 <div class="text-center py-2 px-2 bg-[#f0faf5] rounded-xl">
                     <div class="text-lg font-bold text-[#2d8f6f]" id="memberPetCount">0 / 1 隻</div>
-                    <div class="text-xs text-gray-500">已登記毛孩配額</div>
+                    <div class="text-xs text-gray-500">已登記毛孩</div>
                 </div>
                 <div class="text-center py-2 px-2 bg-[#f0faf5] rounded-xl">
                     <div class="text-lg font-bold text-[#2d8f6f]" id="memberReportCount">0 / 0 份</div>
-                    <div class="text-xs text-gray-500">已上載病歷</div>
+                    <div class="text-xs text-gray-500">已上傳病歷</div>
                 </div>
             </div>
+            <div class="mt-5 space-y-2">
+                <button type="button" onclick="openSettingsSub('name')" class="w-full py-2.5 border border-gray-200 rounded-2xl text-sm text-left px-4">常用名稱</button>
+                <button type="button" onclick="openChangeEmailModal()" class="w-full py-2.5 border border-gray-200 rounded-2xl text-sm text-left px-4">電子郵件</button>
+                <button type="button" onclick="openSettingsSub('password')" class="w-full py-2.5 border border-gray-200 rounded-2xl text-sm text-left px-4">密碼</button>
+            </div>
+            <button type="button" onclick="downloadAccountBackup()" class="w-full mt-4 py-2.5 border border-[#3da881] text-[#2d8f6f] rounded-2xl text-sm">一鍵打包備份所有資料</button>
         </div>
         </div>
 
@@ -1310,9 +1313,8 @@
             <div class="space-y-2.5">
                 <button onclick="openSettingsSub('name')" class="w-full py-2.5 border border-gray-300 rounded-2xl text-sm hover:bg-gray-50 transition text-left px-4 flex items-center gap-3"><i class="fa-regular fa-user text-[#3da881] w-5"></i> 修改顯示名稱</button>
                 <button onclick="openSettingsSub('password')" class="w-full py-2.5 border border-gray-300 rounded-2xl text-sm hover:bg-gray-50 transition text-left px-4 flex items-center gap-3"><i class="fa-solid fa-lock text-[#3da881] w-5"></i> 修改密碼</button>
-                <button onclick="openChangeEmailModal()" class="w-full py-2.5 border border-gray-300 rounded-2xl text-sm hover:bg-gray-50 transition text-left px-4 flex items-center gap-3"><i class="fa-regular fa-envelope text-[#3da881] w-5"></i> 更換電郵</button>
-                <button onclick="closeSettingsModal(); openContactModal();" class="w-full py-2.5 border border-gray-300 rounded-2xl text-sm hover:bg-gray-50 transition text-left px-4 flex items-center gap-3"><i class="fa-regular fa-envelope text-[#3da881] w-5"></i> 查詢／留言</button>
-                <button type="button" onclick="downloadAccountBackup()" class="w-full py-2.5 border border-[#3da881] text-[#2d8f6f] rounded-2xl text-sm hover:bg-[#f0faf5] transition text-left px-4 flex items-center gap-3"><i class="fa-solid fa-box-archive text-[#3da881] w-5"></i> 📦 一鍵打包備份所有資料</button>
+                <button onclick="openChangeEmailModal()" class="w-full py-2.5 border border-gray-300 rounded-2xl text-sm hover:bg-gray-50 transition text-left px-4 flex items-center gap-3">更換電郵</button>
+                <button type="button" onclick="downloadAccountBackup()" class="w-full py-2.5 border border-[#3da881] text-[#2d8f6f] rounded-2xl text-sm hover:bg-[#f0faf5] transition text-left px-4">一鍵打包備份所有資料</button>
             </div>
             <button onclick="closeSettingsModal()" class="w-full mt-4 py-2.5 bg-[#3da881] text-white rounded-2xl font-medium text-sm hover:bg-[#2d8f6f] transition">關閉</button>
         </div>
@@ -1420,6 +1422,7 @@
     <div id="uploadModal" class="modal">
         <div class="modal-content fade-in">
             <h3 class="text-lg font-bold text-gray-800 mb-3">新增病歷報告</h3>
+            <div class="modal-body modal-scroll">
             <label class="text-xs text-gray-500 mb-1 block">屬於邊隻毛孩</label>
             <select id="uploadPetSelect" onchange="onUploadPetSelectChange()" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6ecba5]"></select>
             <input id="uploadNewPetName" type="text" placeholder="請輸入新毛孩名字" class="hidden w-full px-4 py-2.5 border border-[#6ecba5] rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
@@ -1442,7 +1445,8 @@
             </div>
             <p id="ocrHint" class="text-xs text-[#2d8f6f] mb-2 hidden">正在辨識圖片文字…</p>
             <div id="fileList" class="text-xs text-gray-500 mb-3"></div>
-            <div class="modal-sticky-actions flex gap-2.5">
+            </div>
+            <div class="modal-footer modal-sticky-actions flex gap-2.5">
                 <button onclick="closeUploadModal()" class="flex-1 py-2.5 border border-gray-300 rounded-2xl text-sm hover:bg-gray-50 transition">取消</button>
                 <button type="button" id="confirmUpload" onclick="confirmUpload()" class="flex-1 py-2.5 bg-[#3da881] text-white rounded-2xl text-sm hover:bg-[#2d8f6f] transition">儲存報告</button>
             </div>
@@ -1490,6 +1494,7 @@
     <div id="editReportModal" class="modal">
         <div class="modal-content fade-in">
             <h3 class="text-lg font-bold text-gray-800 mb-3">編輯報告</h3>
+            <div class="modal-body modal-scroll">
             <label class="text-xs text-gray-500 mb-1 block">屬於毛孩</label>
             <select id="editReportPetSelect" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6ecba5]"></select>
             <input id="editReportTitle" type="text" placeholder="標題 *" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
@@ -1514,7 +1519,8 @@
             </div>
             <input type="file" id="editFileInput" class="hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,image/*,application/pdf" multiple onchange="handleEditFiles(this.files)">
             <div id="editFileList" class="text-xs text-gray-500 mb-3"></div>
-            <div class="flex gap-2.5">
+            </div>
+            <div class="modal-footer modal-sticky-actions flex gap-2.5">
                 <button onclick="closeEditModal()" class="flex-1 py-2.5 border border-gray-300 rounded-2xl text-sm hover:bg-gray-50 transition">取消</button>
                 <button type="button" id="saveEditReportBtn" onclick="saveEditedReport()" class="flex-1 py-2.5 bg-[#3da881] text-white rounded-2xl text-sm hover:bg-[#2d8f6f] transition">儲存報告</button>
             </div>
@@ -2814,11 +2820,10 @@
             if (isLoggedIn) {
                 box.innerHTML =
                     '<button type="button" onclick="toggleNavDrawer(false);showMemberPets();">我的毛孩</button>' +
-                    '<button type="button" onclick="toggleNavDrawer(false);showMemberAccount();">會員專區</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);showMemberAccount();">帳戶設定</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);openClinicPartnerModal()">獸醫診所專區</button>' +
                     '<button type="button" onclick="toggleNavDrawer(false);openPricingModal()">定價方案</button>' +
                     '<button type="button" onclick="toggleNavDrawer(false);openFaqModal()">常見問題</button>' +
-                    '<button type="button" onclick="toggleNavDrawer(false);openContactModal()">查詢</button>' +
-                    '<button type="button" onclick="toggleNavDrawer(false);openClinicPartnerModal()">獸醫診所專區</button>' +
                     adminBtn +
                     '<button type="button" onclick="toggleNavDrawer(false);handleLogout()">登出</button>';
             } else {
@@ -2828,7 +2833,6 @@
                     '<button type="button" onclick="toggleNavDrawer(false);openClinicPartnerModal()">獸醫診所專區</button>' +
                     '<button type="button" onclick="toggleNavDrawer(false);openPricingModal()">定價方案</button>' +
                     '<button type="button" onclick="toggleNavDrawer(false);openFaqModal()">常見問題</button>' +
-                    '<button type="button" onclick="toggleNavDrawer(false);openContactModal()">查詢</button>' +
                     '<button type="button" onclick="toggleNavDrawer(false);openSignupModal()">免費開始使用</button>';
             }
         }
@@ -3102,6 +3106,14 @@
             var planName = planBadgeText((getPlanLimits() && getPlanLimits().label) || '');
             var badge = document.getElementById('memberPlanBadge');
             var setBadge = function(text) { if (badge) badge.textContent = text; };
+            var setAccountCard = function(planText, statusText, dateText) {
+                var n = document.getElementById('accountPlanName');
+                var s = document.getElementById('accountPlanStatus');
+                var d = document.getElementById('accountPlanDates');
+                if (n) n.textContent = planText;
+                if (s) s.textContent = statusText;
+                if (d) d.textContent = dateText;
+            };
             var forceTrial = isTrialActive || (typeof paymentStatus !== 'undefined' && (paymentStatus === 'trial' || paymentStatus === 'pending_review'));
             if (forceTrial && !hasPaid) {
                 title.textContent = planName + ' · 免費試用中（' + short(trialStartDate) + ' - ' + short(trialEndDate) + '）';
@@ -3109,6 +3121,7 @@
                 if (range) range.textContent = '';
                 setDays(getTrialDaysLeft(), false);
                 setBadge(planName + '免費試用中 · 尚餘 ' + getTrialDaysLeft() + ' 天');
+                setAccountCard('試用版方案', '[ 試用中 ]', '至 ' + short(trialEndDate) + '（尚餘 ' + getTrialDaysLeft() + ' 天）');
             } else if (hasPaid && planEndDate) {
                 var graceEnd = new Date(planEndDate);
                 graceEnd.setDate(graceEnd.getDate() + MEMBERSHIP_GRACE_DAYS);
@@ -3120,6 +3133,7 @@
                 setDays(left, !stillActive);
                 lab.textContent = '';
                 setBadge(planName + (stillActive ? '生效中' : '已到期') + ' · 尚餘 ' + left + ' 天');
+                setAccountCard(planName, stillActive ? '[ 生效中 ]' : '[ 已到期 ]', (short(planStartDate || trialStartDate) + ' 至 ' + short(planEndDate) + '（尚餘 ' + left + ' 天）'));
                 if (!stillActive && badge) badge.style.background = '#fff7ed';
             } else if (hasPaid && !planEndDate) {
                 title.textContent = planName + ' · 已付費生效中';
@@ -3127,12 +3141,14 @@
                 if (range) range.textContent = '';
                 if (daysEl) daysEl.textContent = '尚餘 — 天';
                 setBadge(planName + '生效中');
+                setAccountCard(planName, '[ 生效中 ]', '—');
             } else if (isTrialActive && trialEndDate) {
                 title.textContent = planName + ' · 免費試用中（' + short(trialStartDate) + ' - ' + short(trialEndDate) + '）';
                 detail.textContent = '';
                 if (range) range.textContent = '';
                 setDays(getTrialDaysLeft(), false);
                 setBadge(planName + '免費試用中 · 尚餘 ' + getTrialDaysLeft() + ' 天');
+                setAccountCard('試用版方案', '[ 試用中 ]', '至 ' + short(trialEndDate) + '（尚餘 ' + getTrialDaysLeft() + ' 天）');
             } else {
                 title.textContent = '待付款';
                 detail.textContent = trialEndDate ? ('試用已於 ' + short(trialEndDate) + ' 結束') : '請選擇方案續用';
@@ -3140,6 +3156,7 @@
                 setDays(0, true);
                 card.className = 'hidden';
                 setBadge(planName + '待付款');
+                setAccountCard(planName || '方案', '[ 待付款 ]', trialEndDate ? ('試用已於 ' + short(trialEndDate) + ' 結束') : '—');
             }
         }
 
@@ -3159,10 +3176,6 @@
         }
 
         function goHome() {
-            if (isLoggedIn) {
-                showMemberPets();
-                return;
-            }
             document.getElementById('memberDashboard').classList.remove('show');
             var ad = document.getElementById('adminDashboard');
             if (ad) ad.classList.add('hidden');
@@ -3772,29 +3785,27 @@
             var navRight = document.getElementById('navRightSection');
             if (isLoggedIn) {
                 navRight.innerHTML = `
-                    <button onclick="openClinicPartnerModal()" class="nav-link-b2b"><i class="fa-solid fa-user-doctor mr-1"></i>獸醫診所專區</button>
+                    <button onclick="openClinicPartnerModal()" class="nav-link-b2b">獸醫診所專區</button>
                     <button onclick="openPricingModal()" class="nav-link">定價方案</button>
                     <button onclick="openFaqModal()" class="nav-link">常見問題</button>
-                    <button onclick="openContactModal()" class="nav-link">查詢</button>
-                    ${isAdminUser() ? '<button onclick="openAdminPage()" class="nav-link text-indigo-700 font-semibold">後台管理</button>' : ''}
                     <div class="user-dropdown">
                         <button onclick="toggleUserDropdown()" class="nav-link flex items-center gap-1">
                             ${currentUser.name || '會員'} <i class="fa-solid fa-chevron-down text-[0.6rem]"></i>
                         </button>
                         <div id="userDropdownMenu" class="dropdown-menu">
-                            <button onclick="handleUserMenuClick('account')" class="dropdown-item"><i class="fa-regular fa-user"></i> 會員專區</button>
-                            ${isAdminUser() ? '<button onclick="handleUserMenuClick(\'admin\')" class="dropdown-item"><i class="fa-solid fa-screwdriver-wrench"></i> 後台管理</button>' : ''}
+                            <button onclick="handleUserMenuClick('pets')" class="dropdown-item">我的毛孩</button>
+                            <button onclick="handleUserMenuClick('settings')" class="dropdown-item">帳戶設定</button>
+                            ${isAdminUser() ? '<button onclick="handleUserMenuClick(\'admin\')" class="dropdown-item">後台管理</button>' : ''}
                             <hr class="my-1 border-gray-100">
-                            <button onclick="handleLogout()" class="dropdown-item logout"><i class="fa-solid fa-right-from-bracket"></i> 登出</button>
+                            <button onclick="handleLogout()" class="dropdown-item logout text-red-600">登出</button>
                         </div>
                     </div>
                 `;
             } else {
                 navRight.innerHTML = `
-                    <button onclick="openClinicPartnerModal()" class="nav-link-b2b"><i class="fa-solid fa-user-doctor mr-1"></i>獸醫診所專區</button>
+                    <button onclick="openClinicPartnerModal()" class="nav-link-b2b">獸醫診所專區</button>
                     <button onclick="openPricingModal()" class="nav-link">定價方案</button>
                     <button onclick="openFaqModal()" class="nav-link">常見問題</button>
-                    <button onclick="openContactModal()" class="nav-link">查詢</button>
                     <button onclick="openLoginModal()" class="nav-link">登入</button>
                     <button onclick="openSignupModal()" class="nav-link-primary">免費開始使用</button>
                 `;
@@ -3815,9 +3826,8 @@
                 alert('請先登入會員'); 
                 return; 
             }
-            if (action === 'account') {
-                showMemberAccount();
-            }
+            if (action === 'pets') showMemberPets();
+            if (action === 'account' || action === 'settings') showMemberAccount();
             if (action === 'admin') openAdminPage();
         }
 
@@ -5443,23 +5453,25 @@
             var pet = pets.find(function(p) { return p.id === petId; });
             
             var filesHtml = '';
-            if (report.files && report.files.length > 0) {
+            var fileList = report.files || report.attachments || [];
+            if (fileList.length > 0) {
                 filesHtml = '<div class="flex flex-col gap-2 mt-2">';
-                report.files.forEach(function(f) {
-                    var isPdf = f.toLowerCase().endsWith('.pdf');
-                    var isImage = f.toLowerCase().endsWith('.jpg') || f.toLowerCase().endsWith('.jpeg') || f.toLowerCase().endsWith('.png');
+                fileList.forEach(function(f, idx) {
+                    var name = fileDisplayName(f);
+                    var low = name.toLowerCase();
+                    var isPdf = low.endsWith('.pdf');
+                    var isImage = /\.(jpe?g|png|webp|gif)$/i.test(low);
                     var icon = isPdf ? 'fa-file-pdf' : (isImage ? 'fa-file-image' : 'fa-file');
                     var color = isPdf ? 'text-red-500' : (isImage ? 'text-green-500' : 'text-gray-500');
                     var label = isPdf ? 'PDF' : (isImage ? '圖片' : '檔案');
-                    var safe = String(f).replace(/'/g, "\\'");
                     filesHtml += '<div class="flex items-center justify-between gap-2 bg-white border border-gray-100 rounded-xl px-3 py-2">';
-                    filesHtml += '<button type="button" class="flex items-center gap-2 text-left flex-1 min-w-0" onclick="previewAttachment(\'' + safe + '\',\'' + petId + '\')">';
+                    filesHtml += '<button type="button" class="attachment-preview-btn flex items-center gap-2 text-left flex-1 min-w-0" data-file-index="' + idx + '">';
                     filesHtml += '<i class="fa-regular ' + icon + ' ' + color + '"></i>';
-                    filesHtml += '<span class="text-sm text-gray-800 truncate">' + f + '</span>';
+                    filesHtml += '<span class="text-sm text-gray-800 truncate">' + name + '</span>';
                     filesHtml += '<span class="text-xs text-gray-400">(' + label + ')</span>';
                     filesHtml += '<i class="fa-solid fa-eye text-xs text-gray-400 ml-1"></i>';
                     filesHtml += '</button>';
-                    filesHtml += '<button type="button" class="shrink-0 px-2.5 py-1 text-xs border border-[#3da881] text-[#2d8f6f] rounded-full hover:bg-[#e8f5ef]" onclick="downloadFile(\'' + safe + '\',\'' + petId + '\')"><i class="fa-solid fa-download"></i></button>';
+                    filesHtml += '<button type="button" class="attachment-download-btn" data-file-index="' + idx + '" aria-label="下載附件"><i class="fa-solid fa-download"></i></button>';
                     filesHtml += '</div>';
                 });
                 filesHtml += '</div>';
@@ -5487,15 +5499,50 @@
                     report.description + '\n\n📎 附件: ' + (report.files || []).join(', ');
                 navigator.clipboard.writeText(text).then(function() { showToast('報告內容已複製到剪貼簿！', 'success'); });
             };
-            document.getElementById('detailDownloadBtn').onclick = function() {
-                if (!report.files || report.files.length === 0) {
-                    showToast('此報告沒有原檔可下載', 'warning');
-                    return;
-                }
-                report.files.forEach(function(f, i) {
-                    setTimeout(function() { downloadFile(f, petId); }, i * 400);
+            var detailDl = document.getElementById('detailDownloadBtn');
+            if (detailDl) {
+                detailDl.onclick = function(ev) {
+                    if (ev) ev.preventDefault();
+                    var files = report.files || report.attachments || [];
+                    if (!files.length) return;
+                    files.forEach(function(f, i) {
+                        setTimeout(function() { downloadAttachmentSmart(f, petId); }, i * 350);
+                    });
+                };
+            }
+            var box = document.getElementById('reportDetailContent');
+            if (box) {
+                box.querySelectorAll('.attachment-download-btn').forEach(function(btn) {
+                    btn.addEventListener('click', function(ev) {
+                        ev.preventDefault();
+                        ev.stopPropagation();
+                        var idx = parseInt(btn.getAttribute('data-file-index'), 10);
+                        var files = report.files || report.attachments || [];
+                        if (!isNaN(idx) && files[idx] != null) downloadAttachmentSmart(files[idx], petId);
+                    });
                 });
-            };
+                box.querySelectorAll('.attachment-preview-btn').forEach(function(btn) {
+                    btn.addEventListener('click', function(ev) {
+                        ev.preventDefault();
+                        ev.stopPropagation();
+                        var idx = parseInt(btn.getAttribute('data-file-index'), 10);
+                        var files = report.files || report.attachments || [];
+                        var f = files[idx];
+                        if (f == null) return;
+                        currentAttachmentFile = fileDisplayName(f);
+                        currentAttachmentPetId = petId;
+                        previewAttachment(currentAttachmentFile, petId);
+                    });
+                });
+            }
+        }
+        function fileDisplayName(f) {
+            if (!f) return 'attachment';
+            if (typeof f === 'string') {
+                if (/^data:|^blob:|^https?:/i.test(f)) return 'attachment';
+                return f;
+            }
+            return f.name || f.filename || f.fileName || 'attachment';
         }
 
         function closeReportDetailModal() {
@@ -5660,9 +5707,41 @@
             a.href = href;
             a.download = filename || 'download';
             a.rel = 'noopener';
+            a.target = '_blank';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
+            if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent || '')) {
+                try { window.open(href, '_blank'); } catch (e) {}
+            }
+        }
+        function dataToBlobUrl(src, filename) {
+            if (!src) return Promise.resolve('');
+            if (src instanceof Blob) return Promise.resolve(URL.createObjectURL(src));
+            if (typeof src !== 'string') {
+                src = src.dataUrl || src.dataURL || src.base64 || src.url || src.src || '';
+            }
+            if (!src) return Promise.resolve('');
+            if (/^blob:/i.test(src)) return Promise.resolve(src);
+            if (/^https?:\/\//i.test(src)) return Promise.resolve(src);
+            if (/^data:/i.test(src)) {
+                return fetch(src).then(function(r) { return r.blob(); }).then(function(b) { return URL.createObjectURL(b); });
+            }
+            return Promise.resolve(src);
+        }
+        function downloadAttachmentSmart(file, petId) {
+            var name = (typeof file === 'string') ? file : (file && (file.name || file.filename || 'attachment'));
+            var local = (typeof file === 'string') ? findLocalAttachmentData(file, petId) : (file && (file.dataUrl || file.dataURL || file.base64 || file.url || file.src || file.blob));
+            var src = local || (typeof file === 'string' ? file : '');
+            return dataToBlobUrl(src, name).then(function(url) {
+                if (url) {
+                    triggerAnchorDownload(url, name);
+                    return;
+                }
+                return downloadFile(name, petId);
+            }).catch(function() {
+                if (src) window.open(src, '_blank');
+            });
         }
         function downloadFile(filename, petId) {
             petId = petId || selectedPetId || memberSelectedPetId;

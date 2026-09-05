@@ -29,7 +29,8 @@
         .modal-preview { z-index: 2000 !important; }
         .modal-top { z-index: 3000 !important; }
         .modal.show { display: flex !important; align-items: center; justify-content: center; }
-        .modal-content { background: white; border-radius: 2rem; max-width: 480px; width: 100%; padding: 2rem; max-height: 90vh; overflow-y: auto; margin: auto; }
+        .modal-content { background: white; border-radius: 2rem; max-width: 480px; width: 100%; padding: 2rem; max-height: 90vh; overflow-y: auto; margin: auto; position: relative; }
+        .modal-sticky-actions { position: sticky; bottom: 0; background: #fff; z-index: 10; padding-top: 0.6rem; margin-top: 0.4rem; }
         .modal-content-wide { max-width: 960px; }
         .modal-content-medical { max-width: 800px; }
         .modal-content-payment { max-width: 500px; }
@@ -118,8 +119,9 @@
         .report-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: #3da881; margin-right: 0.5rem; }
         .select-all-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: #3da881; margin-right: 0.5rem; }
         .report-select-mode { display: none !important; }
-        .report-float-bar { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(12px); z-index: 40; display: none; align-items: center; gap: 0.75rem; flex-wrap: wrap; padding: 0.55rem 0.9rem; border-radius: 9999px; background: rgba(30, 41, 59, 0.92); backdrop-filter: blur(8px); color: #e2e8f0; box-shadow: 0 10px 30px rgba(15,23,42,0.25); max-width: calc(100vw - 24px); }
+        .report-float-bar { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%) translateY(12px); z-index: 40; display: none; align-items: center; justify-content: space-between; gap: 0.6rem; flex-direction: row; flex-wrap: nowrap; width: 90%; max-width: 500px; padding: 12px 16px; border-radius: 16px; background: #1e293b; color: #fff; box-shadow: 0 10px 30px rgba(15,23,42,0.28); overflow-x: auto; }
         .report-float-bar.show { display: flex !important; transform: translateX(-50%) translateY(0); }
+        .report-float-bar button { white-space: nowrap; flex: 0 0 auto; }
         .limit-warning { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 1rem; padding: 0.8rem 1.2rem; display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
         .limit-warning .icon { color: #dc2626; font-size: 1.2rem; }
         .limit-warning .text { font-size: 0.85rem; color: #7f1d1d; }
@@ -305,7 +307,9 @@
             .navbar { flex-direction: column; align-items: stretch; }
             .container { padding: 1rem; }
             .pricing-card { width: 100%; }
-            .modal-content { max-width: 95%; padding: 1.5rem; }
+            .modal-content { width: 92vw !important; max-width: 92vw !important; max-height: 85vh !important; padding: 1.1rem 1rem 0.85rem; }
+            .modal { padding: 0.5rem; align-items: flex-end; }
+            .modal.show { align-items: center; }
         }
     </style>
 </head>
@@ -367,10 +371,10 @@
                                 <span class="demo-step-badge">假資料 · 非真實病歷</span>
                             </h2>
                         </div>
-                        <div class="flex gap-2 flex-wrap">
-                            <button type="button" id="demoPetManageBtn" onclick="togglePetManageMode(true)" class="px-3 py-1.5 border border-gray-300 rounded-full text-sm">管理</button>
+                        <div class="flex gap-2 flex-wrap items-center">
                             <button type="button" onclick="openCaptureUpload(true)" class="btn-primary-pill">📷 拍照／一鍵建檔</button>
                             <button onclick="openAddPetModalDemo()" class="btn-secondary-pill">＋新增毛孩</button>
+                            <button type="button" id="demoPetManageBtn" onclick="togglePetManageMode(true)" class="px-3 py-1.5 text-gray-500 text-sm">管理</button>
                         </div>
                     </div>
                     <div id="demoPetBatchBar" class="pet-batch-bar">
@@ -435,7 +439,7 @@
                         </h3>
                         <div class="flex gap-2 flex-wrap">
                             <button onclick="openUploadModalDemo()" class="btn-secondary-pill">＋ 上傳報告</button>
-                            <button onclick="exportDemoMedicalPdf()" class="bg-white hover:bg-[#f0faf5] border border-[#3da881] text-[#2d8f6f] px-4 py-1.5 rounded-full text-sm font-medium transition">匯出 PDF</button>
+                            <button onclick="openExportMenu(true)" class="bg-white hover:bg-[#f0faf5] border border-[#3da881] text-[#2d8f6f] px-4 py-1.5 rounded-full text-sm font-medium transition">📤 匯出</button>
                             <button onclick="toggleDemoSelectMode()" class="border border-gray-300 hover:bg-gray-50 px-4 py-1.5 rounded-full text-sm font-medium transition" id="demoToggleSelectBtn">批量操作</button>
                         </div>
                     </div>
@@ -678,10 +682,10 @@
             <div class="p-6 border-b">
                 <div class="flex justify-between items-center flex-wrap gap-3 mb-2">
                     <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-paw text-[#3da881] mr-2"></i>我的毛孩</h2>
-                    <div class="flex gap-2 flex-wrap">
-                    <button type="button" id="memberPetManageBtn" onclick="togglePetManageMode(false)" class="px-3 py-1.5 border border-gray-300 rounded-full text-sm">管理</button>
+                    <div class="flex gap-2 flex-wrap items-center">
                     <button type="button" onclick="openCaptureUpload(false)" class="btn-primary-pill">📷 拍照／一鍵建檔</button>
                     <button id="memberAddPetBtn" onclick="openAddPetModal()" class="btn-secondary-pill">＋新增毛孩</button>
+                    <button type="button" id="memberPetManageBtn" onclick="togglePetManageMode(false)" class="px-3 py-1.5 text-gray-500 text-sm">管理</button>
                     </div>
                 </div>
                 <p id="memberPetCapacity" class="hidden"></p>
@@ -702,7 +706,7 @@
                     <span id="memberReportCapacity" class="hidden"></span>
                     <div class="flex gap-2 flex-wrap">
                         <button id="memberUploadReportBtn" onclick="openUploadModal()" class="btn-secondary-pill">＋ 上傳報告</button>
-                        <button onclick="exportMedicalHistoryPdf()" class="bg-white hover:bg-[#f0faf5] border border-[#3da881] text-[#2d8f6f] px-4 py-1.5 rounded-full text-sm font-medium transition">匯出 PDF</button>
+                        <button onclick="openExportMenu(false)" class="bg-white hover:bg-[#f0faf5] border border-[#3da881] text-[#2d8f6f] px-4 py-1.5 rounded-full text-sm font-medium transition">📤 匯出</button>
                         <button id="memberToggleSelectModeBtn" onclick="toggleMemberSelectMode()" class="border border-gray-300 hover:bg-gray-50 px-4 py-1.5 rounded-full text-sm font-medium transition">批量操作</button>
                     </div>
                 </div>
@@ -1438,7 +1442,7 @@
         </div>
     </div>
     <input type="file" id="petPhotoFile" class="hidden" accept="image/*,.heic,.heif,image/heic,image/heif" onchange="onPetPhotoPicked(event)">
-    <input type="file" id="captureFileInput" class="hidden" accept="image/*,application/pdf" capture="environment" onchange="onCaptureFilePicked(event)">
+    <input type="file" id="captureFileInput" class="hidden" accept="image/*,application/pdf,.heic,.pdf" onchange="onCaptureFilePicked(event)">
 
     <!-- 會員版 - 編輯報告 -->
     <div id="editReportModal" class="modal">
@@ -1484,6 +1488,16 @@
                 <button type="button" id="appConfirmCancel" class="flex-1 py-2.5 border border-gray-300 rounded-2xl text-sm text-gray-600 hover:bg-gray-50">取消</button>
                 <button type="button" id="appConfirmOk" class="flex-1 py-2.5 bg-[#3da881] text-white rounded-2xl text-sm hover:bg-[#2d8f6f]">確定</button>
             </div>
+        </div>
+    </div>
+
+    <div id="exportChoiceModal" class="modal modal-top">
+        <div class="modal-content fade-in" style="max-width:360px;">
+            <h3 class="text-lg font-bold text-gray-800 mb-1">匯出病歷</h3>
+            <p class="text-sm text-gray-500 mb-4">選擇匯出格式</p>
+            <button type="button" onclick="confirmExportChoice('pdf')" class="w-full mb-2 py-3 rounded-2xl border border-gray-200 text-sm font-medium hover:bg-[#f0faf5]">📄 匯出為 PDF 檔案</button>
+            <button type="button" onclick="confirmExportChoice('jpeg')" class="w-full mb-3 py-3 rounded-2xl border border-gray-200 text-sm font-medium hover:bg-[#f0faf5]">🖼️ 匯出為 JPEG 圖片</button>
+            <button type="button" onclick="closeExportMenu()" class="w-full py-2.5 rounded-2xl text-sm text-gray-500">取消</button>
         </div>
     </div>
 
@@ -2061,9 +2075,11 @@
             if (!file) return { ok: false, reason: '沒有檔案' };
             if (file.size > 20 * 1024 * 1024) return { ok: false, reason: '單一檔案不可超過 20MB' };
             if (!isAllowedReportFile(file)) return { ok: false, reason: '只接受圖片或 PDF' };
-            var next = (usedStorageBytes || 0) + file.size;
-            if (next > getMaxStorageBytes()) {
-                return { ok: false, reason: '您的專屬醫療雲端空間已滿，請升級方案或加購容量。' };
+            if (!demoUploadMode && currentUser) {
+                var next = (usedStorageBytes || 0) + file.size;
+                if (next > getMaxStorageBytes()) {
+                    return { ok: false, reason: '您的專屬醫療雲端空間已滿，請升級方案或加購容量。' };
+                }
             }
             return { ok: true };
         }
@@ -2184,12 +2200,34 @@
                 : petAvatarPlaceholder();
             return core + '<button type="button" class="flip-photo-btn" title="變更相片" onclick="event.stopPropagation(); startPetPhotoChange(\'' + (pet && pet.id) + '\',' + (demo ? 'true' : 'false') + ')"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg></button>';
         }
+        var flipBackTimers = {};
+        function clearFlipBackTimer(id) {
+            if (flipBackTimers[id]) { clearTimeout(flipBackTimers[id]); delete flipBackTimers[id]; }
+        }
+        function startFlipBackTimer(id) {
+            clearFlipBackTimer(id);
+            flipBackTimers[id] = setTimeout(function() {
+                if (flippedPetIds[id]) flipPetCard(id);
+            }, 8000);
+        }
+        function pokeFlipTimer(id) {
+            if (flippedPetIds[id]) startFlipBackTimer(id);
+            else clearFlipBackTimer(id);
+        }
         function flipPetCard(id) {
             flippedPetIds[id] = !flippedPetIds[id];
             var el = document.querySelector('.flip-card[data-pet-id="' + id + '"]');
             if (el) el.classList.toggle('is-flipped', !!flippedPetIds[id]);
+            if (flippedPetIds[id]) startFlipBackTimer(id);
+            else clearFlipBackTimer(id);
         }
-        function onPetCardLeave(id) { if (flippedPetIds[id]) flipPetCard(id); }
+        function onPetCardLeave(id) { pokeFlipTimer(id); }
+        document.addEventListener('click', function(ev) {
+            var card = ev.target && ev.target.closest && ev.target.closest('.flip-card');
+            if (!card) return;
+            var id = card.getAttribute('data-pet-id');
+            if (id && flippedPetIds[id] && ev.target.closest('button, a, input')) pokeFlipTimer(id);
+        });
         function onPetFlipCardClick(ev, id, demo) {
             if (ev.target.closest('button, a, input, .flip-check, .flip-check-btn')) return;
             flipPetCard(id);
@@ -2496,8 +2534,8 @@
             var fi = document.getElementById('captureFileInput');
             if (!fi) return;
             fi.value = '';
-            fi.setAttribute('accept', 'image/*,application/pdf');
-            fi.setAttribute('capture', 'environment');
+            fi.setAttribute('accept', 'image/*,application/pdf,.heic,.pdf');
+            fi.removeAttribute('capture');
             fi.click();
         }
         var pendingPetFormPhoto = '';
@@ -4210,6 +4248,70 @@
             exportMedicalHistoryPdf(petId);
             isMemberSelectMode = mode;
             memberSelectedReports = keep;
+        }
+        var pendingExportDemo = false;
+        function openExportMenu(demo) {
+            pendingExportDemo = !!demo;
+            var m = document.getElementById('exportChoiceModal');
+            if (m) m.classList.add('show');
+        }
+        function closeExportMenu() {
+            var m = document.getElementById('exportChoiceModal');
+            if (m) m.classList.remove('show');
+        }
+        function confirmExportChoice(kind) {
+            closeExportMenu();
+            if (pendingExportDemo) {
+                if (kind === 'jpeg') exportDemoMedicalJpeg();
+                else exportDemoMedicalPdf();
+            } else {
+                if (kind === 'jpeg') exportMedicalHistoryJpeg();
+                else exportMedicalHistoryPdf();
+            }
+        }
+        function htmlToJpegDownload(html, filename) {
+            var wrap = document.createElement('div');
+            wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:800px;background:#fff;padding:24px;';
+            wrap.innerHTML = html;
+            document.body.appendChild(wrap);
+            var h2c = window.html2canvas;
+            if (!h2c) { document.body.removeChild(wrap); printMedicalHistoryFallback(html); return; }
+            showToast('正在產生圖片…', 'success');
+            h2c(wrap, { scale: 2, useCORS: true, backgroundColor: '#ffffff', width: 800 }).then(function(canvas) {
+                document.body.removeChild(wrap);
+                canvas.toBlob(function(blob) {
+                    if (blob) saveBlobToDevice(blob, filename);
+                }, 'image/jpeg', 0.88);
+            }).catch(function() {
+                if (wrap.parentNode) document.body.removeChild(wrap);
+                showToast('匯出圖片失敗', 'error');
+            });
+        }
+        function exportMedicalHistoryJpeg(petId) {
+            var target = [];
+            if (petId) {
+                var one = pets.find(function(p) { return p.id === petId; });
+                if (one) target = [one];
+            } else if (memberSelectedPetId && memberSelectedPetId !== 'all') {
+                var sel = pets.find(function(p) { return p.id === memberSelectedPetId; });
+                if (sel) target = [sel];
+            } else target = pets.slice();
+            if (!target.length) { showToast('請先新增毛孩再匯出', 'warning'); return; }
+            htmlToJpegDownload(buildMedicalPdfHtml(target), 'PawVault-病歷-' + new Date().toISOString().slice(0,10) + '.jpg');
+        }
+        function exportDemoMedicalJpeg() {
+            var list = (demoPets && demoPets.length) ? demoPets.slice() : [{ id: 'demo1', name: '豆豆' }];
+            var map = {};
+            list.forEach(function(p) { map[p.id] = []; });
+            (demoReportsData || []).forEach(function(r) {
+                var pid = r.petId || (list[0] && list[0].id);
+                if (!map[pid]) map[pid] = [];
+                map[pid].push({ id: r.id, title: r.title, date: r.date, description: r.desc || r.description, clinic: r.clinic, doctor: r.doctor, amount: r.amount });
+            });
+            pdfReportMapOverride = map;
+            var html = buildMedicalPdfHtml(list, { demo: true, ownerName: '示範主人' });
+            pdfReportMapOverride = null;
+            htmlToJpegDownload(html, 'PawVault-示範病歷.jpg');
         }
         function exportMedicalHistoryPdf(petId) {
             var target = [];
@@ -6173,8 +6275,10 @@
         }
         function extractPetNameFromText(text) {
             var blob = String(text || '');
-            var m = blob.match(/(?:Pet\s*Name|Patient(?:\s*Name)?|Animal\s*Name|動物名稱|寵物(?:名字|名稱)?|毛孩(?:名字|名稱)?)\s*[:：]\s*([^\n,]{1,20})/i);
+            var m = blob.match(/(?:Pet\s*Name|Patient(?:\s*Name)?|Animal(?:\s*Name)?|動物名稱|寵物(?:名字|名稱)?|毛孩(?:名字|名稱)?)\s*[:：]\s*([^\n,]{1,28})/i);
             if (m) return cleanExtractedPetName(m[1]);
+            m = blob.match(/\b(?:Animal|Patient|Pet)\s+([A-Za-z\u4e00-\u9fff][A-Za-z\u4e00-\u9fff '\-]{1,20})/i);
+            if (m && !/hospital|clinic|doctor/i.test(m[1])) return cleanExtractedPetName(m[1]);
             return '';
         }
         function ensureDemoPetByName(nameHint) {
@@ -6386,7 +6490,7 @@
                         '<span class="text-red-500">❌</span> ' + file.name +
                         ' <span class="text-gray-400">(' + (chk && chk.reason ? chk.reason : '不支援') + ')</span>';
                     list.appendChild(div);
-                    if (file.type && file.type.indexOf('image/') === 0) runReportOcr(file);
+                    if (isAllowedReportFile(file) && !captureAutoSaveMode) runReportOcr(file);
                 }
             }
         }
@@ -6401,36 +6505,48 @@
                 if (hint) hint.textContent = '未能自動辨識，請自行填寫。';
             });
         }
+        function ensurePdfJsReady() {
+            try {
+                if (window.pdfjsLib) {
+                    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                    return pdfjsLib;
+                }
+            } catch (e) {}
+            return null;
+        }
         function extractReportText(file) {
-            var isPdf = (file.type === 'application/pdf') || /\.pdf$/i.test(file.name || '');
+            var isPdf = (file && (file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '')));
             if (isPdf) return extractPdfText(file);
             if (typeof Tesseract === 'undefined') return Promise.resolve('');
             return Tesseract.recognize(file, 'chi_tra+eng').then(function(res) {
                 return (res && res.data && res.data.text) || '';
-            });
+            }).catch(function() { return ''; });
+        }
+        function ocrCanvas(canvas) {
+            if (typeof Tesseract === 'undefined') return Promise.resolve('');
+            return Tesseract.recognize(canvas, 'chi_tra+eng').then(function(res) {
+                return (res && res.data && res.data.text) || '';
+            }).catch(function() { return ''; });
         }
         function extractPdfText(file) {
-            if (typeof pdfjsLib === 'undefined') return Promise.resolve('');
-            try { pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; } catch (e) {}
+            var lib = ensurePdfJsReady();
+            if (!lib) return Promise.resolve('');
             return file.arrayBuffer().then(function(buf) {
-                return pdfjsLib.getDocument({ data: buf }).promise;
+                return lib.getDocument({ data: buf }).promise;
             }).then(function(pdf) {
                 return pdf.getPage(1).then(function(page) {
                     return page.getTextContent().then(function(tc) {
-                        var text = (tc.items || []).map(function(it) { return it.str; }).join(' ');
-                        if (text && text.replace(/\s/g, '').length > 12) return text;
-                        var vp = page.getViewport({ scale: 1.6 });
+                        var text = (tc.items || []).map(function(it) { return it.str; }).join('\n');
+                        var vp = page.getViewport({ scale: 2 });
                         var canvas = document.createElement('canvas');
                         canvas.width = vp.width; canvas.height = vp.height;
                         return page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise.then(function() {
-                            if (typeof Tesseract === 'undefined') return '';
-                            return Tesseract.recognize(canvas, 'chi_tra+eng').then(function(res) {
-                                return (res && res.data && res.data.text) || '';
-                            });
+                            if (text && text.replace(/\s/g, '').length > 40) return text;
+                            return ocrCanvas(canvas).then(function(ocr) { return (ocr && ocr.length > text.length) ? ocr : (text || ocr || ''); });
                         });
                     });
                 });
-            });
+            }).catch(function() { return ''; });
         }
         function applyOcrToReportForm(text) {
             if (!text) return;
@@ -6452,12 +6568,28 @@
             if (doctorEl && fields.doctor && !doctorEl.value) doctorEl.value = fields.doctor;
             var amtEl = document.getElementById('reportAmount');
             if (amtEl && fields.amount && !amtEl.value) amtEl.value = fields.amount;
-            if (titleEl && !titleEl.value) titleEl.value = fields.title || '看診紀錄';
-            if (descEl && !descEl.value.trim() && fields.notes) descEl.value = fields.notes;
+            if (titleEl && (!titleEl.value || titleEl.value === '看診紀錄' || titleEl.value === 'Consultation')) titleEl.value = fields.title || titleEl.value || '看診紀錄';
+            if (descEl && fields.notes && (!descEl.value.trim() || descEl.value === '無詳細紀錄')) descEl.value = fields.notes;
             var titleDemo = document.getElementById('reportTitleDemo');
             var descDemo = document.getElementById('reportDescDemo');
             if (titleDemo && !titleDemo.value) titleDemo.value = fields.title || '看診紀錄';
             if (descDemo && !descDemo.value.trim() && fields.notes) descDemo.value = fields.notes;
+            matchOcrPetInUploadSelect(fields.petName);
+        }
+        function matchOcrPetInUploadSelect(name) {
+            name = cleanExtractedPetName(name || lastOcrPetName || '');
+            if (!name) return;
+            var sel = document.getElementById('uploadPetSelect');
+            if (!sel) return;
+            var low = name.toLowerCase();
+            for (var i = 0; i < sel.options.length; i++) {
+                var t = String(sel.options[i].text || '').toLowerCase();
+                if (t && (t.indexOf(low) !== -1 || low.indexOf(t) !== -1)) {
+                    sel.value = sel.options[i].value;
+                    if (typeof onUploadPetSelectChange === 'function') onUploadPetSelectChange();
+                    return;
+                }
+            }
         }
         function normalizeOcrDate(raw) {
             if (!raw) return '';
@@ -6495,6 +6627,7 @@
                 if (/consult/i.test(blob)) return '門診看診';
                 return '門診覆診與拿藥';
             }
+            if (/medical\s*letter|醫療證明|診斷書|certificate/i.test(blob)) return '醫療證明／診斷書';
             if (/Consultation/i.test(blob)) return 'Consultation';
             return '看診紀錄';
         }

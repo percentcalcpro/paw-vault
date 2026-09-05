@@ -25,7 +25,7 @@
         body { font-family: system-ui, -apple-system, 'Inter', 'Segoe UI', sans-serif; background: #f5faf7; min-height: 100vh; }
         
         /* ===== Modal ===== */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 1000; padding: 1rem; align-items: center; justify-content: center; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.25); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 1000; padding: 1rem; align-items: center; justify-content: center; }
         .modal-preview { z-index: 2000 !important; }
         .modal-top { z-index: 3000 !important; }
         .modal.show { display: flex !important; align-items: center; justify-content: center; }
@@ -88,7 +88,8 @@
         .btn-secondary-pill { padding: 0.4rem 1.2rem; background: #fff; color: #2d8f6f; border-radius: 9999px; font-size: 0.85rem; font-weight: 600; border: 1.5px solid #3da881; cursor: pointer; transition: 0.15s; }
         .btn-secondary-pill:hover { background: #f0faf5; }
         .feature-section { background: white; border-radius: 2rem; padding: 3rem 2rem; border: 1px solid #e5ece8; }
-        .drop-zone { border: 2px dashed #d1d5db; border-radius: 1rem; padding: 1.25rem 1rem; min-height: 110px; text-align: center; cursor: pointer; transition: 0.2s; background: #fafafa; }
+        .drop-zone { border: 2px dashed #d1d5db; border-radius: 1rem; padding: 1.8rem 1rem; min-height: 150px; text-align: center; cursor: pointer; transition: 0.2s; background: #fafafa; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.25rem; }
+        .plan-mini-badge { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.72rem; font-weight: 600; color: #065f46; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 9999px; padding: 0.15rem 0.55rem; white-space: nowrap; }
         .more-btn { width: 32px; height: 32px; border-radius: 999px; border: 1px solid #e5e7eb; background: #fff; color: #6b7280; display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; line-height: 1; cursor: pointer; }
         .more-btn::-webkit-details-marker { display: none; }
         .drop-zone:hover, .drop-zone.dragover { border-color: #3da881; background: #f0faf5; }
@@ -411,7 +412,7 @@
                         <div class="flex gap-2 flex-wrap items-center">
                             <button type="button" onclick="openCaptureUpload(true)" class="btn-primary-pill">📷 拍照／一鍵建檔</button>
                             <button onclick="openAddPetModalDemo()" class="btn-secondary-pill">＋新增毛孩</button>
-                            <button type="button" id="demoPetManageBtn" onclick="handleManageBtn(true)" class="btn-secondary-pill">⚙️ 管理</button>
+                            <button type="button" id="demoPetManageBtn" onclick="handleManageBtn(true)" class="btn-secondary-pill">管理</button>
                         </div>
                     </div>
                     <div id="demoPetBatchBar" class="pet-batch-bar">
@@ -657,12 +658,13 @@
         <div class="member-area">
             <div class="flex flex-wrap items-center gap-6">
                 <div>
-                    <div class="flex items-center gap-2">
+                    <div class="flex flex-wrap items-center gap-2">
                         <h3 id="memberName" class="text-xl font-bold text-gray-800">寵物主人</h3>
+                        <span id="memberPlanBadge" class="plan-mini-badge">付費生效中 · 尚餘 — 天</span>
+                        <button type="button" onclick="openPaymentModal()" class="px-2.5 py-1 border border-[#3da881] text-[#2d8f6f] rounded-full text-xs">續費/升級</button>
                         <details class="quiet-menu">
                             <summary class="px-3 py-1 border border-gray-300 text-gray-600 rounded-full text-xs hover:bg-gray-50">帳戶</summary>
                             <div class="menu-panel">
-                                <button type="button" onclick="openPricingModal(false)">方案管理</button>
                                 <button type="button" onclick="openSettingsModal()">設定</button>
                                 <button type="button" onclick="handleLogout()" class="text-red-600">登出</button>
                             </div>
@@ -670,19 +672,12 @@
                     </div>
                     <p id="memberEmail" class="text-sm text-gray-500">petlover@email.com</p>
                     <span id="memberPlanTag" class="hidden"></span>
-                    <p id="memberPendingPlanNote" class="text-xs text-indigo-700 mt-1 hidden"></p>
-                </div>
-            </div>
-            <div id="membershipStatusCard" class="mt-5 p-4 rounded-2xl border border-blue-200 bg-blue-50">
-                <div class="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                        <div class="text-sm font-bold text-blue-900" id="membershipStatusTitle">會籍狀態</div>
-                        <div class="text-xs text-blue-800 mt-1" id="membershipStatusDetail">載入中…</div>
-                        <div class="text-xs text-blue-700 mt-1" id="membershipDateRange"></div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span id="membershipDaysLeft" class="text-sm font-bold px-3 py-1 rounded-full bg-white text-blue-800 border border-blue-200">尚餘 — 天</span>
-                        <button type="button" onclick="openPaymentModal()" class="px-4 py-1.5 rounded-full bg-blue-600 text-white text-sm">續費／升級</button>
+                    <p id="memberPendingPlanNote" class="text-xs text-gray-500 mt-1 hidden"></p>
+                    <div id="membershipStatusCard" class="hidden" aria-hidden="true">
+                        <div id="membershipStatusTitle"></div>
+                        <div id="membershipStatusDetail"></div>
+                        <div id="membershipDateRange"></div>
+                        <span id="membershipDaysLeft"></span>
                     </div>
                 </div>
             </div>
@@ -718,7 +713,7 @@
                     <div class="flex gap-2 flex-wrap items-center">
                     <button type="button" onclick="openCaptureUpload(false)" class="btn-primary-pill">📷 拍照／一鍵建檔</button>
                     <button id="memberAddPetBtn" onclick="openAddPetModal()" class="btn-secondary-pill">＋新增毛孩</button>
-                    <button type="button" id="memberPetManageBtn" onclick="handleManageBtn(false)" class="btn-secondary-pill">⚙️ 管理</button>
+                    <button type="button" id="memberPetManageBtn" onclick="handleManageBtn(false)" class="btn-secondary-pill">管理</button>
                     </div>
                 </div>
                 <p id="memberPetCapacity" class="hidden"></p>
@@ -1529,8 +1524,8 @@
         <div class="modal-content fade-in" style="max-width:360px;">
             <h3 class="text-lg font-bold text-gray-800 mb-1">確認匯出／分享</h3>
             <p id="exportShareHint" class="text-sm text-gray-500 mb-4 hidden">選擇格式後將直接開啟分享選單</p>
-            <button type="button" onclick="confirmExportChoice('pdf')" class="w-full mb-2 py-3 rounded-2xl border border-gray-200 text-sm font-medium hover:bg-[#f0faf5]">📄 生成 PDF 懶人包檔案</button>
-            <button type="button" onclick="confirmExportChoice('jpeg')" class="w-full mb-3 py-3 rounded-2xl border border-gray-200 text-sm font-medium hover:bg-[#f0faf5]">🖼️ 生成 JPEG 合成圖片</button>
+            <button type="button" onclick="confirmExportChoice('pdf')" class="w-full mb-2 py-3 rounded-2xl border border-gray-200 text-sm font-medium hover:bg-[#f0faf5]">生成 PDF 懶人包</button>
+            <button type="button" onclick="confirmExportChoice('jpeg')" class="w-full mb-3 py-3 rounded-2xl border border-gray-200 text-sm font-medium hover:bg-[#f0faf5]">生成 JPEG 合成圖片</button>
             <button type="button" id="exportNativeShareBtn" onclick="openNativeShareSheet()" class="hidden w-full mb-3 py-3 rounded-2xl bg-[#10b981] text-white text-sm font-semibold">開啟系統分享選單</button>
             <button type="button" onclick="closeExportMenu()" class="w-full py-2.5 rounded-2xl text-sm text-gray-500">取消</button>
         </div>
@@ -2372,7 +2367,7 @@
             var list = document.getElementById(demo ? 'petList' : 'memberPetList');
             var allBtn = document.getElementById(demo ? 'demoPetSelectAllBtn' : 'memberPetSelectAllBtn');
             var delBtn = document.getElementById(demo ? 'demoPetBatchDeleteBtn' : 'memberPetBatchDeleteBtn');
-            if (manageBtn) manageBtn.textContent = on ? '完成' : '⚙️ 管理';
+            if (manageBtn) manageBtn.textContent = on ? '完成' : '管理';
             if (bar) bar.classList.toggle('show', !!on);
             if (list) list.classList.toggle('pet-manage-on', !!on);
             var ids = currentPetIds(demo);
@@ -2465,8 +2460,16 @@
                 return new File([blob], String(file.name || 'photo').replace(/\.hei[cf]$/i, '.jpg'), { type: 'image/jpeg' });
             });
         }
+        function compressImageToFile(file, maxEdge, quality) {
+            return compressImageFile(file, maxEdge || 2048, quality || 0.75).then(function(dataUrl) {
+                return fetch(dataUrl).then(function(res) { return res.blob(); }).then(function(blob) {
+                    var name = String(file && file.name || 'photo.jpg').replace(/\.[^.]+$/, '.jpg');
+                    return new File([blob], name, { type: 'image/jpeg' });
+                });
+            });
+        }
         function compressImageFile(file, maxEdge, quality) {
-            maxEdge = maxEdge || 800;
+            maxEdge = maxEdge || 2048;
             quality = quality || 0.75;
             return new Promise(function(resolve, reject) {
                 var url = URL.createObjectURL(file);
@@ -2796,25 +2799,25 @@
         function fillNavDrawer() {
             var box = document.getElementById('navDrawerLinks');
             if (!box) return;
-            var adminBtn = isAdminUser() ? '<button type="button" onclick="toggleNavDrawer(false);openAdminPage()">🛠️ 後台管理</button>' : '';
+            var adminBtn = isAdminUser() ? '<button type="button" onclick="toggleNavDrawer(false);openAdminPage()">後台管理</button>' : '';
             if (isLoggedIn) {
                 box.innerHTML =
-                    '<button type="button" onclick="toggleNavDrawer(false);handleUserMenuClick(\'account\')">👤 會員專區</button>' +
-                    '<button type="button" onclick="toggleNavDrawer(false);handleUserMenuClick(\'account\');scrollToPetsSection();">🐾 我的毛孩</button>' +
-                    '<button type="button" onclick="toggleNavDrawer(false);openClinicPartnerModal()">🏥 獸醫診所專區</button>' +
-                    '<button type="button" onclick="toggleNavDrawer(false);openPricingModal()">💎 定價方案</button>' +
-                    '<button type="button" onclick="toggleNavDrawer(false);openFaqModal()">❓ 常見問題</button>' +
-                    '<button type="button" onclick="toggleNavDrawer(false);openContactModal()">❓ 查詢</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);handleUserMenuClick(\'account\')">會員專區</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);handleUserMenuClick(\'account\');scrollToPetsSection();">我的毛孩</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);openClinicPartnerModal()">獸醫診所專區</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);openPricingModal()">定價方案</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);openFaqModal()">常見問題</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);openContactModal()">查詢</button>' +
                     adminBtn +
-                    '<button type="button" onclick="toggleNavDrawer(false);handleLogout()">🚪 登出</button>';
+                    '<button type="button" onclick="toggleNavDrawer(false);handleLogout()">登出</button>';
             } else {
                 box.innerHTML =
-                    '<button type="button" onclick="toggleNavDrawer(false);openLoginModal()">👤 登入／會員專區</button>' +
-                    '<button type="button" onclick="toggleNavDrawer(false);document.getElementById(\'demoExperienceWrap\')&&document.getElementById(\'demoExperienceWrap\').scrollIntoView({behavior:\'smooth\'});">🐾 我的毛孩</button>' +
-                    '<button type="button" onclick="toggleNavDrawer(false);openClinicPartnerModal()">🏥 獸醫診所專區</button>' +
-                    '<button type="button" onclick="toggleNavDrawer(false);openPricingModal()">💎 定價方案</button>' +
-                    '<button type="button" onclick="toggleNavDrawer(false);openFaqModal()">❓ 常見問題</button>' +
-                    '<button type="button" onclick="toggleNavDrawer(false);openContactModal()">❓ 查詢</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);openLoginModal()">登入／會員專區</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);document.getElementById(\'demoExperienceWrap\')&&document.getElementById(\'demoExperienceWrap\').scrollIntoView({behavior:\'smooth\'});">我的毛孩</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);openClinicPartnerModal()">獸醫診所專區</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);openPricingModal()">定價方案</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);openFaqModal()">常見問題</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);openContactModal()">查詢</button>' +
                     '<button type="button" onclick="toggleNavDrawer(false);openSignupModal()">免費開始使用</button>';
             }
         }
@@ -3084,14 +3087,17 @@
                 if (!d) return '—';
                 return d.getFullYear() + '/' + ('0'+(d.getMonth()+1)).slice(-2) + '/' + ('0'+d.getDate()).slice(-2);
             };
-            card.className = 'mt-5 p-4 rounded-2xl border border-blue-200 bg-blue-50';
+            card.className = 'hidden';
             var planName = planBadgeText((getPlanLimits() && getPlanLimits().label) || '');
+            var badge = document.getElementById('memberPlanBadge');
+            var setBadge = function(text) { if (badge) badge.textContent = text; };
             var forceTrial = isTrialActive || (typeof paymentStatus !== 'undefined' && (paymentStatus === 'trial' || paymentStatus === 'pending_review'));
             if (forceTrial && !hasPaid) {
                 title.textContent = planName + ' · 免費試用中（' + short(trialStartDate) + ' - ' + short(trialEndDate) + '）';
                 detail.textContent = '';
                 if (range) range.textContent = '';
                 setDays(getTrialDaysLeft(), false);
+                setBadge('試用中 · 尚餘 ' + getTrialDaysLeft() + ' 天');
             } else if (hasPaid && planEndDate) {
                 var graceEnd = new Date(planEndDate);
                 graceEnd.setDate(graceEnd.getDate() + MEMBERSHIP_GRACE_DAYS);
@@ -3102,23 +3108,27 @@
                 if (range) range.textContent = '';
                 setDays(left, !stillActive);
                 lab.textContent = '';
-                if (!stillActive) card.className = 'mt-5 p-4 rounded-2xl border border-amber-300 bg-amber-50';
+                setBadge((stillActive ? '付費生效中' : '已到期') + ' · 尚餘 ' + left + ' 天');
+                if (!stillActive && badge) badge.style.background = '#fff7ed';
             } else if (hasPaid && !planEndDate) {
                 title.textContent = planName + ' · 已付費生效中';
                 detail.textContent = '';
                 if (range) range.textContent = '';
                 if (daysEl) daysEl.textContent = '尚餘 — 天';
+                setBadge('付費生效中');
             } else if (isTrialActive && trialEndDate) {
                 title.textContent = planName + ' · 免費試用中（' + short(trialStartDate) + ' - ' + short(trialEndDate) + '）';
                 detail.textContent = '';
                 if (range) range.textContent = '';
                 setDays(getTrialDaysLeft(), false);
+                setBadge('試用中 · 尚餘 ' + getTrialDaysLeft() + ' 天');
             } else {
                 title.textContent = '待付款';
                 detail.textContent = trialEndDate ? ('試用已於 ' + short(trialEndDate) + ' 結束') : '請選擇方案續用';
                 range.textContent = '';
                 setDays(0, true);
-                card.className = 'mt-5 p-4 rounded-2xl border border-amber-300 bg-amber-50';
+                card.className = 'hidden';
+                setBadge('待付款');
             }
         }
 
@@ -3381,7 +3391,7 @@
                             renderAll();
                             updateNav();
                             showMemberPets();
-                            showToast('歡迎回來！如未開始試用，請到「方案管理」選擇方案。', 'success');
+                            showToast('歡迎回來！如未開始試用，請按續費/升級選擇方案。', 'success');
                         }
                     } else {
                         isTrialActive = false;
@@ -6723,28 +6733,27 @@
 
         function handleFiles(files) {
             var list = document.getElementById('fileList');
-            for (var i = 0; i < files.length; i++) {
-                var file = files[i];
+            Array.prototype.forEach.call(files || [], function(file) {
                 var chk = canUploadFile(file);
-                if (chk.ok) {
-                    uploadedFiles.push(file);
-                    var div = document.createElement('div');
-                    div.className = 'flex items-center gap-2 py-1';
-                    div.innerHTML =
-                        '<span class="text-green-500">✅</span> ' + file.name + ' <span class="text-gray-400">(' +
-                        (file.size / 1024).toFixed(1) + ' KB)</span>';
-                    list.appendChild(div);
-                    if (!captureAutoSaveMode) runReportOcr(file);
-                } else {
-                    var div = document.createElement('div');
-                    div.className = 'flex items-center gap-2 py-1';
-                    div.innerHTML =
-                        '<span class="text-red-500">❌</span> ' + file.name +
-                        ' <span class="text-gray-400">(' + (chk && chk.reason ? chk.reason : '不支援') + ')</span>';
-                    list.appendChild(div);
-                    if (isAllowedReportFile(file) && !captureAutoSaveMode) runReportOcr(file);
-                }
-            }
+                var isImg = /^image\//.test(file.type || '') || /\.(jpe?g|png|webp|heic|heif)$/i.test(file.name || '');
+                var work = (chk.ok && isImg) ? compressImageToFile(file, 2048, 0.75).catch(function(){ return file; }) : Promise.resolve(file);
+                work.then(function(out) {
+                    if (chk.ok) {
+                        uploadedFiles.push(out);
+                        var div = document.createElement('div');
+                        div.className = 'flex items-center gap-2 py-1';
+                        div.innerHTML = '<span class="text-green-600">OK</span> ' + out.name + ' <span class="text-gray-400">(' + (out.size / 1024).toFixed(1) + ' KB)</span>';
+                        if (list) list.appendChild(div);
+                        if (!captureAutoSaveMode) runReportOcr(out);
+                    } else {
+                        var div2 = document.createElement('div');
+                        div2.className = 'flex items-center gap-2 py-1';
+                        div2.innerHTML = '<span class="text-red-500">X</span> ' + file.name + ' <span class="text-gray-400">(' + (chk && chk.reason ? chk.reason : '不支援') + ')</span>';
+                        if (list) list.appendChild(div2);
+                        if (isAllowedReportFile(file) && !captureAutoSaveMode) runReportOcr(file);
+                    }
+                });
+            });
         }
 
         function runReportOcr(file) {
@@ -10040,6 +10049,11 @@
             if (e.target && e.target.classList && e.target.classList.contains('modal') && e.target.classList.contains('show')) {
                 e.target.classList.remove('show');
             }
+            if (!e.target.closest || !e.target.closest('.user-dropdown')) {
+                var udm = document.getElementById('userDropdownMenu');
+                if (udm) udm.classList.remove('show');
+            }
+            if (e.target.id === 'navDrawerMask') toggleNavDrawer(false);
         });
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
@@ -10090,6 +10104,12 @@
             if (demoM && demoM.classList.contains('show') && t.closest && t.closest('#petModalDemo')) {
                 e.preventDefault();
                 savePetDemo();
+                return;
+            }
+            var openModal = document.querySelector('.modal.show');
+            if (openModal && t.closest && t.closest('.modal.show') && t.tagName !== 'TEXTAREA') {
+                var primary = openModal.querySelector('#confirmUpload, #savePetBtnAction, button[onclick*="confirm"], button[onclick*="save"], button[onclick*="Save"], button[onclick*="submit"]');
+                if (primary) { e.preventDefault(); primary.click(); }
             }
         });
         document.querySelectorAll('.modal').forEach(function(m) {

@@ -90,6 +90,7 @@
         .feature-section { background: white; border-radius: 2rem; padding: 3rem 2rem; border: 1px solid #e5ece8; }
         .drop-zone { border: 2px dashed #d1d5db; border-radius: 1rem; padding: 1.8rem 1rem; min-height: 150px; text-align: center; cursor: pointer; transition: 0.2s; background: #fafafa; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.25rem; }
         .plan-mini-badge { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.72rem; font-weight: 600; color: #065f46; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 9999px; padding: 0.15rem 0.55rem; white-space: nowrap; }
+        .plan-mini-badge::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #10b981; flex: 0 0 auto; }
         .more-btn { width: 32px; height: 32px; border-radius: 999px; border: 1px solid #e5e7eb; background: #fff; color: #6b7280; display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; line-height: 1; cursor: pointer; }
         .more-btn::-webkit-details-marker { display: none; }
         .drop-zone:hover, .drop-zone.dragover { border-color: #3da881; background: #f0faf5; }
@@ -346,7 +347,7 @@
     <nav class="border-b bg-white/90 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
         <div class="max-w-6xl mx-auto px-6 py-3 flex justify-between items-center gap-3" style="min-height:56px;">
             <a href="#" onclick="goHome();return false;" class="flex items-center gap-2 cursor-pointer">
-                <span class="logo-text">🐾 Paw Vault</span>
+                <span class="logo-text">Paw Vault</span>
                 <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-semibold hidden sm:inline">寵物健康檔案</span>
             </a>
             <div class="nav-desktop" id="navRightSection">
@@ -477,7 +478,7 @@
                         </h3>
                         <div class="flex gap-2 flex-wrap">
                             <button onclick="openUploadModalDemo()" class="btn-secondary-pill">＋ 上傳報告</button>
-                            <button onclick="toggleDemoSelectMode()" class="btn-secondary-pill" id="demoToggleSelectBtn">📤 批量匯出/分享</button>
+                            <button onclick="toggleDemoSelectMode()" class="btn-secondary-pill" id="demoToggleSelectBtn">批量匯出/分享</button>
                         </div>
                     </div>
                     <div id="demoReportSelectMode" class="report-float-bar">
@@ -660,7 +661,7 @@
                 <div>
                     <div class="flex flex-wrap items-center gap-2">
                         <h3 id="memberName" class="text-xl font-bold text-gray-800">寵物主人</h3>
-                        <span id="memberPlanBadge" class="plan-mini-badge">付費生效中 · 尚餘 — 天</span>
+                        <span id="memberPlanBadge" class="plan-mini-badge">方案生效中 · 尚餘 — 天</span>
                         <button type="button" onclick="openPaymentModal()" class="px-2.5 py-1 border border-[#3da881] text-[#2d8f6f] rounded-full text-xs">續費/升級</button>
                         <details class="quiet-menu">
                             <summary class="px-3 py-1 border border-gray-300 text-gray-600 rounded-full text-xs hover:bg-gray-50">帳戶</summary>
@@ -734,7 +735,7 @@
                     <span id="memberReportCapacity" class="hidden"></span>
                     <div class="flex gap-2 flex-wrap">
                         <button id="memberUploadReportBtn" onclick="openUploadModal()" class="btn-secondary-pill">＋ 上傳報告</button>
-                        <button id="memberToggleSelectModeBtn" onclick="toggleMemberSelectMode()" class="btn-secondary-pill">📤 批量匯出/分享</button>
+                        <button id="memberToggleSelectModeBtn" onclick="toggleMemberSelectMode()" class="btn-secondary-pill">批量匯出/分享</button>
                     </div>
                 </div>
                 <div id="memberPetFilters" class="flex flex-wrap gap-2 mb-3"></div>
@@ -1522,11 +1523,9 @@
 
     <div id="exportChoiceModal" class="modal modal-top">
         <div class="modal-content fade-in" style="max-width:360px;">
-            <h3 class="text-lg font-bold text-gray-800 mb-1">確認匯出／分享</h3>
-            <p id="exportShareHint" class="text-sm text-gray-500 mb-4 hidden">選擇格式後將直接開啟分享選單</p>
+            <h3 class="text-lg font-bold text-gray-800 mb-3">確認匯出／分享</h3>
             <button type="button" onclick="confirmExportChoice('pdf')" class="w-full mb-2 py-3 rounded-2xl border border-gray-200 text-sm font-medium hover:bg-[#f0faf5]">生成 PDF 懶人包</button>
             <button type="button" onclick="confirmExportChoice('jpeg')" class="w-full mb-3 py-3 rounded-2xl border border-gray-200 text-sm font-medium hover:bg-[#f0faf5]">生成 JPEG 合成圖片</button>
-            <button type="button" id="exportNativeShareBtn" onclick="openNativeShareSheet()" class="hidden w-full mb-3 py-3 rounded-2xl bg-[#10b981] text-white text-sm font-semibold">開啟系統分享選單</button>
             <button type="button" onclick="closeExportMenu()" class="w-full py-2.5 rounded-2xl text-sm text-gray-500">取消</button>
         </div>
     </div>
@@ -3097,7 +3096,7 @@
                 detail.textContent = '';
                 if (range) range.textContent = '';
                 setDays(getTrialDaysLeft(), false);
-                setBadge('試用中 · 尚餘 ' + getTrialDaysLeft() + ' 天');
+                setBadge(planName + '免費試用中 · 尚餘 ' + getTrialDaysLeft() + ' 天');
             } else if (hasPaid && planEndDate) {
                 var graceEnd = new Date(planEndDate);
                 graceEnd.setDate(graceEnd.getDate() + MEMBERSHIP_GRACE_DAYS);
@@ -3108,27 +3107,27 @@
                 if (range) range.textContent = '';
                 setDays(left, !stillActive);
                 lab.textContent = '';
-                setBadge((stillActive ? '付費生效中' : '已到期') + ' · 尚餘 ' + left + ' 天');
+                setBadge(planName + (stillActive ? '生效中' : '已到期') + ' · 尚餘 ' + left + ' 天');
                 if (!stillActive && badge) badge.style.background = '#fff7ed';
             } else if (hasPaid && !planEndDate) {
                 title.textContent = planName + ' · 已付費生效中';
                 detail.textContent = '';
                 if (range) range.textContent = '';
                 if (daysEl) daysEl.textContent = '尚餘 — 天';
-                setBadge('付費生效中');
+                setBadge(planName + '生效中');
             } else if (isTrialActive && trialEndDate) {
                 title.textContent = planName + ' · 免費試用中（' + short(trialStartDate) + ' - ' + short(trialEndDate) + '）';
                 detail.textContent = '';
                 if (range) range.textContent = '';
                 setDays(getTrialDaysLeft(), false);
-                setBadge('試用中 · 尚餘 ' + getTrialDaysLeft() + ' 天');
+                setBadge(planName + '免費試用中 · 尚餘 ' + getTrialDaysLeft() + ' 天');
             } else {
                 title.textContent = '待付款';
                 detail.textContent = trialEndDate ? ('試用已於 ' + short(trialEndDate) + ' 結束') : '請選擇方案續用';
                 range.textContent = '';
                 setDays(0, true);
                 card.className = 'hidden';
-                setBadge('待付款');
+                setBadge(planName + '待付款');
             }
         }
 
@@ -4445,17 +4444,6 @@
             pendingExportDemo = !!demo;
             pendingSharePayload = null;
             var m = document.getElementById('exportChoiceModal');
-            var hint = document.getElementById('exportShareHint');
-            var shareBtn = document.getElementById('exportNativeShareBtn');
-            if (hint) {
-                if (isMobileShareDevice()) {
-                    hint.classList.remove('hidden');
-                    hint.textContent = '選擇格式後將直接開啟分享選單';
-                } else {
-                    hint.classList.add('hidden');
-                }
-            }
-            if (shareBtn) shareBtn.classList.add('hidden');
             if (m) m.classList.add('show');
         }
         function closeExportMenu() {
@@ -4463,11 +4451,7 @@
             if (m) m.classList.remove('show');
         }
         function confirmExportChoice(kind) {
-            if (!isMobileShareDevice()) closeExportMenu();
-            else {
-                var hint = document.getElementById('exportShareHint');
-                if (hint) { hint.classList.remove('hidden'); hint.textContent = '正在產生檔案…'; }
-            }
+            showToast('正在產生檔案…', 'success');
             if (pendingExportDemo) {
                 if (kind === 'jpeg') exportDemoMedicalJpeg();
                 else exportDemoMedicalPdf();
@@ -4883,7 +4867,7 @@
                 showToast('請勾選欲匯出的病歷報告（可點擊「全選」）', 'success');
             } else {
                 memberSelectedReports.clear();
-                if (btn) btn.textContent = '📤 批量匯出/分享';
+                if (btn) btn.textContent = '批量匯出/分享';
             }
             renderMemberReports();
             updateMemberSelectedCount();
@@ -4918,9 +4902,25 @@
             isMemberSelectMode = false;
             memberSelectedReports.clear();
             var btn = document.getElementById('memberToggleSelectModeBtn');
-            if (btn) btn.textContent = '📤 批量匯出/分享';
+            if (btn) btn.textContent = '批量匯出/分享';
             renderMemberReports();
             updateMemberSelectedCount();
+        }
+        function dismissBatchSelectionIfOpen() {
+            var changed = false;
+            if (typeof isMemberSelectMode !== 'undefined' && isMemberSelectMode) {
+                exitMemberSelectMode();
+                changed = true;
+            }
+            if (typeof isDemoSelectMode !== 'undefined' && isDemoSelectMode) {
+                exitDemoSelectMode();
+                changed = true;
+            }
+            if (typeof isSelectMode !== 'undefined' && isSelectMode) {
+                exitSelectMode();
+                changed = true;
+            }
+            return changed;
         }
 
         // ================================================================
@@ -5533,37 +5533,33 @@
         }
         function openNativeShareSheet() {
             var p = pendingSharePayload;
-            if (!p || !navigator.share) return Promise.resolve(false);
-            var payload = { files: [p.file], title: p.filename };
+            if (!p || !navigator.share) return Promise.resolve('unavailable');
+            var payload = { files: [p.file], title: 'Paw Vault 病歷報告' };
             var run = function(data) {
                 return navigator.share(data).then(function() {
                     closeExportMenu();
-                    return true;
+                    return 'shared';
                 }).catch(function(err) {
-                    if (err && (err.name === 'AbortError' || String(err.message || '').indexOf('abort') !== -1)) return false;
-                    return false;
+                    if (err && (err.name === 'AbortError' || String(err.message || '').indexOf('abort') !== -1)) return 'abort';
+                    return 'fail';
                 });
             };
             if (typeof navigator.canShare !== 'function' || navigator.canShare(payload)) return run(payload);
-            return run({ title: p.filename, text: 'Paw Vault 病歷檔案' });
+            return run({ title: 'Paw Vault 病歷報告', text: p.filename || 'Paw Vault 病歷檔案' });
         }
         function shareGeneratedFile(blob, filename, mime) {
             if (!blob) return Promise.resolve(false);
-            if (!isMobileShareDevice() || !navigator.share) {
-                saveBlobToDevice(blob, filename);
-                return Promise.resolve(false);
-            }
             armNativeShare(blob, filename, mime);
-            var modal = document.getElementById('exportChoiceModal');
-            var hint = document.getElementById('exportShareHint');
-            if (modal) modal.classList.add('show');
-            if (hint) {
-                hint.classList.remove('hidden');
-                hint.textContent = '檔案已準備好，請再點一次開啟分享選單';
+            if (isMobileShareDevice() && navigator.share) {
+                return openNativeShareSheet().then(function(status) {
+                    if (status === 'fail' || status === 'unavailable') saveBlobToDevice(blob, filename);
+                    closeExportMenu();
+                    return status === 'shared';
+                });
             }
-            var shareBtn = document.getElementById('exportNativeShareBtn');
-            if (shareBtn) shareBtn.classList.remove('hidden');
-            return openNativeShareSheet();
+            saveBlobToDevice(blob, filename);
+            closeExportMenu();
+            return Promise.resolve(false);
         }
         function saveBlobToDevice(blob, filename) {
             var blobUrl = URL.createObjectURL(blob);
@@ -9942,7 +9938,7 @@
                 showToast('請勾選欲匯出的病歷報告（可點擊「全選」）', 'success');
             } else {
                 demoSelectedReports.clear();
-                if (btn) btn.textContent = '📤 批量匯出/分享';
+                if (btn) btn.textContent = '批量匯出/分享';
             }
             renderDemoReports();
             updateDemoSelectedCount();
@@ -9981,7 +9977,7 @@
             isDemoSelectMode = false;
             demoSelectedReports.clear();
             var btn = document.getElementById('demoToggleSelectBtn');
-            if (btn) btn.textContent = '📤 批量匯出/分享';
+            if (btn) btn.textContent = '批量匯出/分享';
             renderDemoReports();
             updateDemoSelectedCount();
         }
@@ -10054,6 +10050,13 @@
                 if (udm) udm.classList.remove('show');
             }
             if (e.target.id === 'navDrawerMask') toggleNavDrawer(false);
+            var keepBatch = e.target.closest && (
+                e.target.closest('.report-float-bar') ||
+                e.target.closest('.report-checkbox') ||
+                e.target.closest('#memberToggleSelectModeBtn') ||
+                e.target.closest('#demoToggleSelectBtn')
+            );
+            if (!keepBatch) dismissBatchSelectionIfOpen();
         });
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
@@ -10062,6 +10065,7 @@
                 toggleNavDrawer(false);
                 var ud = document.getElementById('userDropdownMenu');
                 if (ud) ud.classList.remove('show');
+                dismissBatchSelectionIfOpen();
                 return;
             }
             if (e.key !== 'Enter' || e.shiftKey || e.isComposing) return;

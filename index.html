@@ -29,8 +29,16 @@
         .modal-preview { z-index: 2000 !important; }
         .modal-top { z-index: 3000 !important; }
         .modal.show { display: flex !important; align-items: center; justify-content: center; }
-        .modal-content { background: white; border-radius: 2rem; max-width: 480px; width: 100%; padding: 2rem; max-height: 90vh; overflow-y: auto; margin: auto; position: relative; }
-        .modal-sticky-actions { position: sticky; bottom: 0; background: #fff; z-index: 10; padding-top: 0.6rem; margin-top: 0.4rem; }
+        .modal-content { background: white; border-radius: 2rem; max-width: 480px; width: 100%; padding: 2rem; max-height: 85vh; overflow: hidden; margin: auto; position: relative; display: flex; flex-direction: column; }
+        .modal-content > *:not(.modal-sticky-actions) { flex: 0 0 auto; }
+        .modal-scroll { flex: 1 1 auto; overflow-y: auto; min-height: 0; }
+        .modal-sticky-actions { position: sticky; bottom: 0; background: #fff; z-index: 10; padding: 12px 0 0; margin-top: 0.4rem; border-top: 1px solid #eee; flex: 0 0 auto; }
+        .home-quota-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; padding: 0.45rem 0.55rem; margin-bottom: 0.85rem; background: #f4faf7; border: 1px solid #d7eee3; border-radius: 9999px; }
+        .home-quota-chip { font-size: 0.72rem; font-weight: 600; color: #374151; background: #fff; border-radius: 9999px; padding: 0.2rem 0.55rem; border: 1px solid #e5e7eb; }
+        .home-quota-status { font-size: 0.72rem; font-weight: 700; border-radius: 9999px; padding: 0.2rem 0.6rem; }
+        .home-quota-status.ok { background: #ecfdf5; color: #047857; }
+        .home-quota-status.warn { background: #fff7ed; color: #c2410c; }
+        .home-quota-status.expired { background: #fef2f2; color: #b91c1c; }
         .modal-content-wide { max-width: 960px; }
         .modal-content-medical { max-width: 800px; }
         .modal-content-payment { max-width: 500px; }
@@ -411,9 +419,8 @@
                             </h2>
                         </div>
                         <div class="flex gap-2 flex-wrap items-center">
-                            <button type="button" onclick="openCaptureUpload(true)" class="btn-primary-pill">📷 拍照／一鍵建檔</button>
+                            <button type="button" onclick="openCaptureUpload(true)" class="btn-primary-pill">拍照／一鍵建檔</button>
                             <button onclick="openAddPetModalDemo()" class="btn-secondary-pill">＋新增毛孩</button>
-                            <button type="button" id="demoPetManageBtn" onclick="handleManageBtn(true)" class="btn-secondary-pill">管理</button>
                         </div>
                     </div>
                     <div id="demoPetBatchBar" class="pet-batch-bar">
@@ -649,6 +656,7 @@
             <span id="trialRemainingDays" class="hidden">30</span>
         </div>
 
+        <div id="memberAccountPanel">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-[#2d8f6f]">我的會員專區</h2>
         </div>
@@ -693,6 +701,7 @@
                 </div>
             </div>
         </div>
+        </div>
 
         <div id="paymentRenewalSection" class="payment-renewal" style="display:none;">
             <div class="title">💳 會籍已到期，請續用</div>
@@ -709,12 +718,17 @@
 
         <div id="memberPetsSection" class="mt-6 bg-white rounded-3xl shadow-xl overflow-hidden">
             <div class="p-6 border-b">
+                <div id="homeQuotaBar" class="home-quota-bar" onclick="openPaymentModal()">
+                    <span id="homeQuotaPets" class="home-quota-chip">毛孩配額: 0/0 隻</span>
+                    <span id="homeQuotaReports" class="home-quota-chip">病歷配額: 0/0 份</span>
+                    <span id="homeQuotaStatus" class="home-quota-status ok">剩餘 — 天</span>
+                    <button type="button" onclick="event.stopPropagation();openPaymentModal()" class="px-2.5 py-1 bg-[#10b981] text-white rounded-full text-xs font-semibold">續費/升級</button>
+                </div>
                 <div class="flex justify-between items-center flex-wrap gap-3 mb-2">
-                    <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-paw text-[#3da881] mr-2"></i>我的毛孩</h2>
+                    <h2 class="text-xl font-bold text-gray-800">我的毛孩</h2>
                     <div class="flex gap-2 flex-wrap items-center">
-                    <button type="button" onclick="openCaptureUpload(false)" class="btn-primary-pill">📷 拍照／一鍵建檔</button>
+                    <button type="button" onclick="openCaptureUpload(false)" class="btn-primary-pill">拍照／一鍵建檔</button>
                     <button id="memberAddPetBtn" onclick="openAddPetModal()" class="btn-secondary-pill">＋新增毛孩</button>
-                    <button type="button" id="memberPetManageBtn" onclick="handleManageBtn(false)" class="btn-secondary-pill">管理</button>
                     </div>
                 </div>
                 <p id="memberPetCapacity" class="hidden"></p>
@@ -1430,7 +1444,7 @@
             </div>
             <p id="ocrHint" class="text-xs text-[#2d8f6f] mb-2 hidden">正在辨識圖片文字…</p>
             <div id="fileList" class="text-xs text-gray-500 mb-3"></div>
-            <div class="flex gap-2.5">
+            <div class="modal-sticky-actions flex gap-2.5">
                 <button onclick="closeUploadModal()" class="flex-1 py-2.5 border border-gray-300 rounded-2xl text-sm hover:bg-gray-50 transition">取消</button>
                 <button type="button" id="confirmUpload" onclick="confirmUpload()" class="flex-1 py-2.5 bg-[#3da881] text-white rounded-2xl text-sm hover:bg-[#2d8f6f] transition">儲存報告</button>
             </div>
@@ -1635,10 +1649,10 @@
 
     <div id="expiryNoticeModal" class="modal">
         <div class="modal-content fade-in text-center" style="max-width:400px;">
-            <h3 class="text-xl font-bold text-gray-800 mb-2" id="expiryNoticeTitle">會籍已到期</h3>
-            <p class="text-sm text-gray-600 mb-5" id="expiryNoticeText">請付款續用後即可繼續使用。</p>
-            <button onclick="closeExpiryNotice(); openPaymentModal();" class="w-full py-2.5 bg-[#3da881] text-white rounded-2xl text-sm font-medium">前往付款</button>
-            <button onclick="closeExpiryNotice()" class="w-full mt-2 py-2 border border-gray-300 rounded-2xl text-sm text-gray-500">稍後</button>
+            <h3 class="text-xl font-bold text-gray-800 mb-2" id="expiryNoticeTitle">您的試用期/方案已到期</h3>
+            <p class="text-sm text-gray-600 mb-5" id="expiryNoticeText">升級方案以繼續使用 AI 一鍵建檔與病歷空間。</p>
+            <button onclick="closeExpiryNotice(); openPaymentModal();" class="w-full py-2.5 bg-[#3da881] text-white rounded-2xl text-sm font-medium">立即升級續費</button>
+            <button onclick="closeExpiryNotice()" class="w-full mt-2 py-2 border border-gray-300 rounded-2xl text-sm text-gray-500">暫時返回</button>
         </div>
     </div>
 
@@ -2609,13 +2623,12 @@
             if (m) m.classList.add('show');
         }
         function openCaptureUpload(demo) {
+            if (!demo && shouldBlockExpiredWrite()) { checkTrialExpired(); return; }
             captureAutoSaveMode = true;
             demoUploadMode = !!demo;
             pendingCaptureFile = null;
             pendingOcrFields = {};
             closeOcrPreviewModal();
-            captureAutoSaveMode = true;
-            demoUploadMode = !!demo;
             var um = document.getElementById('uploadModal');
             if (um) um.classList.remove('show');
             var g = document.getElementById('captureGuideModal');
@@ -2788,7 +2801,7 @@
             if (on) fillNavDrawer();
         }
         function onNavAvatarClick() {
-            if (isLoggedIn) { handleUserMenuClick('account'); toggleNavDrawer(false); }
+            if (isLoggedIn) { showMemberAccount(); toggleNavDrawer(false); }
             else openLoginModal();
         }
         function scrollToPetsSection() {
@@ -2801,12 +2814,11 @@
             var adminBtn = isAdminUser() ? '<button type="button" onclick="toggleNavDrawer(false);openAdminPage()">後台管理</button>' : '';
             if (isLoggedIn) {
                 box.innerHTML =
-                    '<button type="button" onclick="toggleNavDrawer(false);handleUserMenuClick(\'account\')">會員專區</button>' +
-                    '<button type="button" onclick="toggleNavDrawer(false);handleUserMenuClick(\'account\');scrollToPetsSection();">我的毛孩</button>' +
-                    '<button type="button" onclick="toggleNavDrawer(false);openClinicPartnerModal()">獸醫診所專區</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);showMemberPets();">我的毛孩</button>' +
                     '<button type="button" onclick="toggleNavDrawer(false);openPricingModal()">定價方案</button>' +
                     '<button type="button" onclick="toggleNavDrawer(false);openFaqModal()">常見問題</button>' +
                     '<button type="button" onclick="toggleNavDrawer(false);openContactModal()">查詢</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);openClinicPartnerModal()">獸醫診所專區</button>' +
                     adminBtn +
                     '<button type="button" onclick="toggleNavDrawer(false);handleLogout()">登出</button>';
             } else {
@@ -3233,25 +3245,30 @@
             return new Date() > end;
         }
 
+        function isQuotaFull() {
+            var lim = getPlanLimits() || {};
+            var petMax = (typeof getEffectivePetLimit === 'function' ? getEffectivePetLimit() : lim.petLimit) || lim.petLimit || 1;
+            var reportMax = lim.yearlyReportLimit || lim.monthlyReportLimit || 50;
+            var petUsed = (typeof pets !== 'undefined' && pets) ? pets.filter(function(p){ return !p.is_deleted && !p.isDeleted; }).length : 0;
+            var reportUsed = typeof getTotalReports === 'function' ? getTotalReports() : 0;
+            return petUsed >= petMax && reportUsed >= reportMax;
+        }
+        function shouldBlockExpiredWrite() {
+            return isLoggedIn && isTrialOver() && isQuotaFull();
+        }
         function checkTrialExpired() {
             if (!isTrialOver()) return false;
             var paidEnd = parseTrialDate(planEndDate);
-            var trialEnd = parseTrialDate(trialEndDate);
             var titleEl = document.getElementById('expiryNoticeTitle');
             var textEl = document.getElementById('expiryNoticeText');
-            if (hasPaid && paidEnd) {
-                if (titleEl) titleEl.textContent = '會籍已到期';
-                if (textEl) textEl.textContent = '到期日為 ' + fmtDateHK(paidEnd) + '。付款續用後即可繼續上載報告。';
-            } else {
-                if (titleEl) titleEl.textContent = '試用已結束';
-                if (textEl) textEl.textContent = '請選擇方案並付款，即可繼續使用。';
-            }
+            if (titleEl) titleEl.textContent = '您的試用期/方案已到期';
+            if (textEl) textEl.textContent = hasPaid && paidEnd
+                ? ('到期日為 ' + fmtDateHK(paidEnd) + '。升級方案以繼續使用 AI 一鍵建檔與病歷空間。')
+                : '升級方案以繼續使用 AI 一鍵建檔與病歷空間。';
             var notice = document.getElementById('expiryNoticeModal');
             if (notice) notice.classList.add('show');
             var section = document.getElementById('paymentRenewalSection');
             if (section) section.style.display = 'block';
-            var petsSec = document.getElementById('memberPetsSection');
-            if (petsSec) petsSec.style.display = 'none';
             return true;
         }
         function closeExpiryNotice() {
@@ -3437,6 +3454,8 @@
                 renderMemberReports();
                 updatePlanDisplay();
                 updateTrialBanner();
+                if (typeof updateHomeQuotaBar === 'function') updateHomeQuotaBar();
+                if (typeof updateMembershipStatusCard === 'function') updateMembershipStatusCard();
             } else {
                 renderDemoPets();
                 renderDemoReports();
@@ -5550,12 +5569,19 @@
         function shareGeneratedFile(blob, filename, mime) {
             if (!blob) return Promise.resolve(false);
             armNativeShare(blob, filename, mime);
-            if (isMobileShareDevice() && navigator.share) {
-                return openNativeShareSheet().then(function(status) {
-                    if (status === 'fail' || status === 'unavailable') saveBlobToDevice(blob, filename);
-                    closeExportMenu();
-                    return status === 'shared';
-                });
+            if (isMobileShareDevice()) {
+                if (navigator.share) {
+                    return openNativeShareSheet().then(function(status) {
+                        closeExportMenu();
+                        if (status !== 'shared' && status !== 'abort') {
+                            showToast('未能開啟系統分享選單，請改用電腦下載', 'warning');
+                        }
+                        return status === 'shared';
+                    });
+                }
+                closeExportMenu();
+                showToast('此手機瀏覽器不支援系統分享', 'warning');
+                return Promise.resolve(false);
             }
             saveBlobToDevice(blob, filename);
             closeExportMenu();
@@ -6442,8 +6468,7 @@
                 showToast('請先登入會員才能上傳報告', 'warning');
                 return;
             }
-            // ✅ 檢查試用期是否已結束
-            if (checkTrialExpired()) return;
+            if (shouldBlockExpiredWrite()) { checkTrialExpired(); return; }
             
             if (!selectedPetId && pets.length > 0) {
                 selectedPetId = pets[0].id;
@@ -7516,6 +7541,28 @@
         // 會員專區功能
         // ================================================================
         // ✅ 問題5已修復：試用期已結束嘅提示同限制
+       function setMemberViewMode(mode) {
+            var account = document.getElementById('memberAccountPanel');
+            var petsSec = document.getElementById('memberPetsSection');
+            var renew = document.getElementById('paymentRenewalSection');
+            if (account) account.style.display = mode === 'account' ? 'block' : 'none';
+            if (petsSec) petsSec.style.display = mode === 'account' ? 'none' : 'block';
+            if (renew) renew.style.display = (mode === 'account' && isTrialOver()) ? 'block' : 'none';
+        }
+        function showMemberAccount() {
+            window.pendingOpenAdmin = false;
+            if (typeof closeAllModals === 'function') closeAllModals();
+            document.getElementById('mainContent').classList.add('hidden');
+            var ad = document.getElementById('adminDashboard');
+            if (ad) ad.classList.add('hidden');
+            var cw = document.getElementById('clinicWorkbench');
+            if (cw) cw.classList.add('hidden');
+            document.getElementById('memberDashboard').classList.add('show');
+            updateEmailVerifyBanner();
+            setMemberViewMode('account');
+            updateMembershipStatusCard();
+            updateHomeQuotaBar();
+        }
        function showMemberPets() {
             window.pendingOpenAdmin = false;
             if (typeof closeAllModals === 'function') closeAllModals();
@@ -7526,24 +7573,44 @@
             if (cw) cw.classList.add('hidden');
             document.getElementById('memberDashboard').classList.add('show');
             updateEmailVerifyBanner();
-            
-            // 試用已過期：只顯示付款提示
-            if (isTrialOver()) {
-                document.getElementById('paymentRenewalSection').style.display = 'block';
-                document.getElementById('memberPetsSection').style.display = 'none';
-                checkTrialExpired();
-                return;
-            }
-            
-            document.getElementById('paymentRenewalSection').style.display = 'none';
-            document.getElementById('memberPetsSection').style.display = 'block';
+            setMemberViewMode('pets');
             renderMemberPets();
             renderMemberReports();
             if (memberSelectedPetId) {
                 var pet = pets.find(function(p) { return p.id === memberSelectedPetId; });
-                document.getElementById('memberSelectedPetName').innerHTML = pet ? pet.name + ' 的病歷報告' : '病歷報告';
+                var nameEl = document.getElementById('memberSelectedPetName');
+                if (nameEl) nameEl.innerHTML = pet ? pet.name + ' 的病歷報告' : '病歷報告';
             }
             updateTrialBanner();
+            updateHomeQuotaBar();
+        }
+        function updateHomeQuotaBar() {
+            var petsEl = document.getElementById('homeQuotaPets');
+            var repsEl = document.getElementById('homeQuotaReports');
+            var stEl = document.getElementById('homeQuotaStatus');
+            var lim = getPlanLimits() || {};
+            var petMax = (typeof getEffectivePetLimit === 'function' ? getEffectivePetLimit() : lim.petLimit) || lim.petLimit || 1;
+            var reportMax = lim.yearlyReportLimit || lim.monthlyReportLimit || 50;
+            var petUsed = (pets || []).filter(function(p){ return !p.is_deleted && !p.isDeleted; }).length;
+            var reportUsed = typeof getTotalReports === 'function' ? getTotalReports() : 0;
+            if (petsEl) petsEl.textContent = '毛孩配額: ' + petUsed + '/' + petMax + ' 隻';
+            if (repsEl) repsEl.textContent = '病歷配額: ' + reportUsed + '/' + reportMax + ' 份';
+            if (!stEl) return;
+            var days = 0;
+            if (hasPaid && planEndDate) days = Math.max(0, Math.floor((planEndDate - new Date()) / (1000*60*60*24)));
+            else if (trialEndDate) days = getTrialDaysLeft();
+            var name = planBadgeText((lim.label || '方案'));
+            stEl.classList.remove('ok', 'warn', 'expired');
+            if (isTrialOver()) {
+                stEl.classList.add('expired');
+                stEl.textContent = '方案已到期，點此續費解鎖完整功能';
+            } else if (days <= 3) {
+                stEl.classList.add('warn');
+                stEl.textContent = '試用將於 ' + days + ' 天後結束';
+            } else {
+                stEl.classList.add('ok');
+                stEl.textContent = name + '剩餘 ' + days + ' 天';
+            }
         }
 
         function handleLogout() {

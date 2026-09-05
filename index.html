@@ -119,8 +119,10 @@
         .report-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: #3da881; margin-right: 0.5rem; }
         .select-all-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: #3da881; margin-right: 0.5rem; }
         .report-select-mode { display: none !important; }
-        .report-float-bar { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%) translateY(12px); z-index: 40; display: none; align-items: center; justify-content: space-between; gap: 0.6rem; flex-direction: row; flex-wrap: nowrap; width: 90%; max-width: 500px; padding: 12px 16px; border-radius: 16px; background: #1e293b; color: #fff; box-shadow: 0 10px 30px rgba(15,23,42,0.28); overflow-x: auto; }
+        .report-float-bar { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%) translateY(12px); z-index: 40; display: none; align-items: center; justify-content: space-between; gap: 0.75rem; flex-direction: row; flex-wrap: nowrap; width: 92%; max-width: 560px; padding: 10px 16px; border-radius: 16px; background: #1e293b; color: #fff; box-shadow: 0 10px 30px rgba(15,23,42,0.28); overflow-x: auto; }
         .report-float-bar.show { display: flex !important; transform: translateX(-50%) translateY(0); }
+        .report-float-bar .rf-left { flex: 0 0 auto; font-size: 0.85rem; color: #e2e8f0; white-space: nowrap; }
+        .report-float-bar .rf-right { display: flex; align-items: center; gap: 0.4rem; flex: 0 0 auto; }
         .report-float-bar button { white-space: nowrap; flex: 0 0 auto; }
         .limit-warning { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 1rem; padding: 0.8rem 1.2rem; display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
         .limit-warning .icon { color: #dc2626; font-size: 1.2rem; }
@@ -160,15 +162,15 @@
         .pricing-tabs { display:flex; justify-content:center; gap:0.5rem; margin-bottom:1.25rem; flex-wrap:wrap; }
         .pricing-tab { padding:0.45rem 1.1rem; border-radius:9999px; font-size:0.85rem; font-weight:600; border:1px solid #d1d5db; background:#fff; color:#4b5563; cursor:pointer; }
         .pricing-tab.active { background:#3da881; color:#fff; border-color:#3da881; }
-        .pricing-card { border: 2px solid #e5e7eb; transition: all 0.2s; cursor: pointer; border-radius: 1.5rem; padding: 2rem 1.5rem; text-align: center; background: white; position: relative; }
+        .pricing-card { border: 2px solid #e5e7eb; transition: all 0.2s; cursor: pointer; border-radius: 1.5rem; padding: 12px; text-align: center; background: white; position: relative; line-height: 1.3; }
         .pricing-card:hover { border-color: #3da881; transform: translateY(-6px); box-shadow: 0 20px 30px -12px rgba(0,0,0,0.1); }
         .pricing-card.selected { border-color: #3da881; background: #e8f5ef; box-shadow: 0 20px 30px -12px rgba(61,168,129,0.15); }
         .pricing-card .popular { background: #f43f5e; color: white; font-size: 0.55rem; padding: 0.12rem 0.55rem; border-radius: 30px; display: inline-block; font-weight: 600; letter-spacing: 0.3px; position: absolute; top: -8px; left: 50%; transform: translateX(-50%); }
         .pricing-card .price { font-size: 2rem; font-weight: 700; color: #1f2937; }
         .pricing-card .price span { font-size: 0.85rem; font-weight: 400; color: #6b7280; }
         .pricing-card .annual-price { font-size: 1rem; color: #6b7280; margin-top: 0.1rem; }
-        .pricing-card .features { text-align: left; margin-top: 1rem; font-size: 0.9rem; color: #4b5563; }
-        .pricing-card .features li { padding: 0.3rem 0; display: flex; align-items: center; gap: 0.5rem; }
+        .pricing-card .features { text-align: left; margin-top: 0.45rem; font-size: 0.8rem; color: #4b5563; line-height: 1.3; }
+        .pricing-card .features li { padding: 0.12rem 0; display: flex; align-items: center; gap: 0.5rem; }
         .pricing-card .features .check { color: #10b981; font-weight: 700; }
         .pricing-price-row { display: flex; flex-direction: column; align-items: center; gap: 0.1rem; }
         .pricing-price-row .monthly { font-size: 2rem; font-weight: 700; color: #1f2937; line-height: 1.2; }
@@ -259,9 +261,9 @@
         .existing-file-item { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.6rem; background: #f3f4f6; border-radius: 30px; font-size: 0.75rem; color: #374151; border: 1px solid #e5e7eb; }
         .existing-file-item .remove-file-btn { color: #dc2626; cursor: pointer; font-size: 0.7rem; padding: 0 0.2rem; }
         .existing-file-item .remove-file-btn:hover { color: #b91c1c; }
-        .step-card { background: white; border-radius: 1.5rem; padding: 2rem 1.5rem; text-align: center; border: 1px solid #e5ece8; transition: 0.2s; }
+        .step-card { background: white; border-radius: 1.5rem; padding: 1.35rem 1.1rem; text-align: center; border: 1px solid #e5ece8; transition: 0.2s; }
         .step-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px -8px rgba(0,0,0,0.08); border-color: #6ecba5; }
-        .step-number { display: inline-block; width: 40px; height: 40px; line-height: 40px; border-radius: 50%; background: #3da881; color: white; font-weight: 700; font-size: 1.1rem; margin-bottom: 0.8rem; }
+        .step-number { display: inline-block; width: 32px; height: 32px; line-height: 32px; border-radius: 50%; background: #3da881; color: white; font-weight: 700; font-size: 0.95rem; margin-bottom: 0.5rem; }
         .demo-step-badge { display: inline-block; background: #dbeafe; color: #1e40af; font-size: 0.65rem; font-weight: 700; padding: 0.1rem 0.6rem; border-radius: 30px; margin-left: 0.4rem; letter-spacing: 0.3px; }
         .demo-mode-banner { background: #dbeafe; border: 2px solid #93c5fd; border-radius: 0.75rem; padding: 0.6rem 1.2rem; display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; justify-content: center; margin-top: 0.5rem; }
         .demo-mode-banner .icon { font-size: 1.2rem; }
@@ -359,8 +361,7 @@
                 <div class="p-6 border-b">
                     <div class="demo-mode-banner mb-4">
                         <span class="icon">🔍</span>
-                        <span class="text"><span class="highlight">示範體驗（假資料）</span>　豆豆／咪咪及以下報告只供試用，不是真實病歷，亦不是公開會員資料。</span>
-                        <span class="text">註冊登入後，只有你自己睇到自己嘅檔案</span>
+                        <span class="text">ℹ️ 示範體驗：以下資料及報告僅供功能測試，並非真實病歷，亦非公開會員資料。註冊登入後僅您本人可查看自己的專屬檔案。</span>
                         <button type="button" onclick="resetDemoExperience()" class="px-3 py-1 rounded-full bg-white border border-[#93c5fd] text-[#1e3a5f] text-xs font-medium hover:bg-[#eff6ff]">🔄 還原預設範例</button>
                     </div>
                     <div class="flex justify-between items-center flex-wrap gap-3 mb-4">
@@ -374,7 +375,7 @@
                         <div class="flex gap-2 flex-wrap items-center">
                             <button type="button" onclick="openCaptureUpload(true)" class="btn-primary-pill">📷 拍照／一鍵建檔</button>
                             <button onclick="openAddPetModalDemo()" class="btn-secondary-pill">＋新增毛孩</button>
-                            <button type="button" id="demoPetManageBtn" onclick="togglePetManageMode(true)" class="px-3 py-1.5 text-gray-500 text-sm">管理</button>
+                            <button type="button" id="demoPetManageBtn" onclick="togglePetManageMode(true)" class="btn-secondary-pill">管理</button>
                         </div>
                     </div>
                     <div id="demoPetBatchBar" class="pet-batch-bar">
@@ -444,12 +445,14 @@
                         </div>
                     </div>
                     <div id="demoReportSelectMode" class="report-float-bar">
-                        <button type="button" onclick="toggleDemoSelectAllReports(true)" class="text-sm text-white/90">全選</button>
-                        <span id="demoSelectedCountDisplay" class="text-sm text-slate-200">已選擇 0 項目</span>
-                        <button type="button" onclick="copyDemoSelectedReports()" class="px-3 py-1 rounded-full bg-white/10 text-white text-sm">複製</button>
-                        <button type="button" onclick="downloadDemoSelectedReports()" class="px-3 py-1 rounded-full bg-[#3da881] text-white text-sm">分享/下載</button>
-                        <button type="button" onclick="deleteDemoSelectedReports()" class="px-3 py-1 rounded-full text-red-300 text-sm">刪除</button>
-                        <button type="button" onclick="exitDemoSelectMode()" class="text-slate-300 text-sm px-1">✕</button>
+                        <span id="demoSelectedCountDisplay" class="rf-left">已選擇 0 項</span>
+                        <div class="rf-right">
+                            <button type="button" onclick="toggleDemoSelectAllReports(true)" class="px-3 py-1 rounded-full bg-white/10 text-white text-sm">全選</button>
+                            <button type="button" onclick="copyDemoSelectedReports()" class="px-3 py-1 rounded-full bg-white/10 text-white text-sm">複製</button>
+                            <button type="button" onclick="downloadDemoSelectedReports()" class="px-3 py-1 rounded-full bg-[#3da881] text-white text-sm">📤 分享</button>
+                            <button type="button" onclick="deleteDemoSelectedReports()" class="px-3 py-1 rounded-full text-red-300 text-sm">刪除</button>
+                            <button type="button" onclick="exitDemoSelectMode()" class="text-slate-300 text-sm px-1">✕</button>
+                        </div>
                     </div>
                     <input id="demoReportSearch" type="search" placeholder="搜尋報告標題、內容、診所、醫生…" oninput="demoSelectedReports.clear();renderDemoReports();updateDemoSelectedCount();" class="w-full px-4 py-2 border border-gray-200 rounded-2xl text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
                     <div id="reportListContainer" class="space-y-2 max-h-[400px] overflow-y-auto pr-1"></div>
@@ -503,30 +506,25 @@
         <!-- 使用步驟 -->
         <div class="max-w-6xl mx-auto px-6 pb-8">
             <div class="feature-section">
-                <h2 class="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-8">使用步驟</h2>
-                <div class="grid md:grid-cols-4 gap-6">
+                <h2 class="text-2xl md:text-3xl font-bold text-center text-gray-800 mb-5">使用步驟</h2>
+                <div class="grid md:grid-cols-3 gap-4">
                     <div class="step-card">
                         <div class="step-number">1</div>
-                        <div class="feature-title">註冊帳號</div>
-                        <div class="feature-desc">電郵登記，即享 30 天免費試用</div>
+                        <div class="feature-title">快速註冊</div>
+                        <div class="feature-desc">建立帳號即享 30 天免費體驗。</div>
                     </div>
                     <div class="step-card">
                         <div class="step-number">2</div>
-                        <div class="feature-title">選擇方案與過數</div>
-                        <div class="feature-desc">揀方案，PayMe／轉數快入數後上載證明</div>
+                        <div class="feature-title">上載檔案</div>
+                        <div class="feature-desc">選擇方案並輕鬆建立毛孩健康檔案。</div>
                     </div>
                     <div class="step-card">
                         <div class="step-number">3</div>
-                        <div class="feature-title">上載毛孩資料</div>
-                        <div class="feature-desc">建立檔案、上載化驗單與疫苗證明</div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-number">4</div>
-                        <div class="feature-title">病歷與診所對接</div>
-                        <div class="feature-desc">授權碼給診所寫入報告，覆診提醒不中斷</div>
+                        <div class="feature-title">靈活續用</div>
+                        <div class="feature-desc">試用期滿後可隨時選擇適合方案續用。</div>
                     </div>
                 </div>
-                <div class="text-center mt-8">
+                <div class="text-center mt-6">
                     <button onclick="openSignupModal()" class="btn-hero">立即開始</button>
                 </div>
             </div>
@@ -685,7 +683,7 @@
                     <div class="flex gap-2 flex-wrap items-center">
                     <button type="button" onclick="openCaptureUpload(false)" class="btn-primary-pill">📷 拍照／一鍵建檔</button>
                     <button id="memberAddPetBtn" onclick="openAddPetModal()" class="btn-secondary-pill">＋新增毛孩</button>
-                    <button type="button" id="memberPetManageBtn" onclick="togglePetManageMode(false)" class="px-3 py-1.5 text-gray-500 text-sm">管理</button>
+                    <button type="button" id="memberPetManageBtn" onclick="togglePetManageMode(false)" class="btn-secondary-pill">管理</button>
                     </div>
                 </div>
                 <p id="memberPetCapacity" class="hidden"></p>
@@ -712,12 +710,14 @@
                 </div>
                 <div id="memberPetFilters" class="flex flex-wrap gap-2 mb-3"></div>
                 <div id="memberReportSelectMode" class="report-float-bar">
-                    <button type="button" onclick="toggleMemberSelectAllReports(true)" class="text-sm text-white/90">全選</button>
-                    <span id="memberSelectedCountDisplay" class="text-sm text-slate-200">已選擇 0 項目</span>
-                    <button type="button" onclick="copyMemberSelectedReports()" class="px-3 py-1 rounded-full bg-white/10 text-white text-sm">複製</button>
-                    <button type="button" id="memberDownloadOriginalBtn" onclick="downloadMemberSelectedReports()" class="px-3 py-1 rounded-full bg-[#3da881] text-white text-sm">分享/下載</button>
-                    <button type="button" onclick="deleteMemberSelectedReports()" class="px-3 py-1 rounded-full text-red-300 text-sm">刪除</button>
-                    <button type="button" onclick="exitMemberSelectMode()" class="text-slate-300 text-sm px-1">✕</button>
+                    <span id="memberSelectedCountDisplay" class="rf-left">已選擇 0 項</span>
+                    <div class="rf-right">
+                        <button type="button" onclick="toggleMemberSelectAllReports(true)" class="px-3 py-1 rounded-full bg-white/10 text-white text-sm">全選</button>
+                        <button type="button" onclick="copyMemberSelectedReports()" class="px-3 py-1 rounded-full bg-white/10 text-white text-sm">複製</button>
+                        <button type="button" id="memberDownloadOriginalBtn" onclick="downloadMemberSelectedReports()" class="px-3 py-1 rounded-full bg-[#3da881] text-white text-sm">📤 分享</button>
+                        <button type="button" onclick="deleteMemberSelectedReports()" class="px-3 py-1 rounded-full text-red-300 text-sm">刪除</button>
+                        <button type="button" onclick="exitMemberSelectMode()" class="text-slate-300 text-sm px-1">✕</button>
+                    </div>
                 </div>
                 <input id="memberReportSearch" type="search" placeholder="搜尋報告標題、內容、診所、醫生…" oninput="onMemberReportSearch()" class="w-full px-4 py-2 border border-gray-200 rounded-2xl text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
                 <div id="memberReportListContainer" class="space-y-2 pr-1"></div>
@@ -1495,8 +1495,8 @@
         <div class="modal-content fade-in" style="max-width:360px;">
             <h3 class="text-lg font-bold text-gray-800 mb-1">匯出病歷</h3>
             <p class="text-sm text-gray-500 mb-4">選擇匯出格式</p>
-            <button type="button" onclick="confirmExportChoice('pdf')" class="w-full mb-2 py-3 rounded-2xl border border-gray-200 text-sm font-medium hover:bg-[#f0faf5]">📄 匯出為 PDF 檔案</button>
-            <button type="button" onclick="confirmExportChoice('jpeg')" class="w-full mb-3 py-3 rounded-2xl border border-gray-200 text-sm font-medium hover:bg-[#f0faf5]">🖼️ 匯出為 JPEG 圖片</button>
+            <button type="button" onclick="confirmExportChoice('pdf')" class="w-full mb-2 py-3 rounded-2xl border border-gray-200 text-sm font-medium hover:bg-[#f0faf5]">📄 PDF 懶人包</button>
+            <button type="button" onclick="confirmExportChoice('jpeg')" class="w-full mb-3 py-3 rounded-2xl border border-gray-200 text-sm font-medium hover:bg-[#f0faf5]">🖼️ JPEG 圖片</button>
             <button type="button" onclick="closeExportMenu()" class="w-full py-2.5 rounded-2xl text-sm text-gray-500">取消</button>
         </div>
     </div>
@@ -4280,7 +4280,7 @@
             h2c(wrap, { scale: 2, useCORS: true, backgroundColor: '#ffffff', width: 800 }).then(function(canvas) {
                 document.body.removeChild(wrap);
                 canvas.toBlob(function(blob) {
-                    if (blob) saveBlobToDevice(blob, filename);
+                    if (blob) shareGeneratedFile(blob, filename, 'image/jpeg');
                 }, 'image/jpeg', 0.88);
             }).catch(function() {
                 if (wrap.parentNode) document.body.removeChild(wrap);
@@ -4331,8 +4331,8 @@
             var wrap = document.createElement('div');
             showToast('正在產生 PDF…', 'success');
             html2pdfBlob(html, file).then(function(blob) {
-                if (blob && blob.type === 'application/pdf') saveBlobToDevice(blob, file);
-                else printMedicalHistoryFallback(html);
+                if (blob) return shareGeneratedFile(blob, file, blob.type || 'application/pdf');
+                printMedicalHistoryFallback(html);
             }).catch(function() { printMedicalHistoryFallback(html); });
         }
         function printMedicalHistoryFallback(html) {
@@ -4712,7 +4712,7 @@
         function updateMemberSelectedCount() {
             var n = memberSelectedReports.size;
             var el = document.getElementById('memberSelectedCountDisplay');
-            if (el) el.textContent = '已選擇 ' + n + ' 項目';
+            if (el) el.textContent = '已選擇 ' + n + ' 項';
             var bar = document.getElementById('memberReportSelectMode');
             if (bar) bar.classList.toggle('show', isMemberSelectMode && n > 0);
         }
@@ -4879,14 +4879,26 @@
         }
         function fetchReportBlob(petId, filename) {
             var src = filename || '';
-            if (/^https?:\/\//i.test(src)) {
+            if (filename && typeof filename !== 'string') {
+                if (filename instanceof Blob) return Promise.resolve(filename);
+                if (filename.blob instanceof Blob) return Promise.resolve(filename.blob);
+                src = filename.url || filename.name || '';
+            }
+            if (/^data:/i.test(src)) {
                 return fetch(src).then(function(res) { return res.blob(); });
             }
-            return getReportDownloadURL(petId, filename).then(function(url) {
+            if (/^https?:\/\//i.test(src) || /^blob:/i.test(src)) {
+                return fetch(src).then(function(res) { return res.blob(); });
+            }
+            if (!storage || !currentUser) return Promise.reject(new Error('no-storage'));
+            return getReportDownloadURL(petId, src).then(function(url) {
                 return fetch(url).then(function(res) { return res.blob(); });
             });
         }
         function downloadMemberSelectedReports() {
+            if (memberSelectedReports.size === 0) { showToast('請至少選擇一份報告', 'warning'); return; }
+            openExportMenu(false);
+            return;
             if (memberSelectedReports.size === 0) { showToast('請至少選擇一份報告', 'warning'); return; }
             var jobs = [];
             var zipName = '病歷附件.zip';
@@ -4929,6 +4941,9 @@
             });
         }
         function downloadDemoSelectedReports() {
+            if (demoSelectedReports.size === 0) { showToast('請至少選擇一份報告', 'warning'); return; }
+            openExportMenu(true);
+            return;
             openDemoLockModal('download');
             return;
             if (demoSelectedReports.size === 0) { alert('請至少選擇一份報告'); return; }
@@ -5303,6 +5318,26 @@
         // ================================================================
         // 下載檔案（會員版）
         // ================================================================
+        function shareGeneratedFile(blob, filename, mime) {
+            if (!blob) return Promise.resolve(false);
+            var type = mime || blob.type || 'application/octet-stream';
+            var file = new File([blob], filename, { type: type });
+            var isImg = /image\//.test(type) || /\.jpe?g$/i.test(filename);
+            if (isMobileShareDevice() && navigator.share) {
+                var payload = { title: filename, files: [file] };
+                var can = typeof navigator.canShare !== 'function' || navigator.canShare(payload);
+                if (can) {
+                    return navigator.share(payload).then(function() { return true; }).catch(function() {
+                        saveBlobToDevice(blob, filename);
+                        if (isImg) showToast('如未自動儲存，可長按圖片儲存至相簿', 'success');
+                        return false;
+                    });
+                }
+            }
+            saveBlobToDevice(blob, filename);
+            if (isMobileShareDevice() && isImg) showToast('如未自動儲存，可長按圖片儲存至相簿', 'success');
+            return Promise.resolve(false);
+        }
         function saveBlobToDevice(blob, filename) {
             var blobUrl = URL.createObjectURL(blob);
             var a = document.createElement('a');
@@ -8798,7 +8833,7 @@
             var html = buildMedicalPdfHtml(list, { demo: true, ownerName: '示範主人' });
             pdfReportMapOverride = null;
             html2pdfBlob(html, 'PawVault-示範病歷.pdf', { frostBottom: true }).then(function(blob) {
-                saveBlobToDevice(blob, 'PawVault-示範病歷.pdf');
+                return shareGeneratedFile(blob, 'PawVault-示範病歷.pdf', (blob && blob.type) || 'application/pdf');
             }).catch(function() { printMedicalHistoryFallback(html); });
         }
         function exportDemoOneReport(id) {
@@ -9721,7 +9756,7 @@
         function updateDemoSelectedCount() {
             var n = demoSelectedReports.size;
             var el = document.getElementById('demoSelectedCountDisplay');
-            if (el) el.textContent = '已選擇 ' + n + ' 項目';
+            if (el) el.textContent = '已選擇 ' + n + ' 項';
             var bar = document.getElementById('demoReportSelectMode');
             if (bar) bar.classList.toggle('show', isDemoSelectMode && n > 0);
         }

@@ -468,11 +468,9 @@
                         </div>
                     </div>
                     <!-- 顯示全部按鈕 - 放喺 #petList 外面 -->
-                    <div id="demoPetFilterBar" class="mt-3 flex flex-wrap gap-2">
-                        <button onclick="selectDemoPet('all')" class="text-xs bg-[#3da881] text-white hover:bg-[#2d8f6f] px-3 py-1 rounded-full transition">顯示全部</button>
-                        <button onclick="selectDemoPet('demo1')" class="text-xs border border-gray-300 hover:border-[#3da881] px-3 py-1 rounded-full transition">豆豆</button>
-                        <button onclick="selectDemoPet('demo2')" class="text-xs border border-gray-300 hover:border-[#3da881] px-3 py-1 rounded-full transition">咪咪</button>
-                    </div>
+                    <select id="demoPetFilterBar" onchange="selectDemoPet(this.value)" class="mt-3 w-full sm:w-auto min-w-[200px] px-3 py-2 border border-gray-200 rounded-2xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#6ecba5]">
+                        <option value="all">全部毛孩（全部病歷）</option>
+                    </select>
                 </div>
                 <!-- 示範報告列表 -->
                 <div class="p-6 bg-gradient-to-r from-[#f0faf5]/30 to-white">
@@ -656,7 +654,7 @@
             <span id="trialRemainingDays" class="hidden">30</span>
         </div>
 
-        <div id="memberAccountPanel">
+        <div id="view-membership">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-[#2d8f6f]">我的會員專區</h2>
         </div>
@@ -716,7 +714,7 @@
             </div>
         </div>
 
-        <div id="memberPetsSection" class="mt-6 bg-white rounded-3xl shadow-xl overflow-hidden">
+        <div id="view-pets" class="mt-6 bg-white rounded-3xl shadow-xl overflow-hidden">
             <div class="p-6 border-b">
                 <div id="homeQuotaBar" class="home-quota-bar" onclick="openPaymentModal()">
                     <span id="homeQuotaPets" class="home-quota-chip">毛孩配額: 0/0 隻</span>
@@ -752,7 +750,7 @@
                         <button id="memberToggleSelectModeBtn" onclick="toggleMemberSelectMode()" class="btn-secondary-pill">批量匯出/分享</button>
                     </div>
                 </div>
-                <div id="memberPetFilters" class="flex flex-wrap gap-2 mb-3"></div>
+                <select id="memberPetFilters" onchange="selectMemberPet(this.value)" class="w-full sm:w-auto min-w-[200px] px-3 py-2 border border-gray-200 rounded-2xl text-sm mb-3 bg-white focus:outline-none focus:ring-2 focus:ring-[#6ecba5]"></select>
                 <div id="memberReportSelectMode" class="report-float-bar">
                     <span id="memberSelectedCountDisplay" class="rf-left">已選擇 0 份</span>
                     <div class="rf-mid">
@@ -2140,8 +2138,9 @@
         }
         function canUploadFile(file) {
             if (!file) return { ok: false, reason: '沒有檔案' };
-            if (file.size > 20 * 1024 * 1024) return { ok: false, reason: '單一檔案不可超過 20MB' };
-            if (!isAllowedReportFile(file)) return { ok: false, reason: '只接受圖片或 PDF' };
+            var isImg = (file.type && file.type.indexOf('image/') === 0) || /\.(jpe?g|png|webp|heic|heif)$/i.test(file.name || '');
+            if (!isImg && file.size > 25 * 1024 * 1024) return { ok: false, reason: '檔案過大，請壓縮後再試' };
+            if (!isAllowedReportFile(file) && !isImg) return { ok: false, reason: '只接受圖片或 PDF' };
             if (!demoUploadMode && currentUser) {
                 var next = (usedStorageBytes || 0) + file.size;
                 if (next > getMaxStorageBytes()) {
@@ -2474,7 +2473,7 @@
             });
         }
         function compressImageToFile(file, maxEdge, quality) {
-            return compressImageFile(file, maxEdge || 2048, quality || 0.75).then(function(dataUrl) {
+            return compressImageFile(file, maxEdge || 1920, quality || 0.8).then(function(dataUrl) {
                 return fetch(dataUrl).then(function(res) { return res.blob(); }).then(function(blob) {
                     var name = String(file && file.name || 'photo.jpg').replace(/\.[^.]+$/, '.jpg');
                     return new File([blob], name, { type: 'image/jpeg' });
@@ -2482,8 +2481,8 @@
             });
         }
         function compressImageFile(file, maxEdge, quality) {
-            maxEdge = maxEdge || 2048;
-            quality = quality || 0.75;
+            maxEdge = maxEdge || 1920;
+            quality = quality || 0.8;
             return new Promise(function(resolve, reject) {
                 var url = URL.createObjectURL(file);
                 var img = new Image();
@@ -2570,7 +2569,7 @@
             var file = ev.target && ev.target.files && ev.target.files[0];
             var petId = pendingPhotoPetId; var demo = pendingPhotoDemo;
             if (!file || !petId) return;
-            if (file.size > 10 * 1024 * 1024) { showToast('檔案過大，請選擇小於 10MB 的照片', 'warning'); return; }
+            if (file.size > 25 * 1024 * 1024) { showToast('相片無法處理，請另選一張', 'warning'); return; }
             var okType = (file.type && file.type.indexOf('image/') === 0) || isHeicFile(file);
             if (!okType) { showToast('請選擇圖片檔', 'warning'); return; }
             if (!checkPhotoRateLimit()) return;
@@ -2805,7 +2804,7 @@
             else openLoginModal();
         }
         function scrollToPetsSection() {
-            var el = document.getElementById('memberPetsSection') || document.getElementById('demoExperienceWrap');
+            var el = document.getElementById('view-pets') || document.getElementById('demoExperienceWrap');
             if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
         function fillNavDrawer() {
@@ -2815,6 +2814,7 @@
             if (isLoggedIn) {
                 box.innerHTML =
                     '<button type="button" onclick="toggleNavDrawer(false);showMemberPets();">我的毛孩</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);showMemberAccount();">會員專區</button>' +
                     '<button type="button" onclick="toggleNavDrawer(false);openPricingModal()">定價方案</button>' +
                     '<button type="button" onclick="toggleNavDrawer(false);openFaqModal()">常見問題</button>' +
                     '<button type="button" onclick="toggleNavDrawer(false);openContactModal()">查詢</button>' +
@@ -3159,6 +3159,10 @@
         }
 
         function goHome() {
+            if (isLoggedIn) {
+                showMemberPets();
+                return;
+            }
             document.getElementById('memberDashboard').classList.remove('show');
             var ad = document.getElementById('adminDashboard');
             if (ad) ad.classList.add('hidden');
@@ -3812,8 +3816,7 @@
                 return; 
             }
             if (action === 'account') {
-                if (checkTrialExpired()) return;
-                showMemberPets();
+                showMemberAccount();
             }
             if (action === 'admin') openAdminPage();
         }
@@ -4601,13 +4604,13 @@
         function renderMemberPetFilters() {
             var box = document.getElementById('memberPetFilters');
             if (!box) return;
-            var allOn = !memberSelectedPetId || memberSelectedPetId === 'all';
-            var html = '<button onclick="selectMemberPet(\'all\')" class="text-xs px-3 py-1 rounded-full transition ' + (allOn ? 'bg-[#3da881] text-white' : 'border border-gray-300 text-gray-600') + '">顯示全部</button>';
+            var cur = !memberSelectedPetId || memberSelectedPetId === 'all' ? 'all' : memberSelectedPetId;
+            var html = '<option value="all">全部毛孩（全部病歷）</option>';
             pets.forEach(function(pet) {
-                var on = memberSelectedPetId === pet.id;
-                html += '<button onclick="selectMemberPet(\'' + pet.id + '\')" class="text-xs px-3 py-1 rounded-full transition ' + (on ? 'bg-[#3da881] text-white' : 'border border-gray-300 text-gray-600') + '">' + pet.name + '</button>';
+                html += '<option value="' + pet.id + '"' + (cur === pet.id ? ' selected' : '') + '>' + (pet.name || '未命名') + '</option>';
             });
             box.innerHTML = html;
+            box.value = cur;
         }
 
         function selectMemberPet(petId) {
@@ -4767,10 +4770,10 @@
                 var pid = r.petId || memberSelectedPetId;
                 var filesHtml = compactAttachHtml(r.files, "openReportDetailModal('" + pid + "','" + r.id + "')");
                 return `
-                    <div class="bg-white rounded-xl p-3 shadow-sm border border-gray-100 report-item">
+                    <div class="bg-white rounded-xl p-3 shadow-sm border border-gray-100 report-item" onclick="${isInSelectMode ? `toggleMemberReportSelection('${r.id}')` : ''}">
                         <div class="report-item-with-checkbox">
-                            ${isInSelectMode ? `<input type="checkbox" class="report-checkbox" data-report-id="${r.id}" ${memberSelectedReports.has(r.id) ? 'checked' : ''} onchange="toggleMemberReportSelection('${r.id}')">` : ''}
-                            <div class="report-content" onclick="${isInSelectMode ? '' : `openReportDetailModal('${pid}','${r.id}')`}">
+                            ${isInSelectMode ? `<input type="checkbox" class="report-checkbox" data-report-id="${r.id}" ${memberSelectedReports.has(r.id) ? 'checked' : ''} onclick="event.stopPropagation();" onchange="toggleMemberReportSelection('${r.id}')">` : ''}
+                            <div class="report-content" onclick="${isInSelectMode ? 'event.stopPropagation();toggleMemberReportSelection(\'' + r.id + '\')' : `openReportDetailModal('${pid}','${r.id}')`}">
                                 <div class="font-bold text-sm">${reportKindChipHtml(r)}${reportDisplayTitle(r)}${r._petName ? ' <span class="text-xs font-normal text-gray-400">· ' + r._petName + '</span>' : ''}</div>
                                 <div class="text-xs text-gray-400 mt-0.5">${r.date || ''}</div>
                                 <div class="text-xs text-gray-500 mt-0.5">${reportMetaLine(r)}</div>
@@ -5152,9 +5155,7 @@
                 files.forEach(function(f, i) {
                     setTimeout(function() { saveBlobToDevice(f.blob, f.name); }, i * 250);
                 });
-            }).catch(function(err) {
-                showToast('下載失敗：' + (err.message || err), 'error');
-            });
+            }).catch(function() {});
         }
         function downloadDemoSelectedReports() {
             if (demoSelectedReports.size === 0) { showToast('請至少選擇一份報告', 'warning'); return; }
@@ -5573,19 +5574,33 @@
                 if (navigator.share) {
                     return openNativeShareSheet().then(function(status) {
                         closeExportMenu();
-                        if (status !== 'shared' && status !== 'abort') {
-                            showToast('未能開啟系統分享選單，請改用電腦下載', 'warning');
-                        }
+                        if (status !== 'shared' && status !== 'abort') openBlobInBrowser(blob, filename);
                         return status === 'shared';
                     });
                 }
                 closeExportMenu();
-                showToast('此手機瀏覽器不支援系統分享', 'warning');
+                openBlobInBrowser(blob, filename);
                 return Promise.resolve(false);
             }
             saveBlobToDevice(blob, filename);
             closeExportMenu();
             return Promise.resolve(false);
+        }
+        function openBlobInBrowser(blob, filename) {
+            try {
+                var url = URL.createObjectURL(blob);
+                var w = window.open(url, '_blank');
+                if (!w) {
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.target = '_blank';
+                    a.rel = 'noopener';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                }
+                setTimeout(function() { URL.revokeObjectURL(url); }, 60000);
+            } catch (e) {}
         }
         function saveBlobToDevice(blob, filename) {
             var blobUrl = URL.createObjectURL(blob);
@@ -5619,19 +5634,49 @@
             m.classList.add('modal-preview', 'show');
             if (m.parentNode) m.parentNode.appendChild(m);
         }
+        function findLocalAttachmentData(filename, petId) {
+            var lists = [];
+            if (petId && petReports && petReports[petId]) lists.push(petReports[petId]);
+            if (petReports) Object.keys(petReports).forEach(function(k) { if (k !== petId) lists.push(petReports[k]); });
+            if (typeof demoReportsData !== 'undefined' && demoReportsData) lists.push(demoReportsData);
+            var want = String(filename || '').toLowerCase();
+            for (var i = 0; i < lists.length; i++) {
+                var arr = lists[i] || [];
+                for (var j = 0; j < arr.length; j++) {
+                    var files = arr[j].files || arr[j].attachments || [];
+                    for (var k = 0; k < files.length; k++) {
+                        var f = files[k];
+                        var name = (typeof f === 'string') ? f : (f && (f.name || f.filename || f.fileName));
+                        if (!name || String(name).toLowerCase() !== want) continue;
+                        if (typeof f === 'string' && /^data:|^blob:|^https?:/i.test(f)) return f;
+                        if (f && (f.dataUrl || f.dataURL || f.base64 || f.url || f.src)) return f.dataUrl || f.dataURL || f.base64 || f.url || f.src;
+                    }
+                }
+            }
+            return '';
+        }
+        function triggerAnchorDownload(href, filename) {
+            var a = document.createElement('a');
+            a.href = href;
+            a.download = filename || 'download';
+            a.rel = 'noopener';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
         function downloadFile(filename, petId) {
             petId = petId || selectedPetId || memberSelectedPetId;
-            if (!petId || petId === 'all') { showToast('無法找到檔案', 'error'); return Promise.resolve(); }
+            var local = findLocalAttachmentData(filename, petId);
+            if (local) {
+                triggerAnchorDownload(local, filename);
+                return Promise.resolve();
+            }
+            if (!storage || !petId || petId === 'all') return Promise.resolve();
             var refNew = storage.ref(reportStoragePath(petId, filename, false));
             var refOld = storage.ref(reportStoragePath(petId, filename, true));
             return downloadFromStorageRef(refNew, filename).catch(function() {
                 return downloadFromStorageRef(refOld, filename);
-            }).then(function() {
-                showToast('已開始下載 ' + filename, 'success');
-            }).catch(function(err) {
-                console.warn('下載失敗:', err);
-                showToast('下載失敗，請檢查登入或稍後再試', 'error');
-            });
+            }).catch(function() { return Promise.resolve(); });
         }
 
         // ================================================================
@@ -5669,14 +5714,16 @@
         function downloadCurrentAttachment(ev) {
             if (ev && ev.stopPropagation) ev.stopPropagation();
             bringAttachmentPreviewFront();
-            if (window.demoDetailOpen || demoUploadMode) { openDemoLockModal('download'); return; }
-            if (currentAttachmentFile && currentAttachmentPetId) {
-                downloadFile(currentAttachmentFile, currentAttachmentPetId).then(function() {
-                    bringAttachmentPreviewFront();
-                });
-            } else {
-                showToast('無法下載', 'error');
-            }
+            var name = currentAttachmentFile;
+            var petId = currentAttachmentPetId;
+            if (!name) return;
+            var local = findLocalAttachmentData(name, petId);
+            if (local) { triggerAnchorDownload(local, name); return; }
+            var img = document.querySelector('#attachmentPreviewContainer img');
+            var iframe = document.querySelector('#attachmentPreviewContainer iframe');
+            var href = (img && img.src) || (iframe && iframe.src) || '';
+            if (href) { triggerAnchorDownload(href, name); return; }
+            downloadFile(name, petId);
         }
 
         // ================================================================
@@ -6757,7 +6804,7 @@
             Array.prototype.forEach.call(files || [], function(file) {
                 var chk = canUploadFile(file);
                 var isImg = /^image\//.test(file.type || '') || /\.(jpe?g|png|webp|heic|heif)$/i.test(file.name || '');
-                var work = (chk.ok && isImg) ? compressImageToFile(file, 2048, 0.75).catch(function(){ return file; }) : Promise.resolve(file);
+                var work = isImg ? compressImageToFile(file, 1920, 0.8).catch(function(){ return file; }) : Promise.resolve(file);
                 work.then(function(out) {
                     if (chk.ok) {
                         uploadedFiles.push(out);
@@ -7541,13 +7588,19 @@
         // 會員專區功能
         // ================================================================
         // ✅ 問題5已修復：試用期已結束嘅提示同限制
-       function setMemberViewMode(mode) {
-            var account = document.getElementById('memberAccountPanel');
-            var petsSec = document.getElementById('memberPetsSection');
+        function setMemberViewMode(mode) {
+            var account = document.getElementById('view-membership');
+            var petsSec = document.getElementById('view-pets');
             var renew = document.getElementById('paymentRenewalSection');
-            if (account) account.style.display = mode === 'account' ? 'block' : 'none';
-            if (petsSec) petsSec.style.display = mode === 'account' ? 'none' : 'block';
-            if (renew) renew.style.display = (mode === 'account' && isTrialOver()) ? 'block' : 'none';
+            var dash = document.getElementById('memberDashboard');
+            var main = document.getElementById('mainContent');
+            if (main) main.classList.add('hidden');
+            if (dash) dash.classList.add('show');
+            var showMem = (mode === 'account' || mode === 'membership');
+            if (account) { account.style.display = showMem ? 'block' : 'none'; account.hidden = !showMem; }
+            if (petsSec) { petsSec.style.display = showMem ? 'none' : 'block'; petsSec.hidden = showMem; }
+            if (renew) renew.style.display = (showMem && isTrialOver()) ? 'block' : 'none';
+            try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) { window.scrollTo(0, 0); }
         }
         function showMemberAccount() {
             window.pendingOpenAdmin = false;
@@ -9233,13 +9286,13 @@
         function renderDemoPetFilters() {
             var bar = document.getElementById('demoPetFilterBar');
             if (!bar) return;
-            var allOn = !demoSelectedPetId || demoSelectedPetId === 'all';
-            var html = '<button onclick="selectDemoPet(\'all\')" class="text-xs px-3 py-1 rounded-full transition ' + (allOn ? 'bg-[#3da881] text-white' : 'border border-gray-300 text-gray-600') + '">顯示全部</button>';
+            var cur = !demoSelectedPetId || demoSelectedPetId === 'all' ? 'all' : demoSelectedPetId;
+            var html = '<option value="all">全部毛孩（全部病歷）</option>';
             demoPets.forEach(function(pet) {
-                var on = demoSelectedPetId === pet.id;
-                html += '<button onclick="selectDemoPet(\'' + pet.id + '\')" class="text-xs px-3 py-1 rounded-full transition ' + (on ? 'bg-[#3da881] text-white' : 'border border-gray-300 text-gray-600') + '">' + pet.name + '</button>';
+                html += '<option value="' + pet.id + '"' + (cur === pet.id ? ' selected' : '') + '>' + (pet.name || '未命名') + '</option>';
             });
             bar.innerHTML = html;
+            bar.value = cur;
         }
 
         function renderDemoPets() {
@@ -9316,10 +9369,10 @@
                 var filesHtml = compactAttachHtml(r.files, "openReportDetailDemoById('" + r.id + "')");
                 // 全部改用 report id，避免 title/desc 有引號導致 onclick 壞掉
                 return `
-                    <div class="bg-white rounded-xl p-3 shadow-sm border border-gray-100 report-item" data-report-id="${r.id}">
+                    <div class="bg-white rounded-xl p-3 shadow-sm border border-gray-100 report-item" data-report-id="${r.id}" onclick="${isInSelectMode ? `toggleDemoReportSelection('${r.id}')` : ''}">
                         <div class="report-item-with-checkbox">
-                            ${isInSelectMode ? `<input type="checkbox" class="report-checkbox" data-report-id="${r.id}" ${demoSelectedReports.has(r.id) ? 'checked' : ''} onchange="toggleDemoReportSelection('${r.id}')">` : ''}
-                            <div class="report-content" onclick="${isInSelectMode ? '' : `openReportDetailDemoById('${r.id}')`}" style="cursor:pointer;">
+                            ${isInSelectMode ? `<input type="checkbox" class="report-checkbox" data-report-id="${r.id}" ${demoSelectedReports.has(r.id) ? 'checked' : ''} onclick="event.stopPropagation();" onchange="toggleDemoReportSelection('${r.id}')">` : ''}
+                            <div class="report-content" onclick="${isInSelectMode ? 'event.stopPropagation();toggleDemoReportSelection(\'' + r.id + '\')' : `openReportDetailDemoById('${r.id}')`}" style="cursor:pointer;">
                                 <div class="font-bold text-sm">${reportKindChipHtml(r)}${reportDisplayTitle(r)}</div>
                                 <div class="text-xs text-gray-400">${r.petName ? ('屬於毛孩：' + r.petName) : ''}</div>
                                 <div class="text-xs text-gray-400 mt-0.5">${r.date || ''}</div>

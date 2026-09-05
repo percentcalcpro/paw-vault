@@ -56,6 +56,11 @@
         .flip-avatar { height: 180px; width: 100%; overflow: hidden; flex: 0 0 180px; background: linear-gradient(135deg, #f0f4f1 0%, #e2e9e3 100%); position: relative; cursor: pointer; }
         .flip-avatar-ph { width: 100%; height: 180px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f0f4f1 0%, #e2e9e3 100%); }
         .flip-avatar-ph i { font-size: 2rem; color: #8aa094; opacity: 0.25; }
+        .pet-manage-icons { display: none; position: absolute; top: 8px; right: 8px; z-index: 4; gap: 6px; }
+        .pet-manage-on .pet-manage-icons { display: flex; }
+        .pet-manage-on .flip-photo-btn { display: none; }
+        .pet-manage-icons button { width: 32px; height: 32px; border-radius: 50%; border: none; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.12); font-size: 14px; cursor: pointer; }
+        .flip-card.pet-manage-drag { opacity: 0.55; }
         .flip-photo-btn { position: absolute; top: 10px; right: 10px; width: 36px; height: 36px; border-radius: 50%; border: none; background: #ffffff; box-shadow: 0 2px 6px rgba(0,0,0,0.15); color: #374151; display: flex; align-items: center; justify-content: center; opacity: 1; pointer-events: auto; transition: transform 0.15s ease; cursor: pointer; z-index: 2; padding: 0; }
         .flip-photo-btn svg { display: block; }
         .flip-photo-btn:hover { transform: scale(1.08); }
@@ -1523,9 +1528,10 @@
     <div id="exportChoiceModal" class="modal modal-top">
         <div class="modal-content fade-in" style="max-width:360px;">
             <h3 class="text-lg font-bold text-gray-800 mb-1">確認匯出／分享</h3>
-            <p class="text-sm text-gray-500 mb-4">手機將優先開啟系統分享（WhatsApp／AirDrop／存檔）</p>
+            <p id="exportShareHint" class="text-sm text-gray-500 mb-4 hidden">選擇格式後將直接開啟分享選單</p>
             <button type="button" onclick="confirmExportChoice('pdf')" class="w-full mb-2 py-3 rounded-2xl border border-gray-200 text-sm font-medium hover:bg-[#f0faf5]">📄 生成 PDF 懶人包檔案</button>
             <button type="button" onclick="confirmExportChoice('jpeg')" class="w-full mb-3 py-3 rounded-2xl border border-gray-200 text-sm font-medium hover:bg-[#f0faf5]">🖼️ 生成 JPEG 合成圖片</button>
+            <button type="button" id="exportNativeShareBtn" onclick="openNativeShareSheet()" class="hidden w-full mb-3 py-3 rounded-2xl bg-[#10b981] text-white text-sm font-semibold">開啟系統分享選單</button>
             <button type="button" onclick="closeExportMenu()" class="w-full py-2.5 rounded-2xl text-sm text-gray-500">取消</button>
         </div>
     </div>
@@ -2310,6 +2316,42 @@
             if (demo) renderDemoPets(); else renderMemberPets();
             updatePetBatchBar(demo);
         }
+        var dragPetState = { id: null, demo: false };
+        function onPetDragStart(ev, id, demo) {
+            var on = demo ? petManageModeDemo : petManageModeMember;
+            if (!on) { ev.preventDefault(); return; }
+            dragPetState = { id: id, demo: !!demo };
+            ev.dataTransfer.effectAllowed = 'move';
+            if (ev.currentTarget) ev.currentTarget.classList.add('pet-manage-drag');
+        }
+        function onPetDragOver(ev) {
+            if (!dragPetState.id) return;
+            ev.preventDefault();
+            ev.dataTransfer.dropEffect = 'move';
+        }
+        function onPetDrop(ev, targetId, demo) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            var fromId = dragPetState.id;
+            dragPetState = { id: null, demo: false };
+            document.querySelectorAll('.pet-manage-drag').forEach(function(el){ el.classList.remove('pet-manage-drag'); });
+            if (!fromId || fromId === targetId) return;
+            var arr = demo ? demoPets : pets;
+            var from = arr.findIndex(function(p){ return p.id === fromId; });
+            var to = arr.findIndex(function(p){ return p.id === targetId; });
+            if (from < 0 || to < 0) return;
+            var item = arr.splice(from, 1)[0];
+            arr.splice(to, 0, item);
+            if (demo) renderDemoPets();
+            else {
+                renderMemberPets();
+                if (currentUser && currentUser.uid && typeof db !== 'undefined' && db) {
+                    arr.forEach(function(p, i) {
+                        db.collection('users').doc(currentUser.uid).collection('pets').doc(p.id).set({ sortOrder: i }, { merge: true }).catch(function(){});
+                    });
+                }
+            }
+        }
         function currentPetIds(demo) {
             return demo ? (demoPets || []).map(function(p){ return p.id; }) : (pets || []).map(function(p){ return p.id; });
         }
@@ -2380,8 +2422,10 @@
             var delFn = demo ? ("deletePetDemo('" + pet.id + "')") : ("deletePet('" + pet.id + "')");
             var copyFn = demo ? ("navigator.clipboard&&navigator.clipboard.writeText('" + code + "')") : ("copyPetShareCode('" + pet.id + "')");
             var boxOn = !!(demo ? demoCheckedPetIds[pet.id] : memberCheckedPetIds[pet.id]);
-            return '<div class="flip-card pet-card ' + (opts.selected ? 'is-active active' : '') + (boxOn ? ' is-checked' : '') + (over ? ' opacity-90' : '') + (flippedPetIds[pet.id] ? ' is-flipped' : '') + '" data-pet-id="' + pet.id + '" onclick="onPetFlipCardClick(event,\'' + pet.id + '\',' + (demo ? 'true' : 'false') + ')" onmouseleave="onPetCardLeave(\'' + pet.id + '\')">' +
+            var manageOn = demo ? petManageModeDemo : petManageModeMember;
+            return '<div class="flip-card pet-card ' + (opts.selected ? 'is-active active' : '') + (boxOn ? ' is-checked' : '') + (over ? ' opacity-90' : '') + (flippedPetIds[pet.id] ? ' is-flipped' : '') + '" data-pet-id="' + pet.id + '" draggable="' + (manageOn ? 'true' : 'false') + '" ondragstart="onPetDragStart(event,\'' + pet.id + '\',' + (demo ? 'true' : 'false') + ')" ondragover="onPetDragOver(event)" ondrop="onPetDrop(event,\'' + pet.id + '\',' + (demo ? 'true' : 'false') + ')" onclick="onPetFlipCardClick(event,\'' + pet.id + '\',' + (demo ? 'true' : 'false') + ')" onmouseleave="onPetCardLeave(\'' + pet.id + '\')">' +
                 '<div class="flip-inner"><div class="flip-face flip-front"><button type="button" class="flip-check-btn' + (boxOn ? ' is-on' : '') + '" onclick="event.stopPropagation(); togglePetChecked(\'' + pet.id + '\',' + (demo ? 'true' : 'false') + ')">' + (boxOn ? '✓' : '') + '</button>' +
+                '<div class="pet-manage-icons"><button type="button" title="編輯" onclick="event.stopPropagation();' + editFn + '">✏️</button><button type="button" title="刪除" onclick="event.stopPropagation();' + delFn + '">🗑️</button></div>' +
                 '<div class="flip-avatar">' + petAvatarHtml(pet, demo) + '</div>' +
                 '<div class="flip-front-meta"><div class="font-bold text-[#2d8f6f] truncate">' + (pet.name || '未命名毛孩') + '</div>' +
                 '<div class="text-[11px] text-gray-500 truncate">' + (details.join(' · ') || '點擊翻開名片') + '</div></div></div>' +
@@ -2709,9 +2753,8 @@
         }
         var manageHubDemo = false;
         function handleManageBtn(demo) {
-            var on = demo ? petManageModeDemo : petManageModeMember;
-            if (on) togglePetManageMode(demo);
-            else openManageHub(demo);
+            closeManageHub();
+            togglePetManageMode(demo);
         }
         function openManageHub(demo) {
             manageHubDemo = !!demo;
@@ -2746,26 +2789,32 @@
             if (isLoggedIn) { handleUserMenuClick('account'); toggleNavDrawer(false); }
             else openLoginModal();
         }
+        function scrollToPetsSection() {
+            var el = document.getElementById('memberPetsSection') || document.getElementById('demoExperienceWrap');
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
         function fillNavDrawer() {
             var box = document.getElementById('navDrawerLinks');
             if (!box) return;
-            var adminBtn = isAdminUser() ? '<button type="button" onclick="toggleNavDrawer(false);openAdminPage()">後台管理</button>' : '';
+            var adminBtn = isAdminUser() ? '<button type="button" onclick="toggleNavDrawer(false);openAdminPage()">🛠️ 後台管理</button>' : '';
             if (isLoggedIn) {
                 box.innerHTML =
-                    '<button type="button" onclick="toggleNavDrawer(false);handleUserMenuClick(\'account\')">會員專區</button>' +
-                    '<button type="button" onclick="toggleNavDrawer(false);openClinicPartnerModal()">獸醫診所專區</button>' +
-                    '<button type="button" onclick="toggleNavDrawer(false);openPricingModal()">定價方案</button>' +
-                    '<button type="button" onclick="toggleNavDrawer(false);openFaqModal()">常見問題</button>' +
-                    '<button type="button" onclick="toggleNavDrawer(false);openContactModal()">查詢</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);handleUserMenuClick(\'account\')">👤 會員專區</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);handleUserMenuClick(\'account\');scrollToPetsSection();">🐾 我的毛孩</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);openClinicPartnerModal()">🏥 獸醫診所專區</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);openPricingModal()">💎 定價方案</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);openFaqModal()">❓ 常見問題</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);openContactModal()">❓ 查詢</button>' +
                     adminBtn +
-                    '<button type="button" onclick="toggleNavDrawer(false);handleLogout()">登出</button>';
+                    '<button type="button" onclick="toggleNavDrawer(false);handleLogout()">🚪 登出</button>';
             } else {
                 box.innerHTML =
-                    '<button type="button" onclick="toggleNavDrawer(false);openClinicPartnerModal()">獸醫診所專區</button>' +
-                    '<button type="button" onclick="toggleNavDrawer(false);openPricingModal()">定價方案</button>' +
-                    '<button type="button" onclick="toggleNavDrawer(false);openFaqModal()">常見問題</button>' +
-                    '<button type="button" onclick="toggleNavDrawer(false);openContactModal()">查詢</button>' +
-                    '<button type="button" onclick="toggleNavDrawer(false);openLoginModal()">登入</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);openLoginModal()">👤 登入／會員專區</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);document.getElementById(\'demoExperienceWrap\')&&document.getElementById(\'demoExperienceWrap\').scrollIntoView({behavior:\'smooth\'});">🐾 我的毛孩</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);openClinicPartnerModal()">🏥 獸醫診所專區</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);openPricingModal()">💎 定價方案</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);openFaqModal()">❓ 常見問題</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);openContactModal()">❓ 查詢</button>' +
                     '<button type="button" onclick="toggleNavDrawer(false);openSignupModal()">免費開始使用</button>';
             }
         }
@@ -4384,7 +4433,19 @@
         var pendingExportDemo = false;
         function openExportMenu(demo) {
             pendingExportDemo = !!demo;
+            pendingSharePayload = null;
             var m = document.getElementById('exportChoiceModal');
+            var hint = document.getElementById('exportShareHint');
+            var shareBtn = document.getElementById('exportNativeShareBtn');
+            if (hint) {
+                if (isMobileShareDevice()) {
+                    hint.classList.remove('hidden');
+                    hint.textContent = '選擇格式後將直接開啟分享選單';
+                } else {
+                    hint.classList.add('hidden');
+                }
+            }
+            if (shareBtn) shareBtn.classList.add('hidden');
             if (m) m.classList.add('show');
         }
         function closeExportMenu() {
@@ -4392,7 +4453,11 @@
             if (m) m.classList.remove('show');
         }
         function confirmExportChoice(kind) {
-            closeExportMenu();
+            if (!isMobileShareDevice()) closeExportMenu();
+            else {
+                var hint = document.getElementById('exportShareHint');
+                if (hint) { hint.classList.remove('hidden'); hint.textContent = '正在產生檔案…'; }
+            }
             if (pendingExportDemo) {
                 if (kind === 'jpeg') exportDemoMedicalJpeg();
                 else exportDemoMedicalPdf();
@@ -5440,25 +5505,55 @@
         // ================================================================
         // 下載檔案（會員版）
         // ================================================================
+        var pendingSharePayload = null;
+        function armNativeShare(blob, filename, mime) {
+            var type = mime || (blob && blob.type) || 'application/octet-stream';
+            if (type === 'application/octet-stream') {
+                if (/\.pdf$/i.test(filename)) type = 'application/pdf';
+                if (/\.jpe?g$/i.test(filename)) type = 'image/jpeg';
+                if (/\.png$/i.test(filename)) type = 'image/png';
+            }
+            pendingSharePayload = {
+                file: new File([blob], filename, { type: type }),
+                filename: filename,
+                blob: blob,
+                type: type
+            };
+            return pendingSharePayload;
+        }
+        function openNativeShareSheet() {
+            var p = pendingSharePayload;
+            if (!p || !navigator.share) return Promise.resolve(false);
+            var payload = { files: [p.file], title: p.filename };
+            var run = function(data) {
+                return navigator.share(data).then(function() {
+                    closeExportMenu();
+                    return true;
+                }).catch(function(err) {
+                    if (err && (err.name === 'AbortError' || String(err.message || '').indexOf('abort') !== -1)) return false;
+                    return false;
+                });
+            };
+            if (typeof navigator.canShare !== 'function' || navigator.canShare(payload)) return run(payload);
+            return run({ title: p.filename, text: 'Paw Vault 病歷檔案' });
+        }
         function shareGeneratedFile(blob, filename, mime) {
             if (!blob) return Promise.resolve(false);
-            var type = mime || blob.type || 'application/octet-stream';
-            var file = new File([blob], filename, { type: type });
-            var isImg = /image\//.test(type) || /\.jpe?g$/i.test(filename);
-            if (isMobileShareDevice() && navigator.share) {
-                var payload = { title: filename, files: [file] };
-                var can = typeof navigator.canShare !== 'function' || navigator.canShare(payload);
-                if (can) {
-                    return navigator.share(payload).then(function() { return true; }).catch(function() {
-                        saveBlobToDevice(blob, filename);
-                        if (isImg) showToast('如未自動儲存，可長按圖片儲存至相簿', 'success');
-                        return false;
-                    });
-                }
+            if (!isMobileShareDevice() || !navigator.share) {
+                saveBlobToDevice(blob, filename);
+                return Promise.resolve(false);
             }
-            saveBlobToDevice(blob, filename);
-            if (isMobileShareDevice() && isImg) showToast('如未自動儲存，可長按圖片儲存至相簿', 'success');
-            return Promise.resolve(false);
+            armNativeShare(blob, filename, mime);
+            var modal = document.getElementById('exportChoiceModal');
+            var hint = document.getElementById('exportShareHint');
+            if (modal) modal.classList.add('show');
+            if (hint) {
+                hint.classList.remove('hidden');
+                hint.textContent = '檔案已準備好，請再點一次開啟分享選單';
+            }
+            var shareBtn = document.getElementById('exportNativeShareBtn');
+            if (shareBtn) shareBtn.classList.remove('hidden');
+            return openNativeShareSheet();
         }
         function saveBlobToDevice(blob, filename) {
             var blobUrl = URL.createObjectURL(blob);
@@ -9942,11 +10037,15 @@
             var host = e.target.closest && e.target.closest('details.quiet-menu');
             if (!host) closeAllQuietMenus();
             else closeAllQuietMenus(host);
+            if (e.target && e.target.classList && e.target.classList.contains('modal') && e.target.classList.contains('show')) {
+                e.target.classList.remove('show');
+            }
         });
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeAllQuietMenus();
                 document.querySelectorAll('.modal.show').forEach(function(m) { m.classList.remove('show'); });
+                toggleNavDrawer(false);
                 var ud = document.getElementById('userDropdownMenu');
                 if (ud) ud.classList.remove('show');
                 return;

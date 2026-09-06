@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Paw Vault | 寵物健康病歷庫</title>
+    <meta name="theme-color" content="#2d8f6f">
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" href="./paw-vault-icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="./paw-vault-icon.svg">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
@@ -1423,6 +1427,7 @@
                 <div class="sub">支援 PDF / JPEG / PNG</div>
                 <input type="file" id="fileInput" class="hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" multiple>
             </div>
+            <p class="text-xs text-gray-400 mb-2 leading-relaxed">💡 提示：在 WhatsApp 打開附件點擊「分享」選取本網站，即可免存檔直傳病歷。</p>
             <p id="ocrHint" class="text-xs text-[#2d8f6f] mb-2 hidden">正在辨識圖片文字…</p>
             <div id="fileList" class="text-xs text-gray-500 mb-3"></div>
             </div>
@@ -1497,6 +1502,7 @@
                 <div class="text">將檔案拖放到這裡，或點擊選擇檔案（新增附件）</div>
                 <div class="sub">支援 PDF / JPEG / PNG</div>
             </div>
+            <p class="text-xs text-gray-400 mb-2 leading-relaxed">💡 提示：在 WhatsApp 打開附件點擊「分享」選取本網站，即可免存檔直傳病歷。</p>
             <input type="file" id="editFileInput" class="hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,image/*,application/pdf" multiple onchange="handleEditFiles(this.files)">
             <div id="editFileList" class="text-xs text-gray-500 mb-3"></div>
             </div>
@@ -1545,18 +1551,20 @@
     </div>
 
     <!-- 附件預覽 -->
-    <div id="attachmentPreviewModal" class="modal modal-preview">
+    <div id="filePreviewModal" class="modal modal-preview">
         <div class="modal-content modal-content-attachment fade-in">
             <div class="flex justify-between items-center mb-4">
                 <h3 id="attachmentPreviewTitle" class="text-lg font-bold text-gray-800">附件預覽</h3>
-                <div class="flex gap-2">
-                    <i onclick="closeAttachmentPreview()" class="fa-solid fa-xmark text-2xl cursor-pointer text-gray-400 hover:text-gray-600"></i>
-                </div>
+                <button type="button" onclick="closeAttachmentPreview()" class="w-9 h-9 rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50" aria-label="關閉預覽">✕</button>
             </div>
             <div id="attachmentPreviewContainer" class="text-center"></div>
-            <button onclick="closeAttachmentPreview()" class="block mx-auto mt-4 px-6 py-1.5 border border-gray-300 rounded-full text-gray-500 text-sm hover:bg-gray-50 transition">關閉</button>
+            <div class="flex flex-wrap gap-2 mt-4">
+                <button type="button" onclick="shareCurrentAttachmentWhatsApp()" class="flex-1 py-2.5 border border-[#25D366] text-[#128C7E] rounded-2xl text-sm">分享至 WhatsApp</button>
+                <button type="button" onclick="closeAttachmentPreview()" class="flex-1 py-2.5 bg-[#6b7280] text-white rounded-2xl text-sm">關閉預覽</button>
+            </div>
         </div>
     </div>
+    <div id="attachmentPreviewModal" class="hidden" aria-hidden="true"></div>
 
     <!-- 複製報告 -->
     <div id="copyReportModal" class="modal">
@@ -1704,6 +1712,7 @@
                 <div class="sub">支援 PDF / JPEG / PNG</div>
                 <input type="file" id="fileInputDemo" class="hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" multiple>
             </div>
+            <p class="text-xs text-gray-400 mb-2 leading-relaxed">💡 提示：在 WhatsApp 打開附件點擊「分享」選取本網站，即可免存檔直傳病歷。</p>
             <div id="fileListDemo" class="text-xs text-gray-500 mb-3"></div>
             <div class="flex gap-2.5">
                 <button onclick="document.getElementById('uploadModalDemo').classList.remove('show')" class="flex-1 py-2.5 border border-gray-300 rounded-2xl text-sm hover:bg-gray-50 transition">取消</button>
@@ -1780,6 +1789,7 @@
                 <div class="text">將檔案拖放到這裡，或點擊選擇檔案（新增附件）</div>
                 <div class="sub">支援 PDF / JPEG / PNG</div>
             </div>
+            <p class="text-xs text-gray-400 mb-2 leading-relaxed">💡 提示：在 WhatsApp 打開附件點擊「分享」選取本網站，即可免存檔直傳病歷。</p>
             <input type="file" id="editFileInputDemo" class="hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,image/*,application/pdf" multiple onchange="handleEditFilesDemo(this.files)">
             <div id="editFileListDemo" class="text-xs text-gray-500 mb-3"></div>
             <div class="flex gap-2.5">
@@ -4539,14 +4549,12 @@
             }).catch(function() { printMedicalHistoryFallback(html); });
         }
         function printMedicalHistoryFallback(html) {
-            var w = window.open('', '_blank', 'width=800,height=900');
-            if (!w) { showToast('請允許彈出視窗以匯出／列印 PDF', 'warning'); return; }
-            w.document.open();
-            w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Paw Vault 病歷</title></head><body>');
-            w.document.write(html);
-            w.document.write('</body></html>');
-            w.document.close();
-            setTimeout(function() { try { w.focus(); w.print(); } catch (e) {} }, 400);
+            var title = document.getElementById('attachmentPreviewTitle');
+            if (title) title.textContent = '病歷預覽';
+            var box = document.getElementById('attachmentPreviewContainer');
+            var url = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
+            if (box) box.innerHTML = '<iframe src="' + url + '" class="w-full h-[75vh] rounded-xl border-0"></iframe>';
+            bringAttachmentPreviewFront();
         }
 
         function renderMemberPets() {
@@ -5319,19 +5327,29 @@
                 
                 var existingFilesDiv = document.getElementById('editExistingFilesList');
                 existingFilesDiv.innerHTML = '';
-                if (r.files && r.files.length > 0) {
-                    r.files.forEach(function(f) {
-                        var isImage = /\.(jpg|jpeg|png)$/i.test(f);
-                        var isPdf = /\.pdf$/i.test(f);
-                        var icon = isPdf ? 'fa-file-pdf text-red-500' : (isImage ? 'fa-file-image text-green-500' : 'fa-file text-gray-500');
-                        var safe = String(f).replace(/'/g, "\\'");
+                var existList = reportAttachList(r);
+                if (existList.length > 0) {
+                    existList.forEach(function(f, idx) {
+                        cacheAttachment(petId, f);
+                        var name = fileDisplayName(f);
+                        var kind = attachKind(f);
+                        var icon = kind === 'pdf' ? 'fa-file-pdf text-red-500' : (kind === 'image' ? 'fa-file-image text-green-500' : 'fa-file text-gray-500');
                         var row = document.createElement('div');
                         row.className = 'existing-file-item flex items-center justify-between gap-2 w-full';
                         row.innerHTML =
-                            '<button type="button" class="flex items-center gap-2 text-left flex-1 min-w-0 text-sm text-gray-800" onclick="previewAttachment(\'' + safe + '\',\'' + petId + '\')">' +
-                                '<i class="fa-regular ' + icon + '"></i><span class="truncate">' + f + '</span>' +
+                            '<button type="button" class="flex items-center gap-2 text-left flex-1 min-w-0 text-sm text-gray-800">' +
+                                '<i class="fa-regular ' + icon + '"></i><span class="truncate">' + name + '</span>' +
                                 '<i class="fa-solid fa-eye text-xs text-gray-400"></i></button>' +
-                            '<button type="button" class="shrink-0 w-8 h-8 rounded-full text-red-500 hover:bg-red-50" onclick="markFileForRemoval(\'' + safe + '\', this)" title="刪除附件"><i class="fa-solid fa-trash-can"></i></button>';
+                            '<div class="flex items-center gap-1 shrink-0">' +
+                            '<button type="button" class="edit-att-dl w-8 h-8 rounded-full text-[#2d8f6f] hover:bg-[#e8f5ef]" title="下載附件"><i class="fa-solid fa-download"></i></button>' +
+                            '<button type="button" class="edit-att-del w-8 h-8 rounded-full text-red-500 hover:bg-red-50" title="刪除附件"><i class="fa-solid fa-trash-can"></i></button>' +
+                            '</div>';
+                        row.querySelector('button').addEventListener('click', function() { previewAttachment(f, petId); });
+                        row.querySelector('.edit-att-dl').addEventListener('click', function(ev) {
+                            ev.preventDefault(); ev.stopPropagation();
+                            resolveAndDownload(f, petId);
+                        });
+                        row.querySelector('.edit-att-del').addEventListener('click', function() { markFileForRemoval(name, this); });
                         existingFilesDiv.appendChild(row);
                     });
                 } else {
@@ -5356,6 +5374,21 @@
             });
         }
 
+        function bindEditReportEnterSave() {
+            var modal = document.getElementById('editReportModal');
+            if (!modal || modal.dataset.enterBound === '1') return;
+            modal.dataset.enterBound = '1';
+            modal.addEventListener('keydown', function(ev) {
+                if (ev.key !== 'Enter') return;
+                var tag = (ev.target && ev.target.tagName) || '';
+                if (tag === 'TEXTAREA') return;
+                if (tag === 'INPUT' || tag === 'SELECT') {
+                    ev.preventDefault();
+                    saveEditedReport();
+                }
+            });
+        }
+        bindEditReportEnterSave();
         function closeEditModal() {
             document.getElementById('editReportModal').classList.remove('show');
             editingReportMeta = null;
@@ -5458,14 +5491,26 @@
                 filesHtml = '<span class="text-gray-400 text-sm">無附件</span>';
             }
 
+            var petLabel = report.petName || (pet ? pet.name : '未知');
+            var card = function(label, value) {
+                return '<div class="bg-gray-50 rounded-lg border border-gray-100 p-3 min-h-[64px]">' +
+                    '<div class="text-xs font-medium text-gray-400 mb-1">' + label + '</div>' +
+                    '<div class="text-sm font-semibold text-gray-800 break-words">' + (value || '—') + '</div></div>';
+            };
             document.getElementById('reportDetailContent').innerHTML =
                 '<div class="space-y-3">' +
                     '<div><div class="text-xs font-medium text-gray-400 mb-1">標題</div><div class="text-base font-bold text-gray-800">' + (report.title || '') + '</div></div>' +
-                    '<div><div class="text-xs font-medium text-gray-400 mb-1">日期</div><div class="text-sm font-semibold text-gray-800">' + (report.date || '') + '</div></div>' +
-                    '<div><div class="text-xs font-medium text-gray-400 mb-1">屬於毛孩</div><div class="text-sm text-gray-700">' + (report.petName || (pet ? pet.name : '未知')) + (pet && pet.species ? ' · ' + pet.species : '') + '</div></div>' +
-                    '<div class="grid grid-cols-2 gap-2">' +((report.clinic) ? '<div><div class="text-xs font-medium text-gray-400 mb-1">診所</div><div class="text-sm text-gray-800">' + report.clinic + '</div></div>' : '') +((report.doctor) ? '<div><div class="text-xs font-medium text-gray-400 mb-1">醫生</div><div class="text-sm text-gray-800">' + report.doctor + '</div></div>' : '') +'</div>' +'<div><div class="text-xs font-medium text-gray-400 mb-1">詳細內容</div><div class="text-base text-gray-700 bg-white p-3 rounded-xl border border-gray-100 leading-relaxed whitespace-pre-wrap">' + (report.description || '') + '</div></div>' +
+                    '<div class="grid grid-cols-2 gap-2">' +
+                        card('日期', report.date || '') +
+                        card('屬於毛孩', petLabel + (pet && pet.species ? ' · ' + pet.species : '')) +
+                        card('診所', report.clinic || '') +
+                        card('醫生', report.doctor || '') +
+                    '</div>' +
+                    '<div><div class="text-xs font-medium text-gray-400 mb-1">詳細內容</div><div class="text-base text-gray-700 bg-white p-3 rounded-xl border border-gray-100 leading-relaxed whitespace-pre-wrap">' + (report.description || '') + '</div></div>' +
                     '<div><div class="text-xs font-medium text-gray-400 mb-1">附件 <span class="text-gray-400 font-normal">（點擊預覽 · 右側下載）</span></div>' + filesHtml + '</div>' +
                 '</div>';
+            window._detailAttachList = fileList.slice();
+            window._detailAttachPetId = petId;
             document.getElementById('reportDetailModal').classList.add('show');
 
             document.getElementById('detailEditBtn').onclick = function() { 
@@ -5488,7 +5533,7 @@
                         ev.stopPropagation();
                         var idx = parseInt(btn.getAttribute('data-file-index'), 10);
                         var files = reportAttachList(report);
-                        if (!isNaN(idx) && files[idx] != null) downloadAttachmentSmart(files[idx], petId);
+                        if (!isNaN(idx) && files[idx] != null) resolveAndDownload(files[idx], petId);
                     });
                 });
                 box.querySelectorAll('.attachment-preview-btn').forEach(function(btn) {
@@ -5639,12 +5684,12 @@
                 if (navigator.share) {
                     return openNativeShareSheet().then(function(status) {
                         closeExportMenu();
-                        if (status !== 'shared' && status !== 'abort') openBlobInBrowser(blob, filename);
+                        if (status !== 'shared' && status !== 'abort') saveBlobToDevice(blob, filename);
                         return status === 'shared';
                     });
                 }
                 closeExportMenu();
-                openBlobInBrowser(blob, filename);
+                saveBlobToDevice(blob, filename);
                 return Promise.resolve(false);
             }
             saveBlobToDevice(blob, filename);
@@ -5654,18 +5699,14 @@
         function openBlobInBrowser(blob, filename) {
             try {
                 var url = URL.createObjectURL(blob);
-                var w = window.open(url, '_blank');
-                if (!w) {
-                    var a = document.createElement('a');
-                    a.href = url;
-                    a.target = '_blank';
-                    a.rel = 'noopener';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                }
-                setTimeout(function() { URL.revokeObjectURL(url); }, 60000);
-            } catch (e) {}
+                currentAttachmentFile = filename || 'preview';
+                var title = document.getElementById('attachmentPreviewTitle');
+                if (title) title.textContent = filename || '預覽';
+                showAttachmentPreview(url, filename || 'file');
+                bringAttachmentPreviewFront();
+            } catch (e) {
+                saveBlobToDevice(blob, filename);
+            }
         }
         function saveBlobToDevice(blob, filename) {
             var blobUrl = URL.createObjectURL(blob);
@@ -5693,11 +5734,25 @@
                 });
             });
         }
+        function getFilePreviewModal() {
+            return document.getElementById('filePreviewModal') || document.getElementById('attachmentPreviewModal');
+        }
         function bringAttachmentPreviewFront() {
-            var m = document.getElementById('attachmentPreviewModal');
+            var m = getFilePreviewModal();
             if (!m) return;
             m.classList.add('modal-preview', 'show');
             if (m.parentNode) m.parentNode.appendChild(m);
+        }
+        function shareCurrentAttachmentWhatsApp() {
+            var name = currentAttachmentFile || 'Paw Vault 附件';
+            var text = 'Paw Vault 病歷附件：' + name;
+            if (navigator.share) {
+                navigator.share({ title: name, text: text }).catch(function() {
+                    location.href = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(text);
+                });
+                return;
+            }
+            location.href = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(text);
         }
         function findLocalAttachmentData(filename, petId) {
             var lists = [];
@@ -5724,21 +5779,53 @@
             return typeof src === 'string' && /^(blob:|data:|https?:\/\/)/i.test(src);
         }
         function downloadFileHelper(fileData, fileName) {
-            if (!fileData || !isRealFileUrl(fileData)) {
-                alert('找不到檔案內容！');
+            if (fileData instanceof Blob) {
+                var blobUrl = URL.createObjectURL(fileData);
+                downloadFileHelper(blobUrl, fileName);
+                setTimeout(function() { URL.revokeObjectURL(blobUrl); }, 120000);
                 return;
             }
+            if (!fileData) { alert("找不到檔案內容！"); return; }
+            if (!isRealFileUrl(fileData)) { alert("找不到檔案內容！"); return; }
             try {
-                var a = document.createElement('a');
+                const a = document.createElement('a');
                 a.style.display = 'none';
                 a.href = fileData;
+                a.target = '_blank';
+                a.rel = 'noopener';
                 a.download = fileName || 'download';
                 document.body.appendChild(a);
                 a.click();
                 setTimeout(function() { if (a.parentNode) a.parentNode.removeChild(a); }, 1000);
             } catch (e) {
-                try { window.open(fileData, '_blank'); } catch (e2) {}
+                window.open(fileData, '_blank');
             }
+        }
+        function resolveAndDownload(fileObj, petId) {
+            var name = fileDisplayName(fileObj);
+            cacheAttachment(petId, fileObj);
+            var payload = pickAttachPayload(fileObj, petId);
+            var finish = function(data) {
+                if (!data) return Promise.reject();
+                if (data instanceof Blob) return blobToDataUrl(data).then(function(u) { downloadFileHelper(u || data, name); });
+                downloadFileHelper(data, name);
+                return Promise.resolve();
+            };
+            if (payload) return finish(payload).catch(function(){ return Promise.reject(); }).catch(function() {
+                if (!storage || !petId) { alert('找不到檔案內容！'); return; }
+                return getReportDownloadURL(petId, name).then(function(url) {
+                    cacheAttachment(petId, { name: name, url: url, data: url });
+                    downloadFileHelper(url, name);
+                }).catch(function() { alert('找不到檔案內容！'); });
+            });
+            if (storage && petId && name) {
+                return getReportDownloadURL(petId, name).then(function(url) {
+                    cacheAttachment(petId, { name: name, url: url, data: url });
+                    downloadFileHelper(url, name);
+                }).catch(function() { alert('找不到檔案內容！'); });
+            }
+            alert('找不到檔案內容！');
+            return Promise.resolve();
         }
         function triggerAnchorDownload(href, filename) {
             if (!isRealFileUrl(href)) return false;
@@ -5849,8 +5936,10 @@
         }
 
         function closeAttachmentPreview() {
-            document.getElementById('attachmentPreviewModal').classList.remove('show');
-            document.getElementById('attachmentPreviewContainer').innerHTML = '';
+            var m = getFilePreviewModal();
+            if (m) m.classList.remove('show');
+            var box = document.getElementById('attachmentPreviewContainer');
+            if (box) box.innerHTML = '';
         }
 
         function downloadCurrentAttachment(ev) {
@@ -6983,6 +7072,44 @@
             clearAiFilledReportFields();
             var fi = document.getElementById('fileInput');
             if (fi) fi.value = '';
+        }
+        function applySharedFilesToUpload(files) {
+            var list = Array.prototype.slice.call(files || []).filter(Boolean);
+            if (!list.length) return;
+            try { if (typeof showPetsView === 'function') showPetsView(); } catch (e) {}
+            try { openUploadModal(); } catch (e2) {}
+            setTimeout(function() { handleFiles(list); }, 250);
+        }
+        function consumeShareTargetInbox() {
+            if (!('caches' in window)) return Promise.resolve();
+            return caches.open('pawvault-share-inbox').then(function(cache) {
+                return cache.match('payload').then(function(res) {
+                    if (!res) return;
+                    return res.json().then(function(payload) {
+                        var items = (payload && payload.files) || [];
+                        return Promise.all(items.map(function(item) {
+                            return cache.match(item.key).then(function(fileRes) {
+                                if (!fileRes) return null;
+                                return fileRes.blob().then(function(blob) {
+                                    var name = item.name || 'shared';
+                                    try { name = decodeURIComponent(fileRes.headers.get('X-Filename') || item.name || 'shared'); } catch (e) {}
+                                    return new File([blob], name, { type: item.type || blob.type || 'application/octet-stream' });
+                                });
+                            });
+                        })).then(function(files) {
+                            return cache.keys().then(function(keys) {
+                                return Promise.all(keys.map(function(k) { return cache.delete(k); }));
+                            }).then(function() { return files.filter(Boolean); });
+                        });
+                    });
+                });
+            }).then(function(files) {
+                if (files && files.length) applySharedFilesToUpload(files);
+            }).catch(function() {});
+        }
+        function registerPawVaultPwa() {
+            if (!('serviceWorker' in navigator)) return;
+            navigator.serviceWorker.register('./sw.js').catch(function() {});
         }
         function handleFiles(files) {
             Array.prototype.forEach.call(files || [], function(file) {
@@ -10399,6 +10526,11 @@
         // 啟動
         // ================================================================
         window.onload = function() {
+            registerPawVaultPwa();
+            consumeShareTargetInbox();
+            if (/share-target=1/.test(location.search || '')) {
+                setTimeout(consumeShareTargetInbox, 400);
+            }
             initDevPanel();
             loadCachedPromoCodes();
             auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function() {});

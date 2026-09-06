@@ -1802,6 +1802,7 @@
         // ================================================================
         // Firebase 設定
         // ================================================================
+        const GEMINI_API_KEY = (typeof localStorage !== 'undefined' && localStorage.getItem('PAWVAULT_GEMINI_KEY')) || '';
         const firebaseConfig = {
             apiKey: "AIzaSyCNExsDR5jTa2t9zp3lhiqF_8lV8vP9Mmk",
             authDomain: "paw-vault.firebaseapp.com",
@@ -2667,9 +2668,12 @@
             ready.then(function(f) {
                 pendingCaptureFile = f;
                 uploadedFiles = [f];
-                return extractReportText(f);
-            }).then(function(text) {
-                pendingOcrFields = extractOcrFields(text || '');
+                return analyzeReceiptSmart(f).then(function(fields) {
+                    if (fields && (fields.clinic || fields.date || fields.notes || fields.petName || fields.amount)) return fields;
+                    return extractReportText(f).then(function(text) { return extractOcrFields(text || ''); });
+                });
+            }).then(function(fields) {
+                pendingOcrFields = fields || {};
                 fillOcrPreviewFields(pendingOcrFields);
                 setOcrPreviewLoading(false);
             }).catch(function() {
@@ -7132,12 +7136,150 @@
         function runReportOcr(file) {
             var hint = document.getElementById('ocrHint');
             if (hint) { hint.classList.remove('hidden'); hint.textContent = '正在辨識「' + file.name + '」文字…'; }
-            extractReportText(file).then(function(text) {
-                applyOcrToReportForm(text || '');
-                if (hint) hint.textContent = text ? '已嘗試帶入診所／日期／診斷，請核對後再儲存。' : '未能自動辨識，請自行填寫。';
+            analyzeReceiptSmart(file).then(function(fields) {
+                if (fields && (fields.clinic || fields.date || fields.notes || fields.petName || fields.amount)) {
+                    applyStructuredReportFields(fields);
+                    if (hint) hint.textContent = '已嘗試帶入診所／日期／診斷，請核對後再儲存。';
+                    return;
+                }
+                return extractReportText(file).then(function(text) {
+                    applyOcrToReportForm(text || '');
+                    if (hint) hint.textContent = text ? '已嘗試帶入診所／日期／診斷，請核對後再儲存。' : '未能自動辨識，請自行填寫。';
+                });
             }).catch(function() {
-                if (hint) hint.textContent = '未能自動辨識，請自行填寫。';
+                extractReportText(file).then(function(text) {
+                    applyOcrToReportForm(text || '');
+                    if (hint) hint.textContent = text ? '已嘗試帶入診所／日期／診斷，請核對後再儲存。' : '未能自動辨識，請自行填寫。';
+                }).catch(function() {
+                    if (hint) hint.textContent = '未能自動辨識，請自行填寫。';
+                });
             });
+        }
+        async function fileToGeminiJpegBase64(file) {
+            var isPdf = file && (file.type === 'application/pdf' || /\.pdf$/i.test(file.name || ''));
+            if (isPdf) {
+                var lib = ensurePdfJsReady();
+                if (!lib) throw new Error('no-pdfjs');
+                var buf = await file.arrayBuffer();
+                var pdf = await lib.getDocument({ data: buf }).promise;
+                var page = await pdf.getPage(1);
+                var vp = page.getViewport({ scale: 1.6 });
+                var canvas = document.createElement('canvas');
+                canvas.width = vp.width;
+                canvas.height = vp.height;
+                await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+                return canvas.toDataURL('image/jpeg', 0.82);
+            }
+            var ready = isHeicFile(file) ? await convertHeicIfNeeded(file) : file;
+            if (typeof compressImageToFile === 'function') {
+                try { ready = await compressImageToFile(ready, 1600, 0.8); } catch (e) {}
+            }
+            return await blobToDataUrl(ready);
+        }
+        async function analyzeReceiptWithGemini(base64Image, apiKey) {
+            var key = apiKey || GEMINI_API_KEY;
+            if (!key || !base64Image) throw new Error('no-gemini-key');
+            var raw = String(base64Image);
+            var dataPart = raw.indexOf(',') >= 0 ? raw.split(',')[1] : raw;
+            var models = ['gemini-2.0-flash', 'gemini-1.5-flash'];
+            var lastErr = null;
+            for (var i = 0; i < models.length; i++) {
+                var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + models[i] + ':generateContent?key=' + encodeURIComponent(key);
+                var requestBody = {
+                    contents: [{
+                        parts: [
+                            {
+                                text: "請分析這張獸醫診所收據/報告圖片，以 JSON 格式回傳以下欄位：\n" +
+                                      "1. clinic_name (診所名稱)\n" +
+                                      "2. date (日期 YYYY-MM-DD)\n" +
+                                      "3. pet_name (寵物名字)\n" +
+                                      "4. doctor (醫生名字，若無則填空字串)\n" +
+                                      "5. items (所有診療/藥物項目與金額陣列，每項含 name 與 amount)\n" +
+                                      "6. total_amount (總金額)\n" +
+                                      "7. title (簡短病歷標題，例如 洗牙及拔牙手術 / 門診復診與拿藥 / 血液檢查報告)\n" +
+                                      "8. notes (詳細內容摘要，條列診療與藥物，不要地址電話)"
+                            },
+                            { inline_data: { mime_type: "image/jpeg", data: dataPart } }
+                        ]
+                    }],
+                    generationConfig: { response_mime_type: "application/json" }
+                };
+                try {
+                    var response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(requestBody)
+                    });
+                    var data = await response.json();
+                    var resultText = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text;
+                    if (!resultText) throw new Error('empty-gemini');
+                    return JSON.parse(resultText);
+                } catch (err) {
+                    lastErr = err;
+                }
+            }
+            throw lastErr || new Error('gemini-failed');
+        }
+        function geminiJsonToFields(json) {
+            json = json || {};
+            var items = Array.isArray(json.items) ? json.items : [];
+            var itemLines = items.map(function(it) {
+                if (!it) return '';
+                if (typeof it === 'string') return '- ' + it;
+                var n = it.name || it.item || it.description || '';
+                var a = it.amount || it.price || it.total || '';
+                return n ? ('- ' + n + (a !== '' ? '  $' + a : '')) : '';
+            }).filter(Boolean);
+            var notes = String(json.notes || '').trim();
+            if (!notes && itemLines.length) notes = '【診療 / 藥物項目】\n' + itemLines.join('\n');
+            var amount = json.total_amount != null ? String(json.total_amount).replace(/[^\d.]/g, '') : '';
+            var date = String(json.date || '').replace(/\./g, '-').replace(/\//g, '-');
+            if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(date)) {
+                var p = date.split('-');
+                date = p[0] + '-' + ('0' + p[1]).slice(-2) + '-' + ('0' + p[2]).slice(-2);
+            }
+            return {
+                clinic: String(json.clinic_name || json.clinic || '').trim(),
+                date: date,
+                petName: String(json.pet_name || json.pet || '').trim(),
+                doctor: String(json.doctor || json.doctor_name || '').trim(),
+                amount: amount,
+                title: String(json.title || '').trim(),
+                notes: notes
+            };
+        }
+        function analyzeReceiptSmart(file) {
+            if (!GEMINI_API_KEY || !file) return Promise.resolve(null);
+            return fileToGeminiJpegBase64(file).then(function(b64) {
+                return analyzeReceiptWithGemini(b64, GEMINI_API_KEY);
+            }).then(geminiJsonToFields).catch(function() { return null; });
+        }
+        function applyStructuredReportFields(fields) {
+            fields = fields || {};
+            pendingOcrFields = fields;
+            lastOcrPetName = cleanExtractedPetName(fields.petName || lastOcrPetName || '');
+            if (captureAutoSaveMode) {
+                fillOcrPreviewFields(fields);
+                setOcrPreviewLoading(false);
+                return;
+            }
+            var dateEl = document.getElementById('reportDate');
+            var descEl = document.getElementById('reportDesc');
+            var titleEl = document.getElementById('reportTitle');
+            var clinicEl = document.getElementById('reportClinic');
+            var doctorEl = document.getElementById('reportDoctor');
+            if (clinicEl && fields.clinic && !clinicEl.value) clinicEl.value = fields.clinic;
+            if (dateEl && fields.date && !dateEl.value) dateEl.value = fields.date;
+            if (doctorEl && fields.doctor && !doctorEl.value) doctorEl.value = fields.doctor;
+            var amtEl = document.getElementById('reportAmount');
+            if (amtEl && fields.amount && !amtEl.value) amtEl.value = fields.amount;
+            if (titleEl && (!titleEl.value || titleEl.value === '看診紀錄' || titleEl.value === 'Consultation')) titleEl.value = fields.title || titleEl.value || '看診紀錄';
+            if (descEl && fields.notes && (!descEl.value.trim() || descEl.value === '無詳細紀錄')) descEl.value = fields.notes;
+            var titleDemo = document.getElementById('reportTitleDemo');
+            var descDemo = document.getElementById('reportDescDemo');
+            if (titleDemo && !titleDemo.value) titleDemo.value = fields.title || '看診紀錄';
+            if (descDemo && !descDemo.value.trim() && fields.notes) descDemo.value = fields.notes;
+            matchOcrPetInUploadSelect(fields.petName);
         }
         function ensurePdfJsReady() {
             try {

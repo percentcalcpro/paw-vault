@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Paw Vault | 寵物健康病歷庫</title>
     <meta name="theme-color" content="#2d8f6f">
-    <link rel="manifest" href="./manifest.webmanifest">
-    <link rel="icon" href="./paw-vault-icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="./paw-vault-icon.svg">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%232d8f6f'/%3E%3Ctext x='96' y='118' text-anchor='middle' font-size='72' font-family='system-ui,sans-serif' fill='%23ffffff' font-weight='700'%3EPV%3C/text%3E%3C/svg%3E">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
@@ -702,6 +700,13 @@
                 <button type="button" onclick="openChangeEmailModal()" class="w-full py-2.5 border border-gray-200 rounded-2xl text-sm text-left px-4 flex items-center justify-between">電子郵件 <span class="text-gray-400">✏️</span></button>
                 <button type="button" onclick="openChangePasswordModal()" class="w-full py-2.5 border border-gray-200 rounded-2xl text-sm text-left px-4 flex items-center justify-between">密碼 <span class="text-gray-400">✏️</span></button>
                 <button type="button" onclick="openPaymentModal()" class="w-full py-2.5 bg-[#3da881] text-white rounded-2xl text-sm font-medium">續費 / 升級</button>
+            </div>
+            <div class="mt-4 p-4 rounded-2xl border border-gray-200 bg-white">
+                <p class="text-sm font-medium text-gray-700 mb-1">AI 收據辨識 Key（選填）</p>
+                <p class="text-xs text-gray-400 mb-2">喺 Google AI Studio 複製 API Key 貼呢度，只存在你呢部瀏覽器。</p>
+                <input id="geminiKeyInput" type="password" autocomplete="off" placeholder="AIza..." class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl text-sm mb-2">
+                <button type="button" onclick="saveGeminiKeyFromSettings()" class="w-full py-2 border border-[#3da881] text-[#2d8f6f] rounded-2xl text-sm">儲存 AI Key</button>
+                <p id="geminiKeyStatus" class="text-xs text-gray-500 mt-2"></p>
             </div>
             <button type="button" onclick="downloadAccountBackup()" class="w-full mt-4 py-2.5 border border-[#3da881] text-[#2d8f6f] rounded-2xl text-sm">一鍵打包備份所有資料</button>
         </div>
@@ -1802,7 +1807,36 @@
         // ================================================================
         // Firebase 設定
         // ================================================================
-        const GEMINI_API_KEY = (typeof localStorage !== 'undefined' && localStorage.getItem('PAWVAULT_GEMINI_KEY')) || '';
+        function getGeminiApiKey() {
+            try {
+                return localStorage.getItem('PAWVAULT_GEMINI_KEY')
+                    || localStorage.getItem('GEMINI_API_KEY')
+                    || '';
+            } catch (e) { return ''; }
+        }
+        var GEMINI_API_KEY = getGeminiApiKey();
+        function saveGeminiKeyFromSettings() {
+            var input = document.getElementById('geminiKeyInput');
+            var status = document.getElementById('geminiKeyStatus');
+            var key = String((input && input.value) || '').trim();
+            if (!key) {
+                try { localStorage.removeItem('PAWVAULT_GEMINI_KEY'); } catch (e) {}
+                GEMINI_API_KEY = '';
+                if (status) status.textContent = '已清除。之後會用原本文字辨識。';
+                return;
+            }
+            try { localStorage.setItem('PAWVAULT_GEMINI_KEY', key); } catch (e) {}
+            GEMINI_API_KEY = key;
+            if (status) status.textContent = '已儲存，可去上傳收據測試。';
+            showToast('已儲存 AI Key', 'success');
+        }
+        function fillGeminiKeyInput() {
+            var input = document.getElementById('geminiKeyInput');
+            var status = document.getElementById('geminiKeyStatus');
+            var key = getGeminiApiKey();
+            if (input && key && !input.value) input.placeholder = '已儲存（' + key.slice(0, 6) + '…）';
+            if (status && key) status.textContent = '已有儲存的 Key。';
+        }
         const firebaseConfig = {
             apiKey: "AIzaSyCNExsDR5jTa2t9zp3lhiqF_8lV8vP9Mmk",
             authDomain: "paw-vault.firebaseapp.com",
@@ -7112,8 +7146,27 @@
             }).catch(function() {});
         }
         function registerPawVaultPwa() {
+            try {
+                var manifest = {
+                    name: 'Paw Vault',
+                    short_name: 'Paw Vault',
+                    start_url: './',
+                    display: 'standalone',
+                    background_color: '#f5faf7',
+                    theme_color: '#2d8f6f',
+                    icons: [{ src: document.querySelector('link[rel="icon"]').href, sizes: 'any', type: 'image/svg+xml' }]
+                };
+                var blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+                var url = URL.createObjectURL(blob);
+                var link = document.querySelector('link[rel="manifest"]') || document.createElement('link');
+                link.rel = 'manifest';
+                link.href = url;
+                if (!link.parentNode) document.head.appendChild(link);
+            } catch (e) {}
             if (!('serviceWorker' in navigator)) return;
-            navigator.serviceWorker.register('./sw.js').catch(function() {});
+            fetch('./sw.js', { method: 'HEAD' }).then(function(res) {
+                if (res && res.ok) return navigator.serviceWorker.register('./sw.js');
+            }).catch(function() {});
         }
         function handleFiles(files) {
             Array.prototype.forEach.call(files || [], function(file) {
@@ -7176,49 +7229,53 @@
             }
             return await blobToDataUrl(ready);
         }
-        async function analyzeReceiptWithGemini(base64Image, apiKey) {
-            var key = apiKey || GEMINI_API_KEY;
-            if (!key || !base64Image) throw new Error('no-gemini-key');
-            var raw = String(base64Image);
-            var dataPart = raw.indexOf(',') >= 0 ? raw.split(',')[1] : raw;
+        async function analyzeReceipt(base64Image) {
+            var apiKey = getGeminiApiKey();
+            if (!apiKey) return null;
+            if (!base64Image) return null;
+            var cleanBase64 = String(base64Image).replace(/^data:image\/(png|jpeg|jpg|webp);base64,/, '');
+            var promptText = '請分析這張獸醫診所收據/報告圖片，以嚴格的 JSON 格式回傳（勿加任何 markdown 標籤）：\n' +
+                '{\n' +
+                '  "title": "診療主題/看診項目",\n' +
+                '  "date": "YYYY-MM-DD",\n' +
+                '  "petName": "寵物名字",\n' +
+                '  "clinic": "診所完整名稱",\n' +
+                '  "doctor": "醫生姓名",\n' +
+                '  "details": "詳細診療與藥物明細清單",\n' +
+                '  "totalAmount": "總金額數字"\n' +
+                '}';
             var models = ['gemini-2.0-flash', 'gemini-1.5-flash'];
             var lastErr = null;
             for (var i = 0; i < models.length; i++) {
-                var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + models[i] + ':generateContent?key=' + encodeURIComponent(key);
-                var requestBody = {
-                    contents: [{
-                        parts: [
-                            {
-                                text: "請分析這張獸醫診所收據/報告圖片，以 JSON 格式回傳以下欄位：\n" +
-                                      "1. clinic_name (診所名稱)\n" +
-                                      "2. date (日期 YYYY-MM-DD)\n" +
-                                      "3. pet_name (寵物名字)\n" +
-                                      "4. doctor (醫生名字，若無則填空字串)\n" +
-                                      "5. items (所有診療/藥物項目與金額陣列，每項含 name 與 amount)\n" +
-                                      "6. total_amount (總金額)\n" +
-                                      "7. title (簡短病歷標題，例如 洗牙及拔牙手術 / 門診復診與拿藥 / 血液檢查報告)\n" +
-                                      "8. notes (詳細內容摘要，條列診療與藥物，不要地址電話)"
-                            },
-                            { inline_data: { mime_type: "image/jpeg", data: dataPart } }
-                        ]
-                    }],
-                    generationConfig: { response_mime_type: "application/json" }
-                };
+                var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + models[i] + ':generateContent?key=' + encodeURIComponent(apiKey);
                 try {
                     var response = await fetch(url, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(requestBody)
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [
+                                    { text: promptText },
+                                    { inline_data: { mime_type: 'image/jpeg', data: cleanBase64 } }
+                                ]
+                            }],
+                            generationConfig: { response_mime_type: 'application/json' }
+                        })
                     });
                     var data = await response.json();
                     var resultText = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text;
                     if (!resultText) throw new Error('empty-gemini');
+                    resultText = String(resultText).replace(/^```json\s*/i, '').replace(/```$/i, '').trim();
                     return JSON.parse(resultText);
                 } catch (err) {
                     lastErr = err;
+                    console.error('Gemini 辨識失敗:', err);
                 }
             }
-            throw lastErr || new Error('gemini-failed');
+            return null;
+        }
+        function analyzeReceiptWithGemini(base64Image, apiKey) {
+            return analyzeReceipt(base64Image);
         }
         function geminiJsonToFields(json) {
             json = json || {};
@@ -7230,18 +7287,19 @@
                 var a = it.amount || it.price || it.total || '';
                 return n ? ('- ' + n + (a !== '' ? '  $' + a : '')) : '';
             }).filter(Boolean);
-            var notes = String(json.notes || '').trim();
+            var notes = String(json.details || json.notes || '').trim();
             if (!notes && itemLines.length) notes = '【診療 / 藥物項目】\n' + itemLines.join('\n');
-            var amount = json.total_amount != null ? String(json.total_amount).replace(/[^\d.]/g, '') : '';
+            var rawAmt = json.totalAmount != null ? json.totalAmount : json.total_amount;
+            var amount = rawAmt != null ? String(rawAmt).replace(/[^\d.]/g, '') : '';
             var date = String(json.date || '').replace(/\./g, '-').replace(/\//g, '-');
             if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(date)) {
                 var p = date.split('-');
                 date = p[0] + '-' + ('0' + p[1]).slice(-2) + '-' + ('0' + p[2]).slice(-2);
             }
             return {
-                clinic: String(json.clinic_name || json.clinic || '').trim(),
+                clinic: String(json.clinic || json.clinic_name || '').trim(),
                 date: date,
-                petName: String(json.pet_name || json.pet || '').trim(),
+                petName: String(json.petName || json.pet_name || json.pet || '').trim(),
                 doctor: String(json.doctor || json.doctor_name || '').trim(),
                 amount: amount,
                 title: String(json.title || '').trim(),
@@ -7249,10 +7307,12 @@
             };
         }
         function analyzeReceiptSmart(file) {
-            if (!GEMINI_API_KEY || !file) return Promise.resolve(null);
+            if (!getGeminiApiKey() || !file) return Promise.resolve(null);
             return fileToGeminiJpegBase64(file).then(function(b64) {
-                return analyzeReceiptWithGemini(b64, GEMINI_API_KEY);
-            }).then(geminiJsonToFields).catch(function() { return null; });
+                return analyzeReceipt(b64);
+            }).then(function(json) {
+                return json ? geminiJsonToFields(json) : null;
+            }).catch(function() { return null; });
         }
         function applyStructuredReportFields(fields) {
             fields = fields || {};
@@ -8062,6 +8122,7 @@
             setMemberViewMode('account');
             updateMembershipStatusCard();
             updateHomeQuotaBar();
+            fillGeminiKeyInput();
         }
        function showMemberPets() {
             window.pendingOpenAdmin = false;

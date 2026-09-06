@@ -18,6 +18,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
 
@@ -52,7 +53,8 @@
         /* ===== 寵物卡片 ===== */
         .pet-card { transition: all 0.2s ease; cursor: pointer; background: white; border-radius: 1rem; padding: 0.85rem 1rem; border: 1px solid #e5ece8; }
         .pet-card h3 { font-size: 1rem; }
-        .flip-card { background: transparent; padding: 0; border: none; height: 236px; width: 168px; flex: 0 0 168px; perspective: 1000px; }
+        .flip-card { background: transparent; padding: 0; border: none; height: 236px; width: 168px; flex: 0 0 168px; perspective: 1000px; cursor: grab; }
+        .flip-card.sortable-chosen, .flip-card.pet-manage-drag { cursor: grabbing; }
         .pet-scroll { display: flex; gap: 0.7rem; overflow-x: auto; padding: 2px 2px 10px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
         .pet-scroll .flip-card { scroll-snap-align: start; }
         .flip-avatar img { width: 100%; height: 180px; object-fit: cover; object-position: center; display: block; }
@@ -80,7 +82,14 @@
         .flip-card.is-checked .flip-face { border-color: #3da881; box-shadow: 0 0 0 2px #86efac; }
         .pet-batch-bar { display: none; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin: 0 0 0.75rem; }
         .pet-batch-bar.show { display: flex; }
-        .flip-front-meta { height: 56px; flex: 0 0 56px; display: flex; flex-direction: column; justify-content: center; padding: 0.35rem 0.6rem 0.45rem; }
+        .flip-front-meta { height: 56px; flex: 0 0 56px; display: flex; flex-direction: column; justify-content: center; padding: 0.35rem 1.6rem 0.45rem 0.6rem; position: relative; }
+        .pet-drag-handle { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 16px; height: 28px; display: flex; align-items: center; justify-content: center; color: #9ca3af; pointer-events: none; opacity: 0.7; }
+        .flip-card:hover .pet-drag-handle { color: #6b7280; opacity: 1; }
+        .pet-drag-hint { font-size: 12px; color: #888; font-weight: 400; margin-left: 6px; }
+        .report-sort-btn { width: 36px; height: 36px; border-radius: 999px; border: 1px solid #e5ece8; background: #fff; color: #4b5563; display: inline-flex; align-items: center; justify-content: center; font-size: 16px; line-height: 1; transition: transform 0.22s ease, background 0.15s ease, color 0.15s ease, border-color 0.15s ease; }
+        .report-sort-btn:hover { border-color: #86efac; color: #047857; }
+        .report-sort-btn.is-oldest { transform: rotate(180deg); background: #ecfdf5; color: #047857; border-color: #86efac; }
+        .report-sort-btn:active { transform: rotate(180deg) scale(0.94); }
         @media (max-width: 767px) {
             .report-item .report-actions { display: none; }
             .report-item { padding: 0.65rem !important; }
@@ -416,6 +425,7 @@
                                 <i class="fa-solid fa-notes-medical text-[#3da881] mr-2"></i>
                                 我的毛孩（示範）
                                 <span class="demo-step-badge">假資料 · 非真實病歷</span>
+                                <span class="pet-drag-hint">💡 可長按或拖曳卡片自訂排序</span>
                             </h2>
                         </div>
                         <div class="flex gap-2 flex-wrap items-center">
@@ -481,7 +491,8 @@
                             <span class="demo-step-badge">第二步：上傳報告</span>
                             <span id="demoSelectedPetName" class="text-sm font-normal text-gray-500 ml-2">（全部毛孩）</span>
                         </h3>
-                        <div class="flex gap-2 flex-wrap">
+                        <div class="flex gap-2 flex-wrap items-center">
+                            <button type="button" id="demoReportSortBtn" class="report-sort-btn" title="切換日期排序（由新至舊 / 由舊至新）" onclick="toggleDemoReportSort()" aria-label="切換日期排序">⇅</button>
                             <button onclick="openUploadModalDemo()" class="btn-secondary-pill">＋ 上傳報告</button>
                             <button onclick="toggleDemoSelectMode()" class="btn-secondary-pill" id="demoToggleSelectBtn">批量匯出/分享</button>
                         </div>
@@ -732,7 +743,7 @@
                     <button type="button" onclick="openPaymentModal()" class="px-2.5 py-1 bg-[#10b981] text-white rounded-full text-xs font-semibold">續費/升級</button>
                 </div>
                 <div class="flex justify-between items-center flex-wrap gap-3 mb-2">
-                    <h2 class="text-xl font-bold text-gray-800">我的毛孩 <span id="memberPetTitleCount" class="text-base font-semibold text-gray-500">(0/0隻)</span></h2>
+                    <h2 class="text-xl font-bold text-gray-800">我的毛孩 <span id="memberPetTitleCount" class="text-base font-semibold text-gray-500">(0/0隻)</span> <span class="pet-drag-hint">💡 可長按或拖曳卡片自訂排序</span></h2>
                     <div class="flex gap-2 flex-wrap items-center">
                     <button type="button" onclick="openCaptureUpload(false)" class="btn-primary-pill">拍照／一鍵建檔</button>
                     <button id="memberAddPetBtn" onclick="openAddPetModal()" class="btn-secondary-pill">＋新增毛孩</button>
@@ -755,7 +766,8 @@
                     <h3 class="text-lg font-bold text-gray-700">我的病歷 <span id="memberReportTitleCount" class="text-base font-semibold text-gray-500">(0/0份)</span></h3>
                     <span id="memberSelectedPetName" class="hidden"></span>
                     <span id="memberReportCapacity" class="hidden"></span>
-                    <div class="flex gap-2 flex-wrap">
+                    <div class="flex gap-2 flex-wrap items-center">
+                        <button type="button" id="memberReportSortBtn" class="report-sort-btn" title="切換日期排序（由新至舊 / 由舊至新）" onclick="toggleMemberReportSort()" aria-label="切換日期排序">⇅</button>
                         <button id="memberUploadReportBtn" onclick="openUploadModal()" class="btn-secondary-pill">＋ 上傳報告</button>
                         <button id="memberToggleSelectModeBtn" onclick="toggleMemberSelectMode()" class="btn-secondary-pill">批量匯出/分享</button>
                     </div>
@@ -2040,6 +2052,7 @@
         var memberPetPage = 1;
         var MEMBER_PET_PAGE_SIZE = 6;
         var memberReportNewestFirst = true;
+        var demoReportNewestFirst = true;
         var memberMaxPetsOverride = null;
         var extraPetPending = false;
         var extraPetQty = 1;
@@ -2363,9 +2376,74 @@
             updatePetBatchBar(demo);
         }
         var dragPetState = { id: null, demo: false };
+        function petOrderStorageKey(demo) {
+            if (demo) return 'pawPetOrder_demo';
+            var uid = (currentUser && currentUser.uid) || 'guest';
+            return 'pawPetOrder_' + uid;
+        }
+        function savePetOrder(demo) {
+            var arr = demo ? demoPets : pets;
+            try { localStorage.setItem(petOrderStorageKey(demo), JSON.stringify((arr || []).map(function(p){ return p.id; }))); } catch (e) {}
+        }
+        function applySavedPetOrder(demo) {
+            var arr = demo ? demoPets : pets;
+            if (!arr || !arr.length) return;
+            var raw = '';
+            try { raw = localStorage.getItem(petOrderStorageKey(demo)) || ''; } catch (e) { return; }
+            if (!raw) return;
+            var ids = [];
+            try { ids = JSON.parse(raw); } catch (e) { return; }
+            if (!Array.isArray(ids) || !ids.length) return;
+            applyPetIdOrder(ids, demo, true);
+        }
+        function applyPetIdOrder(ids, demo, skipSave) {
+            var arr = demo ? demoPets : pets;
+            if (!arr || !ids || !ids.length) return;
+            arr.sort(function(a, b) {
+                var ia = ids.indexOf(a.id);
+                var ib = ids.indexOf(b.id);
+                if (ia < 0 && ib < 0) return 0;
+                if (ia < 0) return 1;
+                if (ib < 0) return -1;
+                return ia - ib;
+            });
+            if (!skipSave) {
+                savePetOrder(demo);
+                if (!demo && currentUser && currentUser.uid && typeof db !== 'undefined' && db) {
+                    arr.forEach(function(p, i) {
+                        db.collection('users').doc(currentUser.uid).collection('pets').doc(p.id).set({ sortOrder: i }, { merge: true }).catch(function(){});
+                    });
+                }
+            }
+        }
+        var petSortableInst = { member: null, demo: null };
+        function bindPetCardSortable(container, demo) {
+            if (!container || typeof Sortable === 'undefined') return;
+            var key = demo ? 'demo' : 'member';
+            if (petSortableInst[key]) {
+                try { petSortableInst[key].destroy(); } catch (e) {}
+                petSortableInst[key] = null;
+            }
+            petSortableInst[key] = Sortable.create(container, {
+                animation: 160,
+                draggable: '.flip-card',
+                filter: 'button, input, a, textarea, select',
+                preventOnFilter: false,
+                delayOnTouchOnly: true,
+                delay: 160,
+                onEnd: function() {
+                    var ids = Array.prototype.map.call(container.querySelectorAll('.flip-card[data-pet-id]'), function(el) {
+                        return el.getAttribute('data-pet-id');
+                    });
+                    applyPetIdOrder(ids, demo);
+                }
+            });
+        }
         function onPetDragStart(ev, id, demo) {
-            var on = demo ? petManageModeDemo : petManageModeMember;
-            if (!on) { ev.preventDefault(); return; }
+            if (ev.target && ev.target.closest && ev.target.closest('button, input, a')) {
+                ev.preventDefault();
+                return;
+            }
             dragPetState = { id: id, demo: !!demo };
             ev.dataTransfer.effectAllowed = 'move';
             if (ev.currentTarget) ev.currentTarget.classList.add('pet-manage-drag');
@@ -2388,15 +2466,14 @@
             if (from < 0 || to < 0) return;
             var item = arr.splice(from, 1)[0];
             arr.splice(to, 0, item);
-            if (demo) renderDemoPets();
-            else {
-                renderMemberPets();
-                if (currentUser && currentUser.uid && typeof db !== 'undefined' && db) {
-                    arr.forEach(function(p, i) {
-                        db.collection('users').doc(currentUser.uid).collection('pets').doc(p.id).set({ sortOrder: i }, { merge: true }).catch(function(){});
-                    });
-                }
+            savePetOrder(!!demo);
+            if (!demo && currentUser && currentUser.uid && typeof db !== 'undefined' && db) {
+                arr.forEach(function(p, i) {
+                    db.collection('users').doc(currentUser.uid).collection('pets').doc(p.id).set({ sortOrder: i }, { merge: true }).catch(function(){});
+                });
             }
+            if (demo) renderDemoPets();
+            else renderMemberPets();
         }
         function currentPetIds(demo) {
             return demo ? (demoPets || []).map(function(p){ return p.id; }) : (pets || []).map(function(p){ return p.id; });
@@ -2469,12 +2546,13 @@
             var copyFn = demo ? ("navigator.clipboard&&navigator.clipboard.writeText('" + code + "')") : ("copyPetShareCode('" + pet.id + "')");
             var boxOn = !!(demo ? demoCheckedPetIds[pet.id] : memberCheckedPetIds[pet.id]);
             var manageOn = demo ? petManageModeDemo : petManageModeMember;
-            return '<div class="flip-card pet-card ' + (opts.selected ? 'is-active active' : '') + (boxOn ? ' is-checked' : '') + (over ? ' opacity-90' : '') + (flippedPetIds[pet.id] ? ' is-flipped' : '') + '" data-pet-id="' + pet.id + '" draggable="' + (manageOn ? 'true' : 'false') + '" ondragstart="onPetDragStart(event,\'' + pet.id + '\',' + (demo ? 'true' : 'false') + ')" ondragover="onPetDragOver(event)" ondrop="onPetDrop(event,\'' + pet.id + '\',' + (demo ? 'true' : 'false') + ')" onclick="onPetFlipCardClick(event,\'' + pet.id + '\',' + (demo ? 'true' : 'false') + ')" onmouseleave="onPetCardLeave(\'' + pet.id + '\')">' +
+            return '<div class="flip-card pet-card ' + (opts.selected ? 'is-active active' : '') + (boxOn ? ' is-checked' : '') + (over ? ' opacity-90' : '') + (flippedPetIds[pet.id] ? ' is-flipped' : '') + '" data-pet-id="' + pet.id + '" draggable="true" ondragstart="onPetDragStart(event,\'' + pet.id + '\',' + (demo ? 'true' : 'false') + ')" ondragover="onPetDragOver(event)" ondrop="onPetDrop(event,\'' + pet.id + '\',' + (demo ? 'true' : 'false') + ')" onclick="onPetFlipCardClick(event,\'' + pet.id + '\',' + (demo ? 'true' : 'false') + ')" onmouseleave="onPetCardLeave(\'' + pet.id + '\')">' +
                 '<div class="flip-inner"><div class="flip-face flip-front"><button type="button" class="flip-check-btn' + (boxOn ? ' is-on' : '') + '" onclick="event.stopPropagation(); togglePetChecked(\'' + pet.id + '\',' + (demo ? 'true' : 'false') + ')">' + (boxOn ? '✓' : '') + '</button>' +
                 '<div class="pet-manage-icons"><button type="button" title="編輯" onclick="event.stopPropagation();' + editFn + '">✏️</button><button type="button" title="刪除" onclick="event.stopPropagation();' + delFn + '">🗑️</button></div>' +
                 '<div class="flip-avatar">' + petAvatarHtml(pet, demo) + '</div>' +
                 '<div class="flip-front-meta"><div class="font-bold text-[#2d8f6f] truncate">' + (pet.name || '未命名毛孩') + '</div>' +
-                '<div class="text-[11px] text-gray-500 truncate">' + (details.join(' · ') || '點擊翻開名片') + '</div></div></div>' +
+                '<div class="text-[11px] text-gray-500 truncate">' + (details.join(' · ') || '點擊翻開名片') + '</div>' +
+                '<span class="pet-drag-handle" title="拖曳排序" aria-hidden="true"><svg width="12" height="16" viewBox="0 0 12 16" fill="currentColor"><circle cx="3" cy="3" r="1.3"/><circle cx="9" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="9" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="9" cy="13" r="1.3"/></svg></span></div></div>' +
                 '<div class="flip-face flip-back">' +
                 '<div class="flex justify-between items-center gap-2 mb-2"><div class="font-bold text-[#2d8f6f] text-sm truncate">' + (pet.name || '') + ' 的設定</div>' +
                 '<button type="button" class="text-gray-400 text-sm" onclick="event.stopPropagation(); flipPetCard(\'' + pet.id + '\')">↩️</button></div>' +
@@ -2564,6 +2642,7 @@
             flippedPetIds = {};
             demoCheckedPetIds = {};
             petManageModeDemo = false;
+            try { localStorage.removeItem('pawPetOrder_demo'); } catch (e) {}
             persistDemoPetsLocal();
             if (typeof closeAllModals === 'function') closeAllModals();
             renderDemoPets();
@@ -2973,7 +3052,7 @@
                             if (reportData.is_deleted || reportData.isDeleted) return;
                             reports.push(reportData);
                         });
-                        petReports[doc.id] = reports;
+                        petReports[doc.id] = sortReportsByDateDesc(reports);
                     });
                     petPromises.push(promise);
                 });
@@ -2996,7 +3075,7 @@
                                     remote.forEach(function(r) {
                                         if (r.id && !seen[r.id]) local.push(r);
                                     });
-                                    petReports[pet.id] = local;
+                                    petReports[pet.id] = sortReportsByDateDesc(local);
                                     renderMemberReports();
                                 } else {
                                     persistShareCode(pet);
@@ -4651,6 +4730,7 @@
 
         function renderMemberPets() {
             updateMemberPetCapacityUI();
+            applySavedPetOrder(false);
             var container = document.getElementById('memberPetList');
             if (!container) return;
             if (!pets.length) {
@@ -4687,6 +4767,7 @@
             container.innerHTML = slice.map(function(pet) {
                 return buildPetFlipCardHtml(pet, { demo: false, selected: memberSelectedPetId === pet.id, reportCount: (petReports[pet.id] || []).length, overQuota: isPetOverQuota(pet.id) });
             }).join('');
+            bindPetCardSortable(container, false);
             renderMemberPetFilters();
             updatePetBatchBar(false);
         }
@@ -4754,19 +4835,36 @@
         }
 
         function reportSortTime(r) {
-            var raw = r && (r.createdAt || r.date || r.updatedAt);
+            if (!r) return 0;
+            var raw = r.date || r.createdAt || r.updatedAt;
             if (!raw) return 0;
             if (raw.toDate) raw = raw.toDate();
+            var s = String(raw);
+            var m = s.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+            if (m) return Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
             var t = new Date(raw).getTime();
             return isNaN(t) ? 0 : t;
         }
+        function sortReportsByDateDesc(list) {
+            return (list || []).slice().sort(function(a, b) { return reportSortTime(b) - reportSortTime(a); });
+        }
+        function syncReportSortBtn(btnId, newestFirst) {
+            var btn = document.getElementById(btnId);
+            if (!btn) return;
+            btn.classList.toggle('is-oldest', !newestFirst);
+            btn.setAttribute('aria-pressed', newestFirst ? 'true' : 'false');
+        }
         function toggleMemberReportSort() {
             memberReportNewestFirst = !memberReportNewestFirst;
-            var btn = document.getElementById('memberReportSortBtn');
-            if (btn) btn.textContent = memberReportNewestFirst ? '按日期：最新 ⇅' : '按日期：最舊 ⇅';
+            syncReportSortBtn('memberReportSortBtn', memberReportNewestFirst);
             memberReportPage = 1;
             resetMemberReportSelection();
             renderMemberReports();
+        }
+        function toggleDemoReportSort() {
+            demoReportNewestFirst = !demoReportNewestFirst;
+            syncReportSortBtn('demoReportSortBtn', demoReportNewestFirst);
+            renderDemoReports();
         }
         function collectVisibleMemberReports() {
             var reports = [];
@@ -9978,6 +10076,7 @@
         function renderDemoPets() {
             var container = document.getElementById('petList');
             if (!container) return;
+            applySavedPetOrder(true);
             renderDemoPetFilters();
             
             if (demoPets.length === 0) {
@@ -9989,6 +10088,7 @@
                 var reportCount = demoReportsData.filter(function(r) { return r.petId === pet.id; }).length;
                 return buildPetFlipCardHtml(pet, { demo: true, selected: demoSelectedPetId === pet.id, reportCount: reportCount });
             }).join('');
+            bindPetCardSortable(container, true);
             updatePetBatchBar(true);
         }
 
@@ -10039,6 +10139,10 @@
             if (q) {
                 reports = reports.filter(function(r) { return reportMatchesQuery(r, q); });
             }
+            reports = (reports || []).slice().sort(function(a, b) {
+                var d = reportSortTime(b) - reportSortTime(a);
+                return demoReportNewestFirst ? d : -d;
+            });
             if (reports.length === 0) {
                 container.innerHTML = '<div class="text-center py-6 text-gray-400 text-sm">' + (q ? '沒有符合的報告' : '尚無病歷報告，點擊「上傳報告」') + '</div>';
                 return;

@@ -1455,7 +1455,8 @@
     </div>
     <div id="ocrPreviewModal" class="modal" style="z-index:1200;">
         <div class="modal-content fade-in" style="max-width:420px;">
-            <h3 class="text-lg font-bold text-[#2d8f6f] mb-2">預覽確認辨識結果</h3>
+            <h3 class="text-lg font-bold text-[#2d8f6f] mb-1">預覽確認辨識結果</h3>
+            <p id="ocrPreviewSource" class="text-xs text-gray-400 mb-2"></p>
             <div id="ocrPreviewLoading" class="hidden text-center py-6 text-sm text-[#2d8f6f]">AI 解析中…</div>
             <div id="ocrPreviewFields">
                 <label class="text-xs text-gray-500 mb-1 block">毛孩名字</label>
@@ -2735,6 +2736,8 @@
             var pamt = document.getElementById('ocrPreviewAmount');
             if (pamt) pamt.value = fields.amount || '';
             if (pnotes) pnotes.value = fields.notes || '';
+            var src = document.getElementById('ocrPreviewSource');
+            if (src) src.textContent = '';
         }
         function closeAllModals() {
             document.querySelectorAll('.modal.show').forEach(function(m) { m.classList.remove('show'); });
@@ -7234,53 +7237,78 @@
             }
             return await blobToDataUrl(ready);
         }
+        function isThinReceiptFields(fields) {
+            if (!fields) return true;
+            var notes = String(fields.notes || fields.details || '');
+            var lines = notes.split(/\n/).filter(function(l) { return l.replace(/[-【】\s]/g, '').length > 2; });
+            var hasClinic = !!(fields.clinic || fields.clinicName);
+            var hasDate = !!(fields.date);
+            return (!hasClinic && !hasDate) || lines.length < 2;
+        }
+        async function analyzeWithTesseract(base64Image) {
+            if (typeof Tesseract === 'undefined' || !base64Image) return null;
+            try {
+                var res = await Tesseract.recognize(base64Image, 'chi_tra+eng');
+                var text = (res && res.data && res.data.text) || '';
+                return text ? extractOcrFields(text) : null;
+            } catch (e) {
+                console.warn('Tesseract 備用辨識失敗', e);
+                return null;
+            }
+        }
+        async function analyzeWithGemini(base64Image, apiKey) {
+            var key = apiKey || getGeminiApiKey();
+            if (!key || !base64Image) throw new Error('no-gemini-key');
+            var cleanBase64 = String(base64Image).indexOf(',') >= 0 ? String(base64Image).split(',')[1] : String(base64Image);
+            var promptText = '你是一個專業的獸醫診所收據分析師。請分析這張圖片，嚴格回傳符合 JSON 格式的物件，不要有任何 Markdown 標記：\n' +
+                '{\n' +
+                '  "petName": "毛孩名字",\n' +
+                '  "title": "病歷標題（預設門診看診）",\n' +
+                '  "clinicName": "診所完整名稱（必須包含 Hospital 或 Clinic，例如 Jack\'s Veterinary Hospital）",\n' +
+                '  "doctorName": "主診醫生",\n' +
+                '  "date": "收據日期（格式 YYYY-MM-DD；若圖片是 22/10/2023 轉成 2023-10-22，不要用今天）",\n' +
+                '  "totalAmount": "總金額數字",\n' +
+                '  "details": "診療與藥物明細（列出 Description 內所有項目與金額，不可只取第一行）"\n' +
+                '}';
+            var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=' + encodeURIComponent(key);
+            var response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [
+                            { text: promptText },
+                            { inline_data: { mime_type: 'image/jpeg', data: cleanBase64 } }
+                        ]
+                    }]
+                })
+            });
+            if (!response.ok) throw new Error('Gemini Error: ' + response.status);
+            var data = await response.json();
+            if (data && data.error) throw new Error('Gemini Error');
+            var textResponse = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text;
+            if (!textResponse) throw new Error('empty-gemini');
+            var cleanJson = String(textResponse).replace(/```json/g, '').replace(/```/g, '').trim();
+            var parsed = JSON.parse(cleanJson);
+            parsed._source = 'gemini';
+            return parsed;
+        }
         async function analyzeReceipt(base64Image) {
             var apiKey = getGeminiApiKey();
-            if (!apiKey) return null;
-            if (!base64Image) return null;
-            var cleanBase64 = String(base64Image).replace(/^data:image\/(png|jpeg|jpg|webp);base64,/, '');
-            var promptText = '你是一個專業的獸醫診所收據/病歷分析師。請仔細分析這張圖片，並嚴格只回傳一個 JSON（不要 Markdown）。\n' +
-                '欄位：petName, title, clinicName, doctorName, date, totalAmount, details。\n' +
-                'clinicName 必須是完整診所名，包含 Hospital 或 Clinic，例如 Jack\'s Veterinary Hospital。\n' +
-                'date 必須 YYYY-MM-DD。若圖片是 22/10/2023，轉成 2023-10-22。不要用今天日期。\n' +
-                'details 必須列出 Description 欄全部項目與金額，不可只取第一行。例如 CONSULTATION、PIMOBENDAN、ENALAPRIL、CLOPIDOGREL 都要列出。\n' +
-                '格式：\\n【診療 / 手術項目】\\n- 項目  $金額\\n【處方藥物】\\n- 藥名  $金額';
-            var models = ['gemini-flash-latest', 'gemini-2.5-flash', 'gemini-2.0-flash'];
-            var lastErr = null;
-            for (var i = 0; i < models.length; i++) {
-                var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + models[i] + ':generateContent?key=' + encodeURIComponent(apiKey);
+            if (apiKey) {
                 try {
-                    var response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{
-                                parts: [
-                                    { text: promptText },
-                                    { inline_data: { mime_type: 'image/jpeg', data: cleanBase64 } }
-                                ]
-                            }],
-                            generationConfig: { response_mime_type: 'application/json' }
-                        })
-                    });
-                    var data = await response.json();
-                    if (response.status === 429 || (data && data.error && /429|resource.?exhausted|quota/i.test(JSON.stringify(data.error)))) {
-                        showToast('Gemini 免費額度暫時用完，請等 1 分鐘再試', 'warning');
-                        return null;
-                    }
-                    var resultText = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text;
-                    if (!resultText) throw new Error('empty-gemini');
-                    resultText = String(resultText).replace(/^```json\s*/i, '').replace(/```$/i, '').trim();
-                    return JSON.parse(resultText);
-                } catch (err) {
-                    lastErr = err;
-                    console.error('Gemini 辨識失敗:', err);
+                    var result = await analyzeWithGemini(base64Image, apiKey);
+                    if (result) return result;
+                } catch (e) {
+                    console.log('Gemini 暫時無法使用，靜默切換至本地辨識');
                 }
             }
-            return null;
+            var localFields = await analyzeWithTesseract(base64Image);
+            if (localFields) localFields._source = 'ocr';
+            return localFields;
         }
         function analyzeReceiptWithGemini(base64Image, apiKey) {
-            return analyzeReceipt(base64Image);
+            return analyzeWithGemini(base64Image, apiKey);
         }
         function geminiJsonToFields(json) {
             json = json || {};
@@ -7313,15 +7341,35 @@
                 doctor: String(json.doctorName || json.doctor || json.doctor_name || '').trim(),
                 amount: amount,
                 title: String(json.title || '').trim(),
-                notes: notes
+                notes: notes,
+                source: json._source || 'gemini'
             };
         }
         function analyzeReceiptSmart(file) {
-            if (!getGeminiApiKey() || !file) return Promise.resolve(null);
+            if (!file) return Promise.resolve(null);
             return fileToGeminiJpegBase64(file).then(function(b64) {
-                return analyzeReceipt(b64);
-            }).then(function(json) {
-                return json ? geminiJsonToFields(json) : null;
+                return analyzeReceipt(b64).then(function(jsonOrFields) {
+                    if (!jsonOrFields) return null;
+                    var fields = jsonOrFields.clinic || jsonOrFields.notes || jsonOrFields.date || jsonOrFields.petName
+                        ? jsonOrFields
+                        : geminiJsonToFields(jsonOrFields);
+                    if (fields && !fields.notes && jsonOrFields.details) fields = geminiJsonToFields(jsonOrFields);
+                    fields.source = jsonOrFields._source || fields.source || (jsonOrFields.clinicName || jsonOrFields.details ? 'gemini' : 'ocr');
+                    if (!isThinReceiptFields(fields)) return fields;
+                    return extractReportText(file).then(function(text) {
+                        var extra = extractOcrFields(text || '');
+                        return {
+                            clinic: fields.clinic || extra.clinic || '',
+                            date: fields.date || extra.date || '',
+                            petName: fields.petName || extra.petName || '',
+                            doctor: fields.doctor || extra.doctor || '',
+                            amount: fields.amount || extra.amount || '',
+                            title: fields.title || extra.title || '',
+                            notes: (fields.notes && String(fields.notes).split('\n').length >= 2) ? fields.notes : (extra.notes || fields.notes || ''),
+                            source: fields.source || 'ocr'
+                        };
+                    });
+                });
             }).catch(function() { return null; });
         }
         function applyStructuredReportFields(fields) {

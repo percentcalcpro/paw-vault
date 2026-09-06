@@ -405,9 +405,8 @@
                 <!-- 示範體驗提示移到最上面 -->
                 <div class="p-6 border-b">
                     <div class="demo-mode-banner mb-4">
-                        <span class="icon">🔍</span>
-                        <span class="text">ℹ️ 示範體驗：以下資料及報告僅供功能測試，並非真實病歷，亦非公開會員資料。註冊登入後僅您本人可查看自己的專屬檔案。</span>
-                        <button type="button" onclick="resetDemoExperience()" class="px-3 py-1 rounded-full bg-white border border-[#93c5fd] text-[#1e3a5f] text-xs font-medium hover:bg-[#eff6ff]">🔄 還原預設範例</button>
+                        <span class="text">示範體驗：以下為測試假資料</span>
+                        <button type="button" onclick="resetDemoExperience()" class="px-3 py-1 rounded-full bg-white border border-[#93c5fd] text-[#1e3a5f] text-xs font-medium hover:bg-[#eff6ff]">還原預設範例</button>
                     </div>
                     <div class="flex justify-between items-center flex-wrap gap-3 mb-4">
                         <div>
@@ -719,14 +718,12 @@
 
         <div id="view-pets" class="mt-6 bg-white rounded-3xl shadow-xl overflow-hidden">
             <div class="p-6 border-b">
-                <div id="homeQuotaBar" class="home-quota-bar" onclick="openPaymentModal()">
-                    <span id="homeQuotaPets" class="home-quota-chip">毛孩配額: 0/0 隻</span>
-                    <span id="homeQuotaReports" class="home-quota-chip">病歷配額: 0/0 份</span>
-                    <span id="homeQuotaStatus" class="home-quota-status ok">剩餘 — 天</span>
-                    <button type="button" onclick="event.stopPropagation();openPaymentModal()" class="px-2.5 py-1 bg-[#10b981] text-white rounded-full text-xs font-semibold">續費/升級</button>
+                <div id="homeQuotaBar" class="home-quota-bar">
+                    <span id="homeQuotaStatus" class="home-quota-status ok">基礎版 有效期：—（尚餘 — 天）</span>
+                    <button type="button" onclick="openPaymentModal()" class="px-2.5 py-1 bg-[#10b981] text-white rounded-full text-xs font-semibold">續費/升級</button>
                 </div>
                 <div class="flex justify-between items-center flex-wrap gap-3 mb-2">
-                    <h2 class="text-xl font-bold text-gray-800">我的毛孩</h2>
+                    <h2 class="text-xl font-bold text-gray-800">我的毛孩 <span id="memberPetTitleCount" class="text-base font-semibold text-gray-500">(0/0隻)</span></h2>
                     <div class="flex gap-2 flex-wrap items-center">
                     <button type="button" onclick="openCaptureUpload(false)" class="btn-primary-pill">拍照／一鍵建檔</button>
                     <button id="memberAddPetBtn" onclick="openAddPetModal()" class="btn-secondary-pill">＋新增毛孩</button>
@@ -746,7 +743,8 @@
             </div>
             <div class="p-6 bg-gradient-to-r from-[#f0faf5]/30 to-white">
                 <div class="flex flex-wrap justify-between items-center mb-4 gap-3">
-                    <h3 class="text-lg font-bold text-gray-700"><i class="fa-regular fa-folder-open text-[#3da881] mr-2"></i><span id="memberSelectedPetName">病歷報告</span></h3>
+                    <h3 class="text-lg font-bold text-gray-700">我的病歷 <span id="memberReportTitleCount" class="text-base font-semibold text-gray-500">(0/0份)</span></h3>
+                    <span id="memberSelectedPetName" class="hidden"></span>
                     <span id="memberReportCapacity" class="hidden"></span>
                     <div class="flex gap-2 flex-wrap">
                         <button id="memberUploadReportBtn" onclick="openUploadModal()" class="btn-secondary-pill">＋ 上傳報告</button>
@@ -1539,11 +1537,10 @@
             </div>
             <div id="reportDetailContent" class="report-detail-content"></div>
             <div class="flex flex-wrap gap-2.5 mt-4">
+                <button id="detailCopyBtn" class="flex-1 min-w-[70px] py-2.5 border border-gray-300 text-gray-600 rounded-2xl font-medium text-sm hover:bg-gray-50 transition">複製文字</button>
                 <button id="detailEditBtn" class="flex-1 min-w-[70px] py-2.5 border border-blue-400 text-blue-600 rounded-2xl font-medium text-sm hover:bg-blue-50 transition">編輯</button>
-                <button id="detailCopyBtn" class="flex-1 min-w-[70px] py-2.5 border border-gray-400 text-gray-600 rounded-2xl font-medium text-sm hover:bg-gray-50 transition">複製文字</button>
-                <button id="detailDownloadBtn" class="flex-1 min-w-[70px] py-2.5 border border-[#3da881] text-[#3da881] rounded-2xl font-medium text-sm hover:bg-[#e8f5ef] transition"><i class="fa-solid fa-download mr-1"></i>下載原檔</button>
+                <button type="button" id="detailCloseBtn" onclick="closeReportDetailModal()" class="flex-1 min-w-[70px] py-2.5 bg-[#6b7280] text-white rounded-2xl font-medium text-sm hover:bg-[#4b5563] transition">關閉</button>
             </div>
-            <button onclick="closeReportDetailModal()" class="block mx-auto mt-3 px-6 py-1.5 border border-gray-300 rounded-full text-gray-500 text-sm hover:bg-gray-50 transition">關閉</button>
         </div>
     </div>
 
@@ -1553,7 +1550,6 @@
             <div class="flex justify-between items-center mb-4">
                 <h3 id="attachmentPreviewTitle" class="text-lg font-bold text-gray-800">附件預覽</h3>
                 <div class="flex gap-2">
-                    <button type="button" id="attachmentDownloadBtn" onclick="event.preventDefault();event.stopPropagation();downloadCurrentAttachment(event)" class="px-4 py-1.5 bg-[#3da881] text-white rounded-full text-sm font-medium hover:bg-[#2d8f6f] transition"><i class="fa-solid fa-download mr-1"></i>下載</button>
                     <i onclick="closeAttachmentPreview()" class="fa-solid fa-xmark text-2xl cursor-pointer text-gray-400 hover:text-gray-600"></i>
                 </div>
             </div>
@@ -5437,17 +5433,16 @@
             var pet = pets.find(function(p) { return p.id === petId; });
             
             var filesHtml = '';
-            var fileList = report.files || report.attachments || [];
+            var fileList = reportAttachList(report);
             if (fileList.length > 0) {
                 filesHtml = '<div class="flex flex-col gap-2 mt-2">';
                 fileList.forEach(function(f, idx) {
+                    cacheAttachment(petId, f);
                     var name = fileDisplayName(f);
-                    var low = name.toLowerCase();
-                    var isPdf = low.endsWith('.pdf');
-                    var isImage = /\.(jpe?g|png|webp|gif)$/i.test(low);
-                    var icon = isPdf ? 'fa-file-pdf' : (isImage ? 'fa-file-image' : 'fa-file');
-                    var color = isPdf ? 'text-red-500' : (isImage ? 'text-green-500' : 'text-gray-500');
-                    var label = isPdf ? 'PDF' : (isImage ? '圖片' : '檔案');
+                    var kind = attachKind(f);
+                    var icon = kind === 'pdf' ? 'fa-file-pdf' : (kind === 'image' ? 'fa-file-image' : 'fa-file');
+                    var color = kind === 'pdf' ? 'text-red-500' : (kind === 'image' ? 'text-green-500' : 'text-gray-500');
+                    var label = kind === 'pdf' ? 'PDF' : (kind === 'image' ? '圖片' : '檔案');
                     filesHtml += '<div class="flex items-center justify-between gap-2 bg-white border border-gray-100 rounded-xl px-3 py-2">';
                     filesHtml += '<button type="button" class="attachment-preview-btn flex items-center gap-2 text-left flex-1 min-w-0" data-file-index="' + idx + '">';
                     filesHtml += '<i class="fa-regular ' + icon + ' ' + color + '"></i>';
@@ -5483,17 +5478,8 @@
                     report.description + '\n\n📎 附件: ' + (report.files || []).join(', ');
                 navigator.clipboard.writeText(text).then(function() { showToast('報告內容已複製到剪貼簿！', 'success'); });
             };
-            var detailDl = document.getElementById('detailDownloadBtn');
-            if (detailDl) {
-                detailDl.onclick = function(ev) {
-                    if (ev) ev.preventDefault();
-                    var files = report.files || report.attachments || [];
-                    if (!files.length) return;
-                    files.forEach(function(f, i) {
-                        setTimeout(function() { downloadAttachmentSmart(f, petId); }, i * 350);
-                    });
-                };
-            }
+            var closeBtn = document.getElementById('detailCloseBtn');
+            if (closeBtn && closeBtn.focus) setTimeout(function(){ closeBtn.focus(); }, 30);
             var box = document.getElementById('reportDetailContent');
             if (box) {
                 box.querySelectorAll('.attachment-download-btn').forEach(function(btn) {
@@ -5501,7 +5487,7 @@
                         ev.preventDefault();
                         ev.stopPropagation();
                         var idx = parseInt(btn.getAttribute('data-file-index'), 10);
-                        var files = report.files || report.attachments || [];
+                        var files = reportAttachList(report);
                         if (!isNaN(idx) && files[idx] != null) downloadAttachmentSmart(files[idx], petId);
                     });
                 });
@@ -5510,12 +5496,12 @@
                         ev.preventDefault();
                         ev.stopPropagation();
                         var idx = parseInt(btn.getAttribute('data-file-index'), 10);
-                        var files = report.files || report.attachments || [];
+                        var files = reportAttachList(report);
                         var f = files[idx];
                         if (f == null) return;
                         currentAttachmentFile = fileDisplayName(f);
                         currentAttachmentPetId = petId;
-                        previewAttachment(currentAttachmentFile, petId);
+                        previewAttachment(f, petId);
                     });
                 });
             }
@@ -5528,6 +5514,46 @@
             }
             return f.name || f.filename || f.fileName || 'attachment';
         }
+        var attachmentBlobCache = {};
+        function attachCacheKey(petId, name) { return String(petId || '') + '|' + String(name || ''); }
+        function reportAttachList(report) {
+            if (!report) return [];
+            var raw = report.attachments && report.attachments.length ? report.attachments : (report.files || []);
+            return raw.slice();
+        }
+        function attachKind(f) {
+            var name = fileDisplayName(f).toLowerCase();
+            var type = (f && f.type) || '';
+            if (/\.pdf$/i.test(name) || type === 'application/pdf' || (typeof f === 'string' && f.indexOf('application/pdf') !== -1)) return 'pdf';
+            if (/\.(jpe?g|png|webp|gif|heic)$/i.test(name) || /^image\//.test(type)) return 'image';
+            return 'file';
+        }
+        function cacheAttachment(petId, fileObj) {
+            var name = fileDisplayName(fileObj);
+            var rec = attachmentBlobCache[attachCacheKey(petId, name)] || { name: name };
+            if (fileObj instanceof Blob) rec.blob = fileObj;
+            if (typeof fileObj === 'string' && isRealFileUrl(fileObj)) rec.data = fileObj;
+            if (fileObj && typeof fileObj === 'object') {
+                rec.data = fileObj.data || fileObj.dataUrl || fileObj.dataURL || fileObj.base64 || rec.data;
+                rec.url = fileObj.url || fileObj.src || rec.url;
+                if (fileObj.blob instanceof Blob) rec.blob = fileObj.blob;
+            }
+            attachmentBlobCache[attachCacheKey(petId, name)] = rec;
+            return rec;
+        }
+        function pickAttachPayload(fileObj, petId) {
+            if (fileObj instanceof Blob) return fileObj;
+            if (typeof fileObj === 'string' && isRealFileUrl(fileObj)) return fileObj;
+            if (fileObj && typeof fileObj === 'object') {
+                var d = fileObj.data || fileObj.dataUrl || fileObj.dataURL || fileObj.base64 || fileObj.url || fileObj.src;
+                if (d) return d;
+                if (fileObj.blob instanceof Blob) return fileObj.blob;
+            }
+            var name = fileDisplayName(fileObj);
+            var cached = attachmentBlobCache[attachCacheKey(petId, name)];
+            if (cached) return cached.data || cached.url || cached.blob || '';
+            return findLocalAttachmentData(name, petId) || '';
+        }
 
         function closeReportDetailModal() {
             document.getElementById('reportDetailModal').classList.remove('show');
@@ -5535,6 +5561,14 @@
             if (lockSel) lockSel.classList.remove('demo-lock-select');
             window.demoDetailOpen = false;
         }
+        document.addEventListener('keydown', function(ev) {
+            var modal = document.getElementById('reportDetailModal');
+            if (!modal || !modal.classList.contains('show')) return;
+            if (ev.key === 'Escape' || ev.key === 'Enter') {
+                ev.preventDefault();
+                closeReportDetailModal();
+            }
+        });
 
         // ================================================================
         // Storage 路徑：新檔用「寵物名_ID」，舊檔仍可用純 ID
@@ -5647,15 +5681,15 @@
         function downloadFromStorageRef(ref, filename) {
             if (ref && typeof ref.getBytes === 'function') {
                 return ref.getBytes(25 * 1024 * 1024).then(function(buf) {
-                    saveBlobToDevice(new Blob([buf]), filename);
+                    return blobToDataUrl(new Blob([buf])).then(function(url) { downloadFileHelper(url, filename); });
                 });
             }
             return ref.getDownloadURL().then(function(url) {
                 return fetch(url).then(function(res) {
                     if (!res.ok) throw new Error('fetch fail');
                     return res.blob();
-                }).then(function(blob) {
-                    saveBlobToDevice(blob, filename);
+                }).then(blobToDataUrl).then(function(dataUrl) {
+                    downloadFileHelper(dataUrl, filename);
                 });
             });
         }
@@ -5689,17 +5723,36 @@
         function isRealFileUrl(src) {
             return typeof src === 'string' && /^(blob:|data:|https?:\/\/)/i.test(src);
         }
+        function downloadFileHelper(fileData, fileName) {
+            if (!fileData || !isRealFileUrl(fileData)) {
+                alert('找不到檔案內容！');
+                return;
+            }
+            try {
+                var a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = fileData;
+                a.download = fileName || 'download';
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(function() { if (a.parentNode) a.parentNode.removeChild(a); }, 1000);
+            } catch (e) {
+                try { window.open(fileData, '_blank'); } catch (e2) {}
+            }
+        }
         function triggerAnchorDownload(href, filename) {
             if (!isRealFileUrl(href)) return false;
-            var a = document.createElement('a');
-            a.href = href;
-            a.download = filename || 'download';
-            a.rel = 'noopener';
-            a.style.display = 'none';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            downloadFileHelper(href, filename);
             return true;
+        }
+        function blobToDataUrl(blob) {
+            return new Promise(function(resolve) {
+                if (!(blob instanceof Blob)) { resolve(''); return; }
+                var reader = new FileReader();
+                reader.onload = function() { resolve(reader.result || ''); };
+                reader.onerror = function() { resolve(''); };
+                reader.readAsDataURL(blob);
+            });
         }
         function dataToBlobUrl(src) {
             if (!src) return Promise.resolve('');
@@ -5716,53 +5769,82 @@
         }
         function downloadAttachmentSmart(file, petId) {
             var name = fileDisplayName(file);
-            var local = (typeof file === 'string')
-                ? findLocalAttachmentData(file, petId)
-                : (file && (file.dataUrl || file.dataURL || file.base64 || file.url || file.src || file.blob));
-            return dataToBlobUrl(local).then(function(url) {
-                if (url && triggerAnchorDownload(url, name)) return;
-                return downloadFile(name, petId);
-            }).catch(function() {});
+            cacheAttachment(petId, file);
+            var local = pickAttachPayload(file, petId);
+            if (local instanceof Blob) {
+                return blobToDataUrl(local).then(function(url) { downloadFileHelper(url, name); });
+            }
+            if (isRealFileUrl(local)) {
+                if (/^data:/i.test(local)) { downloadFileHelper(local, name); return Promise.resolve(); }
+                return fetch(local).then(function(r) { return r.blob(); }).then(blobToDataUrl).then(function(url) {
+                    downloadFileHelper(url || local, name);
+                }).catch(function() { downloadFileHelper(local, name); });
+            }
+            if (storage && petId && name) {
+                return getReportDownloadURL(petId, name).then(function(url) {
+                    return fetch(url).then(function(r) { return r.blob(); }).then(blobToDataUrl).then(function(dataUrl) {
+                        cacheAttachment(petId, { name: name, data: dataUrl, url: url });
+                        downloadFileHelper(dataUrl || url, name);
+                    });
+                }).catch(function() { return downloadFile(name, petId); });
+            }
+            return downloadFile(name, petId);
         }
         function downloadFile(filename, petId) {
             petId = petId || selectedPetId || memberSelectedPetId;
             var local = findLocalAttachmentData(filename, petId);
             if (local) {
-                triggerAnchorDownload(local, filename);
+                if (local instanceof Blob) return blobToDataUrl(local).then(function(url) { downloadFileHelper(url, filename); });
+                if (isRealFileUrl(local)) { downloadFileHelper(local, filename); return Promise.resolve(); }
+            }
+            if (!storage || !petId || petId === 'all') {
+                alert('找不到檔案內容！');
                 return Promise.resolve();
             }
-            if (!storage || !petId || petId === 'all') return Promise.resolve();
             var refNew = storage.ref(reportStoragePath(petId, filename, false));
             var refOld = storage.ref(reportStoragePath(petId, filename, true));
             return downloadFromStorageRef(refNew, filename).catch(function() {
                 return downloadFromStorageRef(refOld, filename);
-            }).catch(function() { return Promise.resolve(); });
+            }).catch(function() {
+                alert('找不到檔案內容！');
+            });
         }
 
         // ================================================================
         // 附件預覽（會員版）
         // ================================================================
-        function previewAttachment(filename, petId) {
+        function showAttachmentPreview(url, filename) {
+            var container = document.getElementById('attachmentPreviewContainer');
+            if (!container) return;
+            var low = String(filename || '').toLowerCase();
+            var isPdf = low.endsWith('.pdf') || (typeof url === 'string' && url.indexOf('application/pdf') !== -1);
+            var isImage = /\.(jpe?g|png|webp|gif)$/i.test(low) || (typeof url === 'string' && url.indexOf('image/') !== -1);
+            if (isImage) {
+                container.innerHTML = '<img src="' + url + '" alt="" class="w-full max-h-[75vh] object-contain rounded-xl">';
+            } else if (isPdf) {
+                container.innerHTML = '<iframe src="' + url + '" class="w-full h-[75vh] rounded-xl border-0"></iframe>';
+            } else {
+                container.innerHTML = '<div class="text-center py-8"><i class="fa-regular fa-file text-4xl text-gray-400"></i><p class="text-sm text-gray-500 mt-2">此檔案類型未能預覽</p></div>';
+            }
+        }
+        function previewAttachment(fileOrName, petId) {
+            var filename = fileDisplayName(fileOrName);
             currentAttachmentFile = filename;
             currentAttachmentPetId = petId;
             var container = document.getElementById('attachmentPreviewContainer');
             var title = document.getElementById('attachmentPreviewTitle');
-            title.textContent = '📎 ' + filename;
-            container.innerHTML = '<div class="text-center py-8 text-gray-400"><i class="fa-solid fa-spinner fa-spin text-2xl"></i><br><span class="text-sm">載入中...</span></div>';
+            if (title) title.textContent = filename || '附件預覽';
+            if (container) container.innerHTML = '<div class="text-center py-8 text-gray-400"><i class="fa-solid fa-spinner fa-spin text-2xl"></i><br><span class="text-sm">載入中...</span></div>';
             bringAttachmentPreviewFront();
-
-            getReportDownloadURL(petId, filename).then(function(url) {
-                var isPdf = filename.toLowerCase().endsWith('.pdf');
-                var isImage = filename.toLowerCase().endsWith('.jpg') || filename.toLowerCase().endsWith('.jpeg') || filename.toLowerCase().endsWith('.png');
-                if (isImage) {
-                    container.innerHTML = '<img src="' + url + '" alt="' + filename + '" class="w-full max-h-[75vh] object-contain rounded-xl">';
-                } else if (isPdf) {
-                    container.innerHTML = '<iframe src="' + url + '" class="w-full h-[75vh] rounded-xl border-0"></iframe>';
-                } else {
-                    container.innerHTML = '<div class="text-center py-8"><i class="fa-regular fa-file text-4xl text-gray-400"></i><p class="text-sm text-gray-500 mt-2">預覽不支援此檔案類型<br><a href="' + url + '" target="_blank" class="text-[#2d8f6f] underline">按此下載</a></p></div>';
-                }
-            }).catch(function(err) {
-                container.innerHTML = '<div class="text-center py-8 text-red-400"><i class="fa-regular fa-circle-xmark text-3xl"></i><p class="text-sm mt-2">無法載入檔案：' + filename + '</p></div>';
+            var local = pickAttachPayload(fileOrName, petId);
+            var ready = Promise.resolve(local);
+            if (local instanceof Blob) ready = Promise.resolve(URL.createObjectURL(local));
+            else if (!isRealFileUrl(local) && storage && petId) ready = getReportDownloadURL(petId, filename);
+            ready.then(function(url) {
+                if (!isRealFileUrl(url)) throw new Error('no url');
+                showAttachmentPreview(url, filename);
+            }).catch(function() {
+                if (container) container.innerHTML = '<div class="text-center py-8 text-gray-500"><p class="text-sm">未能預覽此附件</p></div>';
             });
         }
 
@@ -6714,7 +6796,9 @@
             var doctor = f.doctor || '';
             var amount = f.amount || '';
             var desc = f.notes || '';
-            var files = pendingCaptureFile ? [pendingCaptureFile.name] : ((uploadedFiles || []).map(function(x){ return x.name || x; }));
+            var rawFiles = pendingCaptureFile ? [pendingCaptureFile] : (uploadedFiles || []).slice();
+            rawFiles.forEach(function(f) { cacheAttachment(petId, f); });
+            var files = rawFiles.map(function(x){ return x.name || x; });
             if (demoUploadMode) {
                 var dp = (demoPets || []).find(function(p) { return p.id === petId; });
                 demoReportsData.push({ id: 'demo_r_' + Date.now(), petId: petId, petName: (dp && dp.name) || lastOcrPetName, title: title, date: date, desc: desc, description: desc, clinic: clinic, doctor: doctor, amount: amount, files: files });
@@ -6797,15 +6881,22 @@
                     var amount = (document.getElementById('reportAmount') && document.getElementById('reportAmount').value.trim()) || '';
                     var files = Array.isArray(uploadedFiles) ? uploadedFiles.slice() : [];
                     var fileNames = files.map(function(f) { return f.name; });
-                    var newReport = { id: generateId(), title: title, date: date, description: desc, clinic: clinic, doctor: doctor, amount: amount, files: fileNames, createdAt: new Date(), petId: target, petName: ((pets || []).find(function(p){ return p.id === target; }) || {}).name || lastOcrPetName || '' };
+                    files.forEach(function(f) { cacheAttachment(target, f); });
+                    var newReport = { id: generateId(), title: title, date: date, description: desc, clinic: clinic, doctor: doctor, amount: amount, files: fileNames, attachments: files.map(function(f){ return { name: f.name || fileDisplayName(f) }; }), createdAt: new Date(), petId: target, petName: ((pets || []).find(function(p){ return p.id === target; }) || {}).name || lastOcrPetName || '' };
+                    files.forEach(function(f) {
+                        if (f instanceof Blob) blobToDataUrl(f).then(function(d) { cacheAttachment(target, { name: f.name, data: d }); });
+                    });
                     var fileWarn = '';
                     var uploadOne = function(file) {
                         if (!storage || !isAllowedReportFile(file)) {
                             fileWarn = '部分附件未上載';
                             return Promise.resolve();
                         }
-                        return storage.ref(reportStoragePath(target, file.name, false)).put(file).then(function() {
+                        return storage.ref(reportStoragePath(target, file.name, false)).put(file).then(function(snap) {
                             addUsedStorage(file.size || 0);
+                            return snap.ref.getDownloadURL();
+                        }).then(function(url) {
+                            cacheAttachment(target, { name: file.name, url: url, data: url });
                         }).catch(function(err) {
                             fileWarn = '附件上載失敗：' + (err.message || err);
                         });
@@ -7725,31 +7816,33 @@
             updateHomeQuotaBar();
         }
         function updateHomeQuotaBar() {
-            var petsEl = document.getElementById('homeQuotaPets');
-            var repsEl = document.getElementById('homeQuotaReports');
             var stEl = document.getElementById('homeQuotaStatus');
             var lim = getPlanLimits() || {};
             var petMax = (typeof getEffectivePetLimit === 'function' ? getEffectivePetLimit() : lim.petLimit) || lim.petLimit || 1;
             var reportMax = lim.yearlyReportLimit || lim.monthlyReportLimit || 50;
             var petUsed = (pets || []).filter(function(p){ return !p.is_deleted && !p.isDeleted; }).length;
             var reportUsed = typeof getTotalReports === 'function' ? getTotalReports() : 0;
-            if (petsEl) petsEl.textContent = '毛孩配額: ' + petUsed + '/' + petMax + ' 隻';
-            if (repsEl) repsEl.textContent = '病歷配額: ' + reportUsed + '/' + reportMax + ' 份';
+            var petTitle = document.getElementById('memberPetTitleCount');
+            var reportTitle = document.getElementById('memberReportTitleCount');
+            if (petTitle) petTitle.textContent = '(' + petUsed + '/' + petMax + '隻)';
+            if (reportTitle) reportTitle.textContent = '(' + reportUsed + '/' + reportMax + '份)';
             if (!stEl) return;
             var days = 0;
             if (hasPaid && planEndDate) days = Math.max(0, Math.floor((planEndDate - new Date()) / (1000*60*60*24)));
             else if (trialEndDate) days = getTrialDaysLeft();
             var name = planBadgeText((lim.label || '方案'));
             stEl.classList.remove('ok', 'warn', 'expired');
+            var end = hasPaid && planEndDate ? planEndDate : trialEndDate;
+            var endStr = end ? (end.getFullYear() + '/' + ('0'+(end.getMonth()+1)).slice(-2) + '/' + ('0'+end.getDate()).slice(-2)) : '—';
             if (isTrialOver()) {
                 stEl.classList.add('expired');
                 stEl.textContent = '方案已到期，點此續費解鎖完整功能';
-            } else if (days <= 3) {
+            } else if (!hasPaid && days <= 3) {
                 stEl.classList.add('warn');
-                stEl.textContent = '試用將於 ' + days + ' 天後結束';
+                stEl.textContent = name + ' 有效期：' + endStr + '（尚餘 ' + days + ' 天）';
             } else {
                 stEl.classList.add('ok');
-                stEl.textContent = name + '剩餘 ' + days + ' 天';
+                stEl.textContent = name + ' 有效期：' + endStr + '（尚餘 ' + days + ' 天）';
             }
         }
 
@@ -10012,7 +10105,7 @@
                     var label = isPdf ? 'PDF' : (isImage ? '圖片' : '檔案');
                     var safe = String(f).replace(/'/g, "\\'");
                     filesHtml += '<div class="flex items-center justify-between gap-2 bg-white border border-gray-100 rounded-xl px-3 py-2">';
-                    filesHtml += '<button type="button" class="flex items-center gap-2 text-left flex-1 min-w-0" onclick="openDemoLockModal(\'download\')">';
+                    filesHtml += '<button type="button" class="flex items-center gap-2 text-left flex-1 min-w-0" onclick="previewDemoFile(\'' + safe + '\')">';
                     filesHtml += '<i class="fa-regular ' + icon + ' ' + color + '"></i>';
                     filesHtml += '<span class="text-sm text-gray-800 truncate">' + f + '</span>';
                     filesHtml += '<span class="text-xs text-gray-400">(' + label + ')</span>';
@@ -10053,7 +10146,6 @@
                 if (rid) openEditReportDemoById(rid);
             };
             document.getElementById('detailCopyBtn').onclick = function() { openDemoLockModal('copy'); };
-            document.getElementById('detailDownloadBtn').onclick = function() { openDemoLockModal('download'); };
         }
 
         function previewDemoFile(filename) {
@@ -10081,8 +10173,6 @@
             }
             currentAttachmentFile = filename;
             currentAttachmentPetId = null;
-            var dlBtn = document.getElementById('attachmentDownloadBtn');
-            if (dlBtn) dlBtn.onclick = function(e) { if (e) e.stopPropagation(); bringAttachmentPreviewFront(); openDemoLockModal('download'); };
             bringAttachmentPreviewFront();
         }
 

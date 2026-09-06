@@ -1468,6 +1468,8 @@
                 <input id="ocrPreviewDoctor" type="text" placeholder="例如：Dr. Kwan Hoi Ling Helen" class="w-full px-4 py-2.5 border rounded-2xl mb-2.5 text-sm">
                 <label class="text-xs text-gray-500 mb-1 block">日期</label>
                 <input id="ocrPreviewDate" type="date" class="w-full px-4 py-2.5 border rounded-2xl mb-2.5 text-sm">
+                <label class="text-xs text-gray-500 mb-1 block">總金額</label>
+                <input id="ocrPreviewAmount" type="text" placeholder="例如：120.00" class="w-full px-4 py-2.5 border rounded-2xl mb-2.5 text-sm">
                 <label class="text-xs text-gray-500 mb-1 block">詳細內容／備註</label>
                 <textarea id="ocrPreviewNotes" rows="7" placeholder="診療項目、藥物、異常指標或診斷摘要" class="w-full px-4 py-2.5 border rounded-2xl mb-3 text-sm"></textarea>
             </div>
@@ -2729,7 +2731,9 @@
             if (pt) pt.value = fields.title || '看診紀錄';
             if (pc) pc.value = fields.clinic || '';
             if (pdoc) pdoc.value = fields.doctor || '';
-            if (pd) pd.value = fields.date || new Date().toISOString().slice(0, 10);
+            if (pd) pd.value = fields.date || '';
+            var pamt = document.getElementById('ocrPreviewAmount');
+            if (pamt) pamt.value = fields.amount || '';
             if (pnotes) pnotes.value = fields.notes || '';
         }
         function closeAllModals() {
@@ -6903,10 +6907,11 @@
             var title = ((document.getElementById('ocrPreviewTitle') || {}).value || '').trim() || (pendingOcrFields && pendingOcrFields.title) || 'Consultation';
             var clinic = ((document.getElementById('ocrPreviewClinic') || {}).value || '').trim();
             var doctor = ((document.getElementById('ocrPreviewDoctor') || {}).value || '').trim();
-            var date = ((document.getElementById('ocrPreviewDate') || {}).value || '').trim() || new Date().toISOString().slice(0, 10);
+            var date = ((document.getElementById('ocrPreviewDate') || {}).value || '').trim();
             var notes = ((document.getElementById('ocrPreviewNotes') || {}).value || '').trim();
+            var amount = ((document.getElementById('ocrPreviewAmount') || {}).value || '').trim();
             lastOcrPetName = name || '未命名毛孩';
-            pendingOcrFields = Object.assign({}, pendingOcrFields || {}, { petName: lastOcrPetName, title: title, clinic: clinic, doctor: doctor, date: date, notes: notes });
+            pendingOcrFields = Object.assign({}, pendingOcrFields || {}, { petName: lastOcrPetName, title: title, clinic: clinic, doctor: doctor, date: date, notes: notes, amount: amount });
             function afterPet(id) {
                 if (demoUploadMode) { demoSelectedPetId = id; }
                 else { selectedPetId = id; memberSelectedPetId = id; }
@@ -7216,16 +7221,16 @@
                 var buf = await file.arrayBuffer();
                 var pdf = await lib.getDocument({ data: buf }).promise;
                 var page = await pdf.getPage(1);
-                var vp = page.getViewport({ scale: 1.6 });
+                var vp = page.getViewport({ scale: 2.2 });
                 var canvas = document.createElement('canvas');
                 canvas.width = vp.width;
                 canvas.height = vp.height;
                 await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
-                return canvas.toDataURL('image/jpeg', 0.82);
+                return canvas.toDataURL('image/jpeg', 0.92);
             }
             var ready = isHeicFile(file) ? await convertHeicIfNeeded(file) : file;
             if (typeof compressImageToFile === 'function') {
-                try { ready = await compressImageToFile(ready, 1600, 0.8); } catch (e) {}
+                try { ready = await compressImageToFile(ready, 2000, 0.9); } catch (e) {}
             }
             return await blobToDataUrl(ready);
         }
@@ -7234,16 +7239,12 @@
             if (!apiKey) return null;
             if (!base64Image) return null;
             var cleanBase64 = String(base64Image).replace(/^data:image\/(png|jpeg|jpg|webp);base64,/, '');
-            var promptText = '請分析這張獸醫診所收據/報告圖片，以嚴格的 JSON 格式回傳（勿加任何 markdown 標籤）：\n' +
-                '{\n' +
-                '  "title": "診療主題/看診項目",\n' +
-                '  "date": "YYYY-MM-DD",\n' +
-                '  "petName": "寵物名字",\n' +
-                '  "clinic": "診所完整名稱",\n' +
-                '  "doctor": "醫生姓名",\n' +
-                '  "details": "詳細診療與藥物明細清單",\n' +
-                '  "totalAmount": "總金額數字"\n' +
-                '}';
+            var promptText = '你是一個專業的獸醫診所收據/病歷分析師。請仔細分析這張圖片，並嚴格只回傳一個 JSON（不要 Markdown）。\n' +
+                '欄位：petName, title, clinicName, doctorName, date, totalAmount, details。\n' +
+                'clinicName 必須是完整診所名，包含 Hospital 或 Clinic，例如 Jack\'s Veterinary Hospital。\n' +
+                'date 必須 YYYY-MM-DD。若圖片是 22/10/2023，轉成 2023-10-22。不要用今天日期。\n' +
+                'details 必須列出 Description 欄全部項目與金額，不可只取第一行。例如 CONSULTATION、PIMOBENDAN、ENALAPRIL、CLOPIDOGREL 都要列出。\n' +
+                '格式：\\n【診療 / 手術項目】\\n- 項目  $金額\\n【處方藥物】\\n- 藥名  $金額';
             var models = ['gemini-flash-latest', 'gemini-2.5-flash', 'gemini-2.0-flash'];
             var lastErr = null;
             for (var i = 0; i < models.length; i++) {
@@ -7296,15 +7297,20 @@
             var rawAmt = json.totalAmount != null ? json.totalAmount : json.total_amount;
             var amount = rawAmt != null ? String(rawAmt).replace(/[^\d.]/g, '') : '';
             var date = String(json.date || '').replace(/\./g, '-').replace(/\//g, '-');
-            if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(date)) {
+            if (/^\d{1,2}-\d{1,2}-\d{4}$/.test(date)) {
+                var q = date.split('-');
+                date = q[2] + '-' + ('0' + q[1]).slice(-2) + '-' + ('0' + q[0]).slice(-2);
+            } else if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(date)) {
                 var p = date.split('-');
                 date = p[0] + '-' + ('0' + p[1]).slice(-2) + '-' + ('0' + p[2]).slice(-2);
+            } else {
+                date = '';
             }
             return {
-                clinic: String(json.clinic || json.clinic_name || '').trim(),
+                clinic: String(json.clinicName || json.clinic || json.clinic_name || '').trim(),
                 date: date,
                 petName: String(json.petName || json.pet_name || json.pet || '').trim(),
-                doctor: String(json.doctor || json.doctor_name || '').trim(),
+                doctor: String(json.doctorName || json.doctor || json.doctor_name || '').trim(),
                 amount: amount,
                 title: String(json.title || '').trim(),
                 notes: notes

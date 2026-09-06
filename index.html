@@ -1454,13 +1454,20 @@
         </div>
     </div>
     <div id="ocrPreviewModal" class="modal" style="z-index:1200;">
-        <div class="modal-content fade-in" style="max-width:420px;">
-            <h3 class="text-lg font-bold text-[#2d8f6f] mb-1">預覽確認辨識結果</h3>
-            <p id="ocrPreviewSource" class="text-xs text-gray-400 mb-2"></p>
+        <div class="modal-content fade-in" style="max-width:420px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;">
+            <h3 class="text-lg font-bold text-[#2d8f6f] mb-1 shrink-0">預覽確認辨識結果</h3>
+            <p id="ocrPreviewSource" class="text-xs text-gray-400 mb-2 shrink-0"></p>
             <div id="ocrPreviewLoading" class="hidden text-center py-6 text-sm text-[#2d8f6f]">AI 解析中…</div>
-            <div id="ocrPreviewFields">
+            <div id="ocrPreviewFields" class="modal-body" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:8px;">
+                <div id="ocrPreviewThumbWrap" class="hidden mb-3">
+                    <img id="ocrPreviewThumb" alt="附件預覽" style="width:100%;max-height:140px;object-fit:contain;background:#f3f4f6;border-radius:12px;">
+                    <p id="ocrPreviewFileName" class="text-xs text-gray-500 mt-1 truncate"></p>
+                </div>
                 <label class="text-xs text-gray-500 mb-1 block">毛孩名字</label>
-                <input id="ocrPreviewPetName" type="text" placeholder="例如：茶茶" class="w-full px-4 py-2.5 border rounded-2xl mb-2.5 text-sm">
+                <select id="ocrPreviewPetName" class="w-full px-4 py-2.5 border rounded-2xl mb-2.5 text-sm bg-white" onchange="toggleOcrPreviewNewPetInput()">
+                    <option value="__new__">+ 新增毛孩</option>
+                </select>
+                <input id="ocrPreviewNewPetName" type="text" placeholder="請輸入新毛孩名字" class="hidden w-full px-4 py-2.5 border rounded-2xl mb-2.5 text-sm">
                 <label class="text-xs text-gray-500 mb-1 block">病歷標題</label>
                 <input id="ocrPreviewTitle" type="text" placeholder="例如：Consultation" class="w-full px-4 py-2.5 border rounded-2xl mb-2.5 text-sm">
                 <label class="text-xs text-gray-500 mb-1 block">診所名稱</label>
@@ -1472,9 +1479,9 @@
                 <label class="text-xs text-gray-500 mb-1 block">總金額</label>
                 <input id="ocrPreviewAmount" type="text" placeholder="例如：120.00" class="w-full px-4 py-2.5 border rounded-2xl mb-2.5 text-sm">
                 <label class="text-xs text-gray-500 mb-1 block">詳細內容／備註</label>
-                <textarea id="ocrPreviewNotes" rows="7" placeholder="診療項目、藥物、異常指標或診斷摘要" class="w-full px-4 py-2.5 border rounded-2xl mb-3 text-sm"></textarea>
+                <textarea id="ocrPreviewNotes" rows="6" placeholder="診療項目、藥物、異常指標或診斷摘要" class="w-full px-4 py-2.5 border rounded-2xl mb-3 text-sm"></textarea>
             </div>
-            <div class="flex gap-2">
+            <div class="modal-footer flex gap-2 shrink-0" style="position:sticky;bottom:0;background:#fff;z-index:20;padding-top:10px;box-shadow:0 -4px 10px rgba(0,0,0,0.05);">
                 <button type="button" onclick="closeOcrPreviewModal()" class="flex-1 py-2 border rounded-2xl text-sm">取消</button>
                 <button type="button" id="ocrPreviewOk" onclick="applyOcrPreviewConfirm()" class="flex-1 py-2 bg-[#3da881] text-white rounded-2xl text-sm">確認套用並儲存</button>
             </div>
@@ -2694,6 +2701,45 @@
             var fi = document.getElementById('petPhotoFile');
             if (fi) { fi.value = ''; fi.click(); }
         }
+        function showOcrPreviewThumb(att) {
+            var wrap = document.getElementById('ocrPreviewThumbWrap');
+            var img = document.getElementById('ocrPreviewThumb');
+            var nm = document.getElementById('ocrPreviewFileName');
+            if (!wrap || !img) return;
+            if (att && att.data && String(att.data).indexOf('data:image') === 0) {
+                wrap.classList.remove('hidden');
+                img.src = att.data;
+                if (nm) nm.textContent = att.name || '';
+            } else if (att && att.name) {
+                wrap.classList.remove('hidden');
+                img.removeAttribute('src');
+                if (nm) nm.textContent = att.name + '（將一併儲存）';
+            } else {
+                wrap.classList.add('hidden');
+            }
+        }
+        function fileToAttachRecord(file) {
+            if (!file) return Promise.resolve(null);
+            if (file.data || file.dataUrl || file.dataURL) {
+                return Promise.resolve({
+                    name: file.name || fileDisplayName(file) || 'receipt.jpg',
+                    type: file.type || 'image/jpeg',
+                    data: file.data || file.dataUrl || file.dataURL
+                });
+            }
+            var blob = file instanceof Blob ? file : file.blob;
+            if (!blob) return Promise.resolve({ name: file.name || 'receipt.jpg', type: file.type || '', data: file.url || file.src || '' });
+            return blobToDataUrl(blob).then(function(d) {
+                return { name: file.name || 'receipt.jpg', type: file.type || blob.type || 'image/jpeg', data: d };
+            });
+        }
+        function syncCaptureToUploadForm(att) {
+            if (!att) return;
+            uploadedFiles = [att];
+            pendingCaptureFile = att;
+            if (typeof renderUploadedFileList === 'function') renderUploadedFileList();
+            showOcrPreviewThumb(att);
+        }
         function onCaptureFilePicked(ev) {
             var file = ev.target && ev.target.files && ev.target.files[0];
             if (!file) { captureAutoSaveMode = false; return; }
@@ -2705,9 +2751,12 @@
             ready.then(function(f) {
                 pendingCaptureFile = f;
                 uploadedFiles = [f];
-                return analyzeReceiptSmart(f).then(function(fields) {
-                    if (fields && (fields.clinic || fields.date || fields.notes || fields.petName || fields.amount)) return fields;
-                    return extractReportText(f).then(function(text) { return extractOcrFields(text || ''); });
+                return fileToAttachRecord(f).then(function(att) {
+                    if (att) syncCaptureToUploadForm(att);
+                    return analyzeReceiptSmart(f).then(function(fields) {
+                        if (fields && (fields.clinic || fields.date || fields.notes || fields.petName || fields.amount)) return fields;
+                        return extractReportText(f).then(function(text) { return extractOcrFields(text || ''); });
+                    });
                 });
             }).then(function(fields) {
                 pendingOcrFields = fields || {};
@@ -2716,19 +2765,17 @@
             }).catch(function() {
                 pendingOcrFields = {};
                 setOcrPreviewLoading(false);
-                showToast('未能自動辨識，請自行填寫', 'warning');
             });
         }
         function fillOcrPreviewFields(fields) {
             fields = fields || {};
             lastOcrPetName = cleanExtractedPetName(fields.petName || lastOcrPetName || '');
-            var pn = document.getElementById('ocrPreviewPetName');
+            fillOcrPreviewPetSelect(lastOcrPetName);
             var pt = document.getElementById('ocrPreviewTitle');
             var pc = document.getElementById('ocrPreviewClinic');
             var pdoc = document.getElementById('ocrPreviewDoctor');
             var pd = document.getElementById('ocrPreviewDate');
             var pnotes = document.getElementById('ocrPreviewNotes');
-            if (pn) pn.value = lastOcrPetName;
             if (pt) pt.value = fields.title || '看診紀錄';
             if (pc) pc.value = fields.clinic || '';
             if (pdoc) pdoc.value = fields.doctor || '';
@@ -6828,8 +6875,75 @@
             n = n.replace(/vet(?:erinarian)?/ig, ' ').replace(/醫生(?:姓名|名稱|名字)?/g, ' ');
             n = n.replace(/clinic(?:\s*name)?/ig, ' ').replace(/hospital/ig, ' ');
             n = n.replace(/診所(?:名稱|名字)?/g, ' ').replace(/動物醫院/g, ' ');
-            n = n.replace(/[:：,，]/g, ' ').replace(/[0-9]/g, ' ').replace(/\s+/g, ' ').trim();
-            return n.slice(0, 16);
+            n = n.replace(/[~～`'"“”‘’*_=+|\\\/#@!?;:：,，。.\-–—]+/g, ' ');
+            n = n.replace(/[0-9]/g, ' ').replace(/\s+/g, ' ').trim();
+            return n.slice(0, 24);
+        }
+        function normalizePetNameKey(raw) {
+            return String(raw || '').toLowerCase().replace(/[~～`'"“”‘’*_=+|\\\/#@!?;:：,，。.\-–—]/g, ' ').replace(/\s+/g, ' ').trim();
+        }
+        function compactPetNameKey(raw) {
+            return normalizePetNameKey(raw).replace(/\s+/g, '');
+        }
+        function currentPetListForOcr() {
+            return (typeof demoUploadMode !== 'undefined' && demoUploadMode) ? (demoPets || []) : (pets || []);
+        }
+        function findExistingPetByFuzzyName(hint) {
+            var cleaned = cleanExtractedPetName(hint);
+            var key = normalizePetNameKey(cleaned);
+            var compact = compactPetNameKey(cleaned);
+            if (!key && !compact) return null;
+            var list = currentPetListForOcr();
+            var exact = list.find(function(p) { return normalizePetNameKey(p.name) === key; });
+            if (exact) return exact;
+            return list.find(function(p) {
+                var pn = normalizePetNameKey(p.name);
+                var pc = compactPetNameKey(p.name);
+                if (!pn) return false;
+                if (key && (pn.indexOf(key) >= 0 || key.indexOf(pn) >= 0)) return true;
+                if (compact && pc && (pc.indexOf(compact) >= 0 || compact.indexOf(pc) >= 0)) return true;
+                var tokens = key.split(' ').filter(function(t){ return t.length >= 2; });
+                if (!tokens.length) return false;
+                return tokens.every(function(t){ return pn.indexOf(t) >= 0; });
+            }) || null;
+        }
+        function fillOcrPreviewPetSelect(hint) {
+            var sel = document.getElementById('ocrPreviewPetName');
+            var inp = document.getElementById('ocrPreviewNewPetName');
+            if (!sel) return;
+            var list = currentPetListForOcr();
+            var matched = findExistingPetByFuzzyName(hint);
+            var html = list.map(function(pet) {
+                return '<option value="' + pet.id + '"' + (matched && matched.id === pet.id ? ' selected' : '') + '>' + String(pet.name || '').replace(/</g, '') + '</option>';
+            }).join('');
+            html += '<option value="__new__"' + (matched ? '' : ' selected') + '>+ 新增毛孩</option>';
+            sel.innerHTML = html;
+            if (inp) {
+                inp.value = matched ? '' : (cleanExtractedPetName(hint) || '');
+            }
+            toggleOcrPreviewNewPetInput();
+            if (matched) lastOcrPetName = matched.name;
+        }
+        function toggleOcrPreviewNewPetInput() {
+            var sel = document.getElementById('ocrPreviewPetName');
+            var inp = document.getElementById('ocrPreviewNewPetName');
+            if (!inp) return;
+            var show = !sel || sel.value === '__new__';
+            inp.classList.toggle('hidden', !show);
+            if (show && !inp.value && lastOcrPetName) inp.value = lastOcrPetName;
+        }
+        function resolveOcrPreviewPetChoice() {
+            var sel = document.getElementById('ocrPreviewPetName');
+            var inp = document.getElementById('ocrPreviewNewPetName');
+            var list = currentPetListForOcr();
+            if (sel && sel.value && sel.value !== '__new__') {
+                var found = list.find(function(p){ return String(p.id) === String(sel.value); });
+                if (found) return { id: found.id, name: found.name, isNew: false };
+            }
+            var typed = cleanExtractedPetName((inp && inp.value) || lastOcrPetName || '');
+            var fuzzy = findExistingPetByFuzzyName(typed);
+            if (fuzzy) return { id: fuzzy.id, name: fuzzy.name, isNew: false };
+            return { id: '', name: typed || '未命名毛孩', isNew: true };
         }
         function fillUploadPetSelect() {
             var sel = document.getElementById('uploadPetSelect');
@@ -6889,7 +7003,7 @@
         }
         function ensureDemoPetByName(nameHint) {
             var name = cleanExtractedPetName(nameHint || lastOcrPetName) || '未命名毛孩';
-            var found = (demoPets || []).find(function(p) { return String(p.name || '').toLowerCase() === name.toLowerCase(); });
+            var found = findExistingPetByFuzzyName(name) || (demoPets || []).find(function(p) { return String(p.name || '').toLowerCase() === name.toLowerCase(); });
             if (found) return found.id;
             var newId = 'demo_' + Date.now();
             demoPets.push({ id: newId, name: name, species: '', breed: '', gender: '', age: '', shareCode: 'D' + String(Date.now()).slice(-5) });
@@ -6906,19 +7020,23 @@
             setOcrPreviewLoading(false);
         }
         function applyOcrPreviewConfirm() {
-            var name = cleanExtractedPetName((document.getElementById('ocrPreviewPetName') || {}).value || '');
+            var choice = resolveOcrPreviewPetChoice();
             var title = ((document.getElementById('ocrPreviewTitle') || {}).value || '').trim() || (pendingOcrFields && pendingOcrFields.title) || 'Consultation';
             var clinic = ((document.getElementById('ocrPreviewClinic') || {}).value || '').trim();
             var doctor = ((document.getElementById('ocrPreviewDoctor') || {}).value || '').trim();
             var date = ((document.getElementById('ocrPreviewDate') || {}).value || '').trim();
             var notes = ((document.getElementById('ocrPreviewNotes') || {}).value || '').trim();
             var amount = ((document.getElementById('ocrPreviewAmount') || {}).value || '').trim();
-            lastOcrPetName = name || '未命名毛孩';
+            lastOcrPetName = choice.name || '未命名毛孩';
             pendingOcrFields = Object.assign({}, pendingOcrFields || {}, { petName: lastOcrPetName, title: title, clinic: clinic, doctor: doctor, date: date, notes: notes, amount: amount });
             function afterPet(id) {
                 if (demoUploadMode) { demoSelectedPetId = id; }
                 else { selectedPetId = id; memberSelectedPetId = id; }
                 autoSaveOcrReport(id);
+            }
+            if (!choice.isNew && choice.id) {
+                afterPet(choice.id);
+                return;
             }
             if (demoUploadMode) afterPet(ensureDemoPetByName(lastOcrPetName));
             else ensurePetByName(lastOcrPetName).then(afterPet).catch(function(){ closeOcrPreviewModal(); showToast('未能建立毛孩', 'error'); });
@@ -6931,35 +7049,53 @@
             var doctor = f.doctor || '';
             var amount = f.amount || '';
             var desc = f.notes || '';
-            var rawFiles = pendingCaptureFile ? [pendingCaptureFile] : (uploadedFiles || []).slice();
-            rawFiles.forEach(function(f) { cacheAttachment(petId, f); });
-            var files = rawFiles.map(function(x){ return x.name || x; });
-            if (demoUploadMode) {
-                var dp = (demoPets || []).find(function(p) { return p.id === petId; });
-                demoReportsData.push({ id: 'demo_r_' + Date.now(), petId: petId, petName: (dp && dp.name) || lastOcrPetName, title: title, date: date, desc: desc, description: desc, clinic: clinic, doctor: doctor, amount: amount, files: files });
-                demoReportCount = demoReportsData.length;
-                persistDemoPetsLocal();
-                renderDemoPets(); renderDemoReports();
-            } else {
-                var pet = (pets || []).find(function(p) { return p.id === petId; });
-                var newReport = { id: generateId(), title: title, date: date, description: desc, clinic: clinic, doctor: doctor, amount: amount, files: files, createdAt: new Date(), petId: petId, petName: (pet && pet.name) || lastOcrPetName };
-                if (!petReports[petId]) petReports[petId] = [];
-                petReports[petId].unshift(newReport);
-                renderMemberPets(); renderMemberReports();
-                if (currentUser && currentUser.uid) {
-                    db.collection('users').doc(currentUser.uid).collection('pets').doc(petId).collection('reports').doc(newReport.id).set(newReport).catch(function(){});
-                    if (pendingCaptureFile && storage) storage.ref(reportStoragePath(petId, pendingCaptureFile.name, false)).put(pendingCaptureFile).catch(function(){});
+            var raw = pendingCaptureFile || (uploadedFiles && uploadedFiles[0]) || null;
+            fileToAttachRecord(raw).then(function(att) {
+                var files = att && att.name ? [att.name] : [];
+                var attachments = att ? [{ name: att.name, type: att.type || '', data: att.data || '' }] : [];
+                if (att) {
+                    uploadedFiles = [att];
+                    cacheAttachment(petId, att);
+                    if (typeof renderUploadedFileList === 'function') renderUploadedFileList();
                 }
-            }
-            captureAutoSaveMode = false;
-            pendingCaptureFile = null;
-            closeOcrPreviewModal();
-            if (typeof closeUploadModal === 'function') closeUploadModal();
-            showToast('已建立「' + lastOcrPetName + '」並歸檔病歷', 'success');
+                if (demoUploadMode) {
+                    var dp = (demoPets || []).find(function(p) { return p.id === petId; });
+                    demoReportsData.push({ id: 'demo_r_' + Date.now(), petId: petId, petName: (dp && dp.name) || lastOcrPetName, title: title, date: date, desc: desc, description: desc, clinic: clinic, doctor: doctor, amount: amount, files: files, attachments: attachments });
+                    demoReportCount = demoReportsData.length;
+                    persistDemoPetsLocal();
+                    renderDemoPets(); renderDemoReports();
+                } else {
+                    var pet = (pets || []).find(function(p) { return p.id === petId; });
+                    var newReport = { id: generateId(), title: title, date: date, description: desc, clinic: clinic, doctor: doctor, amount: amount, files: files, attachments: attachments, createdAt: new Date(), petId: petId, petName: (pet && pet.name) || lastOcrPetName };
+                    if (!petReports[petId]) petReports[petId] = [];
+                    petReports[petId].unshift(newReport);
+                    renderMemberPets(); renderMemberReports();
+                    if (currentUser && currentUser.uid) {
+                        var payload = Object.assign({}, newReport);
+                        if (payload.attachments && payload.attachments[0] && String(payload.attachments[0].data || '').length > 900000) {
+                            payload.attachments = payload.attachments.map(function(a){ return { name: a.name, type: a.type }; });
+                        }
+                        db.collection('users').doc(currentUser.uid).collection('pets').doc(petId).collection('reports').doc(newReport.id).set(payload).catch(function(){});
+                        var upBlob = (raw instanceof Blob) ? raw : null;
+                        if (!upBlob && att && att.data && att.data.indexOf('data:') === 0) {
+                            fetch(att.data).then(function(r){ return r.blob(); }).then(function(b){
+                                if (storage) storage.ref(reportStoragePath(petId, att.name, false)).put(b).catch(function(){});
+                            }).catch(function(){});
+                        } else if (upBlob && storage) {
+                            storage.ref(reportStoragePath(petId, att.name || upBlob.name, false)).put(upBlob).catch(function(){});
+                        }
+                    }
+                }
+                captureAutoSaveMode = false;
+                pendingCaptureFile = att || null;
+                closeOcrPreviewModal();
+                if (typeof closeUploadModal === 'function') closeUploadModal();
+                showToast('已建立「' + lastOcrPetName + '」並歸檔病歷', 'success');
+            });
         }
         function ensurePetByName(nameHint) {
             var name = cleanExtractedPetName(nameHint || lastOcrPetName) || '未命名毛孩';
-            var found = (pets || []).find(function(p) { return String(p.name || '').toLowerCase() === name.toLowerCase(); });
+            var found = findExistingPetByFuzzyName(name) || (pets || []).find(function(p) { return String(p.name || '').toLowerCase() === name.toLowerCase(); });
             if (found) return Promise.resolve(found.id);
             if (isPetQuotaFull()) return Promise.reject(new Error('QUOTA'));
             var uid = (currentUser && currentUser.uid) || (auth.currentUser && auth.currentUser.uid);

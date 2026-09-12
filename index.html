@@ -21,6 +21,15 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-C4N5N2JBMJ"></script>
+    <script>
+        window.GA4_MEASUREMENT_ID = 'G-C4N5N2JBMJ';
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){ dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', window.GA4_MEASUREMENT_ID, { send_page_view: true, anonymize_ip: true });
+    </script>
 
     <style>
         /* ===== 全域重置 ===== */
@@ -49,7 +58,17 @@
         .faq-modal-body { flex: 1 1 auto !important; min-height: 0; max-height: 80vh; overflow-y: auto !important; -webkit-overflow-scrolling: touch; padding-bottom: 24px !important; }
         .faq-modal-foot { flex: 0 0 auto; background: #fff; padding-top: 8px; }
         .modal-content-report { max-width: 700px; }
-        .modal-content-attachment { max-width: 700px; }
+        .modal-content-attachment { max-width: 700px; max-height: 90vh !important; overflow: hidden !important; display: flex !important; flex-direction: column !important; }
+        .attachment-preview-body { flex: 1 1 auto; min-height: 0; max-height: 60vh; overflow-y: auto !important; -webkit-overflow-scrolling: touch; }
+        .attachment-preview-body iframe, .attachment-preview-body embed, .attachment-preview-body object, .attachment-preview-body img {
+            display: block; width: 100%; max-width: 100%; height: auto; max-height: 58vh; border: 0;
+        }
+        .attachment-preview-body iframe, .attachment-preview-body embed, .attachment-preview-body object { height: 58vh; min-height: 240px; }
+        .attachment-preview-actions { flex: 0 0 auto !important; position: sticky; bottom: 0; background: #fff; z-index: 30; padding: 12px 0 4px; margin: 0; border-top: 1px solid #eee; box-shadow: 0 -4px 10px rgba(0,0,0,0.05); display: flex; flex-wrap: wrap; gap: 8px; }
+        @media (max-width: 640px) {
+            .attachment-preview-body { max-height: 55vh; }
+            .attachment-preview-body iframe, .attachment-preview-body embed, .attachment-preview-body object { height: 50vh; max-height: 50vh; }
+        }
         button:active { transform: scale(0.97); }
         
         /* ===== 寵物卡片 ===== */
@@ -1358,9 +1377,10 @@
     <footer id="siteFooter">
         <div class="max-w-6xl mx-auto px-6 py-8">
             <div class="founder-story">
-                <h3>網站的使用方法</h3>
-                <p>Paw Vault 的誕生，就是希望能幫每個奴才輕鬆記錄，好好保存每一次看診細節，讓毛孩的健康紀錄不再斷層。</p>
-                <p class="mt-3">無論帶毛孩睇多或少次醫生，我們因忙碌或懶惰，未有即時整理好收據、化驗單、疫苗紀錄與藥物明細。直到緊急需要時，才像偵探般在深處和手機相簿中焦急搜尋，耗費大量時間與心機，最終卻找不回關鍵的過往紀錄——既無法進行客觀格價，更無法將完整的病歷準確告知獸醫。</p>
+                <p class="founder-kicker">網站的使用方法與初衷</p>
+                <h3>散亂的病歷，不應成為毛孩健康的缺口。</h3>
+                <p>我們常因忙碌或懶惰，未有即時整理好收據、化驗單、打針紀錄與藥物詳情。直到緊急需要時，才像偵探般在抽屜深處與手機相簿中焦急搜尋，耗費大量時間與心機，最終卻找不回過往紀錄——既無法進行客觀格價，更無法將完整的病歷準確告知獸醫。</p>
+                <p class="mt-3">Paw Vault 的誕生，就是希望能為主子好好保存每次看診紀錄，讓毛孩的健康紀錄不再斷層。</p>
             </div>
             <div class="mt-5 flex flex-wrap items-start justify-between gap-4">
                 <div>
@@ -1677,8 +1697,8 @@
                 <h3 id="attachmentPreviewTitle" class="text-lg font-bold text-gray-800">附件預覽</h3>
                 <button type="button" onclick="closeAttachmentPreview()" class="w-9 h-9 rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50" aria-label="關閉預覽">✕</button>
             </div>
-            <div id="attachmentPreviewContainer" class="text-center"></div>
-            <div class="flex flex-wrap gap-2 mt-4">
+            <div id="attachmentPreviewContainer" class="attachment-preview-body text-center"></div>
+            <div class="attachment-preview-actions modal-sticky-actions">
                 <button type="button" onclick="shareCurrentAttachmentWhatsApp()" class="flex-1 py-2.5 border border-[#25D366] text-[#128C7E] rounded-2xl text-sm">分享至 WhatsApp</button>
                 <button type="button" onclick="closeAttachmentPreview()" class="flex-1 py-2.5 bg-[#6b7280] text-white rounded-2xl text-sm">關閉預覽</button>
             </div>
@@ -3337,6 +3357,29 @@
         };
 
 
+
+        function trackPage(pageId) {
+            if (typeof gtag !== 'function') return;
+            pageId = pageId || 'health-tab';
+            var titles = {
+                'health-tab': '主頁',
+                'review-tab': '糧食評價',
+                'faq-tab': '常見問題',
+                'clinic-tab': '獸醫診所',
+                'pricing-tab': '定價方案',
+                'member-pets': '我的毛孩',
+                'member-account': '帳戶設定'
+            };
+            gtag('event', 'page_view', {
+                page_title: 'Paw Vault | ' + (titles[pageId] || pageId),
+                page_location: location.origin + location.pathname + '#' + pageId,
+                page_path: '/' + pageId
+            });
+        }
+        function trackEvent(name, params) {
+            if (typeof gtag !== 'function') return;
+            gtag('event', name, params || {});
+        }
         function hideAppPages() {
             ['review-tab', 'faq-tab', 'clinic-tab', 'pricing-tab'].forEach(function(id) {
                 var el = document.getElementById(id);
@@ -3359,6 +3402,7 @@
             var page = document.getElementById(id);
             if (page) { page.hidden = false; page.classList.add('active'); }
             setAppHash(id);
+            if (typeof trackPage === 'function') trackPage(id);
             window.scrollTo({ top: 0, behavior: 'smooth' });
             if (typeof toggleNavDrawer === 'function') toggleNavDrawer(false);
         }
@@ -3398,6 +3442,7 @@
             var health = document.getElementById('health-tab');
             if (health) health.style.display = '';
             setAppHash('health-tab');
+            if (typeof trackPage === 'function') trackPage('health-tab');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         function showReviewTab() {
@@ -3531,6 +3576,8 @@
             localStorage.setItem('pawvault_food_reviews_'+id, JSON.stringify(list));
         }
         function openFoodReviewModal(id) {
+            if (typeof trackEvent === 'function') trackEvent('view_item', { item_id: id || '', item_category: 'cat_food' });
+
             currentFoodReviewId = id;
             var d = FOOD_REVIEW_DATA[id];
             if (!d) return;
@@ -4703,6 +4750,39 @@
             var list = document.getElementById('contactFileList');
             if (list) list.textContent = contactFiles.length ? contactFiles.map(function(f) { return f.name; }).join('、') : '';
         }
+        var EMAILJS_SERVICE_ID = 'service_eh70h25';
+        var EMAILJS_TEMPLATE_ID = 'template_tf3vp1h';
+        var EMAILJS_PUBLIC_KEY = 'RK8QpUN3rmqKY8n5W';
+        var EMAILJS_ADMIN_INBOX = '2026.zoelife@gmail.com';
+        var emailJsReady = false;
+        function initEmailJs() {
+            try {
+                if (window.emailjs && EMAILJS_PUBLIC_KEY && !emailJsReady) {
+                    emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+                    emailJsReady = true;
+                }
+            } catch (e) { console.warn('EmailJS init 失敗', e); }
+            return emailJsReady;
+        }
+        initEmailJs();
+        function sendContactEmailNotice(payload) {
+            if (!initEmailJs()) return Promise.resolve(false);
+            return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+                from_name: payload.name || '',
+                name: payload.name || '',
+                user_name: payload.name || '',
+                from_email: payload.email || '',
+                email: payload.email || '',
+                user_email: payload.email || '',
+                message: payload.message || '',
+                to_email: EMAILJS_ADMIN_INBOX,
+                reply_to: payload.email || '',
+                subject: 'Paw Vault 新查詢：' + (payload.name || '')
+            }).then(function() { return true; }).catch(function(err) {
+                console.warn('EmailJS 發送失敗', err);
+                return false;
+            });
+        }
         function submitContact() {
             var name = document.getElementById('contactName').value.trim();
             var email = document.getElementById('contactEmail').value.trim();
@@ -4734,8 +4814,12 @@
                 });
                 return Promise.all(uploads);
             }).then(function() {
+                return sendContactEmailNotice({ name: name, email: email, message: message });
+            }).then(function(mailOk) {
                 closeContactModal();
-                showToast('已送出查詢，我們會以電郵回覆。', 'success');
+                if (typeof trackEvent === 'function') trackEvent('generate_lead', { method: 'contact_form', mail_ok: !!mailOk });
+                if (mailOk) showToast('已送出查詢，通知電郵已發至管理員。', 'success');
+                else showToast('查詢已記錄，但電郵通知發送失敗，我們仍會在後台看到。', 'warning');
             }).catch(function(err) {
                 showToast('送出失敗：' + (err.message || err), 'error');
             });
@@ -4911,6 +4995,7 @@
                     return fetchUserProfile(user.uid).then(function() {
                         persistUserState(remember);
                         closeLoginModal();
+                        if (typeof trackEvent === 'function') trackEvent('login', { method: 'email' });
                         showToast('登入成功！已同步最新方案與毛孩數量', 'success');
                     });
                 })
@@ -4991,6 +5076,7 @@
                     isLoggedIn = true;
                     updateNav();
                     updateEmailVerifyBanner();
+                    if (typeof trackEvent === 'function') trackEvent('sign_up', { method: 'email' });
                     showToast('註冊成功，已進入會員專區。驗證電郵可稍後完成。', 'success');
                     notifyAdmin('新會員註冊', (email || '') + ' 剛註冊 Paw Vault');
                     showMemberPets();
@@ -9217,6 +9303,7 @@
             fillGeminiKeyInput();
         }
        function showMemberPets() {
+            if (typeof trackPage === 'function') trackPage('member-pets');
             window.pendingOpenAdmin = false;
             if (typeof closeAllModals === 'function') closeAllModals();
             document.getElementById('mainContent').classList.add('hidden');

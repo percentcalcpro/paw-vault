@@ -1699,7 +1699,7 @@
             </div>
             <div id="attachmentPreviewContainer" class="attachment-preview-body text-center"></div>
             <div class="attachment-preview-actions modal-sticky-actions">
-                <button type="button" onclick="shareCurrentAttachmentWhatsApp()" class="flex-1 py-2.5 border border-[#25D366] text-[#128C7E] rounded-2xl text-sm">分享至 WhatsApp</button>
+                <button type="button" onclick="shareCurrentAttachmentWhatsApp(event)" class="flex-1 py-2.5 border border-[#25D366] text-[#128C7E] rounded-2xl text-sm">分享至 WhatsApp</button>
                 <button type="button" onclick="closeAttachmentPreview()" class="flex-1 py-2.5 bg-[#6b7280] text-white rounded-2xl text-sm">關閉預覽</button>
             </div>
         </div>
@@ -6818,16 +6818,44 @@
             m.classList.add('modal-preview', 'show');
             if (m.parentNode) m.parentNode.appendChild(m);
         }
-        function shareCurrentAttachmentWhatsApp() {
-            var name = currentAttachmentFile || 'Paw Vault 附件';
-            var text = 'Paw Vault 病歷附件：' + name;
-            if (navigator.share) {
-                navigator.share({ title: name, text: text }).catch(function() {
-                    location.href = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(text);
-                });
-                return;
+        function openInNewTab(url) {
+            if (!url) return false;
+            var opened = null;
+            try { opened = window.open(url, '_blank', 'noopener,noreferrer'); } catch (e) { opened = null; }
+            if (opened) {
+                try { opened.opener = null; } catch (e2) {}
+                return true;
             }
-            location.href = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(text);
+            var a = document.createElement('a');
+            a.href = url;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(function() { if (a.parentNode) a.parentNode.removeChild(a); }, 0);
+            return true;
+        }
+        var whatsAppShareLock = 0;
+        function shareCurrentAttachmentWhatsApp(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            if (e && e.stopPropagation) e.stopPropagation();
+            if (e && e.stopImmediatePropagation) e.stopImmediatePropagation();
+            var now = Date.now();
+            if (whatsAppShareLock && now - whatsAppShareLock < 1200) return false;
+            whatsAppShareLock = now;
+            var name = currentAttachmentFile || 'Paw Vault 附件';
+            var shareText = 'Paw Vault 病歷附件：' + name;
+            var encoded = encodeURIComponent(shareText);
+            var mobile = (typeof isMobileShareDevice === 'function' && isMobileShareDevice())
+                || /iPhone|iPad|iPod|Android|Mobile/i.test(navigator.userAgent || '')
+                || ((navigator.maxTouchPoints || 0) > 1 && Math.min(screen.width, screen.height) <= 900);
+            if (mobile) {
+                window.location.href = 'whatsapp://send?text=' + encoded;
+            } else {
+                window.open('https://web.whatsapp.com/send?text=' + encoded, '_blank', 'noopener,noreferrer');
+            }
+            return false;
         }
         function findLocalAttachmentData(filename, petId) {
             var lists = [];
@@ -6854,27 +6882,23 @@
             return typeof src === 'string' && /^(blob:|data:|https?:\/\/)/i.test(src);
         }
         function downloadFileHelper(fileData, fileName) {
+            var openResolved = function(url) {
+                if (!url) { alert("找不到檔案內容！"); return; }
+                openInNewTab(url);
+            };
             if (fileData instanceof Blob) {
-                var blobUrl = URL.createObjectURL(fileData);
-                downloadFileHelper(blobUrl, fileName);
-                setTimeout(function() { URL.revokeObjectURL(blobUrl); }, 120000);
+                openResolved(URL.createObjectURL(fileData));
                 return;
             }
             if (!fileData) { alert("找不到檔案內容！"); return; }
             if (!isRealFileUrl(fileData)) { alert("找不到檔案內容！"); return; }
-            try {
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = fileData;
-                a.target = '_blank';
-                a.rel = 'noopener';
-                a.download = fileName || 'download';
-                document.body.appendChild(a);
-                a.click();
-                setTimeout(function() { if (a.parentNode) a.parentNode.removeChild(a); }, 1000);
-            } catch (e) {
-                window.open(fileData, '_blank');
+            if (/^data:/i.test(fileData)) {
+                fetch(fileData).then(function(r) { return r.blob(); }).then(function(b) {
+                    openResolved(URL.createObjectURL(b));
+                }).catch(function() { openResolved(fileData); });
+                return;
             }
+            openResolved(fileData);
         }
         function resolveAndDownload(fileObj, petId) {
             var name = fileDisplayName(fileObj);
@@ -6986,7 +7010,7 @@
             } else if (isPdf) {
                 container.innerHTML = '<iframe src="' + url + '" class="w-full h-[75vh] rounded-xl border-0"></iframe>';
             } else {
-                container.innerHTML = '<div class="text-center py-8"><i class="fa-regular fa-file text-4xl text-gray-400"></i><p class="text-sm text-gray-500 mt-2">此檔案類型未能預覽</p></div>';
+                container.innerHTML = '<div class="text-center py-8"><i class="fa-regular fa-file text-4xl text-gray-400"></i><p class="text-sm text-gray-500 mt-2">此檔案類型未能預覽</p><p class="mt-3"><a class="text-[#2d8f6f] underline" href="' + url + '" target="_blank" rel="noopener noreferrer">在新分頁開啟</a></p></div>';
             }
         }
         function previewAttachment(fileOrName, petId) {
@@ -7004,6 +7028,15 @@
             else if (!isRealFileUrl(local) && storage && petId) ready = getReportDownloadURL(petId, filename);
             ready.then(function(url) {
                 if (!isRealFileUrl(url)) throw new Error('no url');
+                if (/^data:/i.test(url)) {
+                    return fetch(url).then(function(r) { return r.blob(); }).then(function(b) {
+                        return URL.createObjectURL(b);
+                    }).then(function(blobUrl) {
+                        openInNewTab(blobUrl);
+                        showAttachmentPreview(blobUrl, filename);
+                    });
+                }
+                openInNewTab(url);
                 showAttachmentPreview(url, filename);
             }).catch(function() {
                 if (container) container.innerHTML = '<div class="text-center py-8 text-gray-500"><p class="text-sm">未能預覽此附件</p></div>';

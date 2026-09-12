@@ -1699,7 +1699,8 @@
             </div>
             <div id="attachmentPreviewContainer" class="attachment-preview-body text-center"></div>
             <div class="attachment-preview-actions modal-sticky-actions">
-                <button type="button" onclick="shareCurrentAttachmentWhatsApp(event)" class="flex-1 py-2.5 border border-[#25D366] text-[#128C7E] rounded-2xl text-sm">分享至 WhatsApp</button>
+                <a id="whatsAppShareAnchor" href="#" style="display:none" aria-hidden="true"></a>
+                <button type="button" id="whatsAppShareBtn" class="flex-1 py-2.5 border border-[#25D366] text-[#128C7E] rounded-2xl text-sm">分享至 WhatsApp</button>
                 <button type="button" onclick="closeAttachmentPreview()" class="flex-1 py-2.5 bg-[#6b7280] text-white rounded-2xl text-sm">關閉預覽</button>
             </div>
         </div>
@@ -6820,42 +6821,45 @@
         }
         function openInNewTab(url) {
             if (!url) return false;
-            var opened = null;
-            try { opened = window.open(url, '_blank', 'noopener,noreferrer'); } catch (e) { opened = null; }
-            if (opened) {
-                try { opened.opener = null; } catch (e2) {}
+            try {
+                window.open(url, '_blank');
                 return true;
+            } catch (e) {
+                return false;
             }
-            var a = document.createElement('a');
-            a.href = url;
-            a.target = '_blank';
-            a.rel = 'noopener noreferrer';
-            a.style.display = 'none';
-            document.body.appendChild(a);
-            a.click();
-            setTimeout(function() { if (a.parentNode) a.parentNode.removeChild(a); }, 0);
-            return true;
         }
-        var whatsAppShareLock = 0;
+        function isWhatsAppMobileDevice() {
+            return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent || '')
+                || ((navigator.maxTouchPoints || 0) > 1 && Math.min(screen.width || 0, screen.height || 0) <= 900);
+        }
         function shareCurrentAttachmentWhatsApp(e) {
-            if (e && e.preventDefault) e.preventDefault();
-            if (e && e.stopPropagation) e.stopPropagation();
-            if (e && e.stopImmediatePropagation) e.stopImmediatePropagation();
-            var now = Date.now();
-            if (whatsAppShareLock && now - whatsAppShareLock < 1200) return false;
-            whatsAppShareLock = now;
+            if (e) {
+                if (e.preventDefault) e.preventDefault();
+                if (e.stopPropagation) e.stopPropagation();
+                if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+            }
             var name = currentAttachmentFile || 'Paw Vault 附件';
             var shareText = 'Paw Vault 病歷附件：' + name;
             var encoded = encodeURIComponent(shareText);
-            var mobile = (typeof isMobileShareDevice === 'function' && isMobileShareDevice())
-                || /iPhone|iPad|iPod|Android|Mobile/i.test(navigator.userAgent || '')
-                || ((navigator.maxTouchPoints || 0) > 1 && Math.min(screen.width, screen.height) <= 900);
-            if (mobile) {
+            if (isWhatsAppMobileDevice()) {
                 window.location.href = 'whatsapp://send?text=' + encoded;
             } else {
-                window.open('https://web.whatsapp.com/send?text=' + encoded, '_blank', 'noopener,noreferrer');
+                window.open('https://web.whatsapp.com/send?text=' + encoded, '_blank');
             }
             return false;
+        }
+        function bindWhatsAppShareButton() {
+            var btn = document.getElementById('whatsAppShareBtn');
+            if (!btn || btn.getAttribute('data-wa-bound') === '1') return;
+            btn.setAttribute('data-wa-bound', '1');
+            btn.addEventListener('click', function(ev) {
+                shareCurrentAttachmentWhatsApp(ev);
+            }, { capture: true });
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', bindWhatsAppShareButton);
+        } else {
+            bindWhatsAppShareButton();
         }
         function findLocalAttachmentData(filename, petId) {
             var lists = [];
@@ -6884,7 +6888,7 @@
         function downloadFileHelper(fileData, fileName) {
             var openResolved = function(url) {
                 if (!url) { alert("找不到檔案內容！"); return; }
-                openInNewTab(url);
+                window.open(url, '_blank');
             };
             if (fileData instanceof Blob) {
                 openResolved(URL.createObjectURL(fileData));
@@ -7028,16 +7032,16 @@
             else if (!isRealFileUrl(local) && storage && petId) ready = getReportDownloadURL(petId, filename);
             ready.then(function(url) {
                 if (!isRealFileUrl(url)) throw new Error('no url');
+                var finish = function(fileUrl) {
+                    window.open(fileUrl, '_blank');
+                    showAttachmentPreview(fileUrl, filename);
+                };
                 if (/^data:/i.test(url)) {
                     return fetch(url).then(function(r) { return r.blob(); }).then(function(b) {
-                        return URL.createObjectURL(b);
-                    }).then(function(blobUrl) {
-                        openInNewTab(blobUrl);
-                        showAttachmentPreview(blobUrl, filename);
+                        finish(URL.createObjectURL(b));
                     });
                 }
-                openInNewTab(url);
-                showAttachmentPreview(url, filename);
+                finish(url);
             }).catch(function() {
                 if (container) container.innerHTML = '<div class="text-center py-8 text-gray-500"><p class="text-sm">未能預覽此附件</p></div>';
             });

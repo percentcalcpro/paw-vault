@@ -45,7 +45,9 @@
         .modal-content-wide { max-width: 960px; }
         .modal-content-medical { max-width: 800px; }
         .modal-content-payment { max-width: 500px; }
-        .modal-content-faq { max-width: 700px; }
+        .modal-content-faq { max-width: 700px; max-height: 80vh !important; overflow: hidden !important; }
+        .faq-modal-body { flex: 1 1 auto !important; min-height: 0; max-height: 80vh; overflow-y: auto !important; -webkit-overflow-scrolling: touch; padding-bottom: 24px !important; }
+        .faq-modal-foot { flex: 0 0 auto; background: #fff; padding-top: 8px; }
         .modal-content-report { max-width: 700px; }
         .modal-content-attachment { max-width: 700px; }
         button:active { transform: scale(0.97); }
@@ -274,6 +276,14 @@
         .att-icon-image { color: #16a34a; }
         .att-icon-file { color: #6b7280; }
         .logo-text { font-size: 1.5rem; font-weight: 700; color: #1f2937; letter-spacing: -0.5px; }
+        #siteFooter { border-top: 1px solid #e5ece8; background: #fff; }
+        .footer-links { display: flex; flex-wrap: wrap; gap: 0.75rem 1rem; }
+        .footer-links button { background: none; border: 0; padding: 0; color: #2d8f6f; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+        .footer-copy { font-size: 0.78rem; color: #9ca3af; }
+        .founder-story { background: #fffaf4; border: 1px solid #e8efe9; border-radius: 1.4rem; padding: 1.15rem 1.2rem; }
+        .founder-kicker { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: #2d8f6f; font-weight: 700; margin-bottom: 0.35rem; }
+        .founder-story h3 { font-size: 1.05rem; font-weight: 800; color: #1f2937; margin-bottom: 0.4rem; }
+        .founder-story p { font-size: 0.88rem; color: #6b7280; line-height: 1.7; }
         .faq-item { border-bottom: 1px solid #e5ece8; padding: 1.15rem 0.15rem; }
         .faq-item:last-child { border-bottom: none; }
         .faq-item .question { font-weight: 500; color: #4b5563; cursor: pointer; display: flex; justify-content: space-between; align-items: center; line-height: 1.55; padding: 0.15rem 0; }
@@ -358,6 +368,87 @@
             nav.sticky { min-height: 56px; }
             nav.sticky > div { padding-top: 0.35rem; padding-bottom: 0.35rem; }
         }
+
+        /* ===== 糧食與用品評價 ===== */
+        .food-reviews { padding: 2.5rem 0 1rem; }
+        .food-reviews-head { text-align: center; margin-bottom: 1.6rem; }
+        .food-reviews-head h2 { font-size: 1.85rem; font-weight: 800; color: #1f2937; }
+        .food-reviews-head p { color: #6b7280; margin-top: 0.45rem; font-size: 0.95rem; }
+        .food-tabbar { display: flex; gap: 0.45rem; justify-content: center; flex-wrap: wrap; margin: 0.9rem 0 1.4rem; }
+        .food-tab { border: 1px solid #d5e8df; background: #fff; color: #3f5c52; border-radius: 9999px; padding: 0.38rem 0.9rem; font-size: 0.82rem; font-weight: 600; cursor: pointer; }
+        .food-tab.active { background: #2d8f6f; color: #fff; border-color: #2d8f6f; }
+        .food-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.7rem 0.75rem; }
+        .food-tile { background: transparent; border: 0; padding: 0.15rem; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.38rem; cursor: pointer; transition: transform .15s ease; }
+        .food-tile:hover { transform: translateY(-4px); }
+        .food-logo-frame { width: 100%; aspect-ratio: 1 / 1; background: #fff; border: 1px solid #e5e7eb; border-radius: 0.9rem; display: flex; align-items: center; justify-content: center; padding: 0.55rem; overflow: hidden; transition: box-shadow .15s ease; }
+        .food-tile:hover .food-logo-frame { box-shadow: 0 8px 18px rgba(15,23,42,0.08); }
+        .food-logo-frame img { width: 100%; height: 100%; object-fit: contain; background: transparent; display: block; }
+        .food-tile-brand { font-size: 0.78rem; font-weight: 700; color: #1f2937; line-height: 1.2; }
+        .food-tile-name { font-size: 0.68rem; color: #6b7280; line-height: 1.3; min-height: 1.7em; }
+        .food-tile .food-type { font-size: 0.62rem; padding: 0.12rem 0.4rem; }
+        .food-card { background: #fff; border: 1px solid #e5ece8; border-radius: 1.5rem; padding: 1.15rem 1.15rem 1rem; box-shadow: 0 8px 24px rgba(15,81,50,0.05); display: flex; flex-direction: column; gap: 0.75rem; }
+        .food-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.6rem; }
+        .food-brand { font-size: 1.05rem; font-weight: 800; color: #0f5132; }
+        .food-name { font-size: 0.82rem; color: #6b7280; margin-top: 0.15rem; line-height: 1.4; }
+        .food-type { font-size: 0.72rem; font-weight: 700; color: #2d8f6f; background: #e8f5ef; border-radius: 9999px; padding: 0.22rem 0.55rem; white-space: nowrap; }
+        .food-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem; }
+        .food-metric { background: #f5faf7; border-radius: 1rem; padding: 0.55rem 0.3rem; text-align: center; }
+        .food-metric b { display: block; color: #0f5132; font-size: 1.02rem; }
+        .food-metric span { display: block; color: #6b7280; font-size: 0.68rem; margin-top: 0.1rem; }
+        .food-submetrics { font-size: 0.75rem; color: #4b5563; background: #f8faf9; border-radius: 0.9rem; padding: 0.45rem 0.6rem; }
+        .food-lists { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem; }
+        .food-list h4 { font-size: 0.75rem; font-weight: 800; margin-bottom: 0.3rem; }
+        .food-list ul { list-style: none; display: flex; flex-direction: column; gap: 0.28rem; }
+        .food-list li { font-size: 0.75rem; line-height: 1.35; color: #374151; }
+        .food-list.pros h4 { color: #166534; }
+        .food-list.cons h4 { color: #b91c1c; }
+        .food-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+        .food-tags span { font-size: 0.7rem; background: #eef6f2; color: #2d6a56; border-radius: 9999px; padding: 0.18rem 0.5rem; }
+        .food-disclaimer { font-size: 0.68rem; color: #9ca3af; line-height: 1.45; border-top: 1px dashed #e5ece8; padding-top: 0.55rem; margin-top: auto; }
+
+        .app-page { display: none; min-height: calc(100vh - 64px); padding: 1.4rem 0 2rem; }
+        .app-page.active { display: block; }
+        .review-page { display: none; min-height: calc(100vh - 64px); padding: 1.4rem 0 3rem; }
+        .review-page.active { display: block; }
+
+        .food-toolbar { display: grid; gap: 0.7rem; margin: 0.2rem 0 1.2rem; }
+        .food-search { width: 100%; border: 1px solid #d5e8df; border-radius: 1.1rem; padding: 0.72rem 0.95rem; background: #fffaf4; font-size: 0.92rem; }
+        .food-search:focus { outline: none; box-shadow: 0 0 0 3px rgba(45,143,111,0.15); border-color: #2d8f6f; }
+        .food-species { display: flex; gap: 0.45rem; justify-content: center; flex-wrap: wrap; }
+        .food-chip { border: 1px solid #d5e8df; background: #fff; color: #3f5c52; border-radius: 9999px; padding: 0.4rem 0.95rem; font-size: 0.82rem; font-weight: 700; cursor: pointer; }
+        .food-chip.active { background: #2d8f6f; color: #fff; border-color: #2d8f6f; }
+        .food-chip:disabled, .food-chip.soon { opacity: 0.55; cursor: not-allowed; }
+        .food-loadmore { display: block; margin: 1.1rem auto 0; border: 1px solid #2d8f6f; background: #fff; color: #2d8f6f; border-radius: 9999px; padding: 0.62rem 1.2rem; font-weight: 700; cursor: pointer; }
+        .food-empty { text-align: center; color: #6b7280; padding: 2.2rem 1rem; background: #fffaf4; border: 1px dashed #d5e8df; border-radius: 1.4rem; }
+        .food-note { font-size: 0.72rem; color: #9ca3af; margin-top: 0.45rem; }
+        .food-analysis-tag { display: inline-block; margin-left: 0.4rem; font-size: 0.68rem; font-weight: 700; color: #2d7a5e; background: #e8f5ef; border-radius: 9999px; padding: 0.12rem 0.45rem; vertical-align: middle; }
+        .food-form-hint { font-size: 0.72rem; color: #9a3412; margin-right: 0.6rem; }
+        .food-cta { width: 100%; margin-top: 0.15rem; border: 0; border-radius: 9999px; padding: 0.62rem 0.8rem; background: #2d8f6f; color: #fff; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
+        .food-cta:hover { background: #24735a; }
+        .food-modal-card { width: min(760px, 94vw); max-height: 88vh; overflow: auto; background: #fff; border-radius: 1.6rem; padding: 1.2rem 1.2rem 1rem; }
+        .food-modal-card h3 { color: #0f5132; font-size: 1.15rem; font-weight: 800; }
+        .food-modal-sec { margin-top: 0.95rem; }
+        .food-modal-sec h4 { font-size: 0.82rem; font-weight: 800; color: #374151; margin-bottom: 0.4rem; }
+        .food-ing { font-size: 0.8rem; line-height: 1.55; color: #4b5563; background: #f5faf7; border-radius: 1rem; padding: 0.7rem 0.8rem; }
+        .food-comment { background: #fff; border: 1px solid #e5ece8; border-radius: 1rem; padding: 0.7rem 0.8rem; margin-bottom: 0.45rem; }
+        .food-comment .meta { font-size: 0.72rem; color: #2d8f6f; font-weight: 700; margin-bottom: 0.2rem; }
+        .food-comment p { font-size: 0.82rem; color: #374151; line-height: 1.45; }
+        .food-stars { color: #d97706; letter-spacing: 1px; font-size: 0.78rem; }
+        .food-form input, .food-form textarea, .food-form select { width: 100%; border: 1px solid #d5e8df; border-radius: 0.9rem; padding: 0.55rem 0.7rem; font-size: 0.85rem; background: #fff; }
+        .food-form textarea { min-height: 88px; resize: vertical; }
+        .food-form button { border: 0; background: #2d8f6f; color: #fff; border-radius: 9999px; padding: 0.55rem 1rem; font-weight: 700; cursor: pointer; }
+        @media (max-width: 1100px) {
+            .food-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        }
+        @media (max-width: 900px) {
+            .food-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        }
+        @media (max-width: 640px) {
+            .food-lists { grid-template-columns: 1fr; }
+            .food-reviews-head h2 { font-size: 1.45rem; }
+            .food-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+        }
+
     </style>
 </head>
 <body>
@@ -371,8 +462,10 @@
             </a>
             <div class="nav-desktop" id="navRightSection">
                 <button onclick="openClinicPartnerModal()" class="nav-link-b2b"><i class="fa-solid fa-user-doctor mr-1"></i>獸醫診所專區</button>
+                <button onclick="scrollToFoodReviews()" class="nav-link">糧食評價</button>
                 <button onclick="openPricingModal()" class="nav-link">定價方案</button>
                 <button onclick="openFaqModal()" class="nav-link">常見問題</button>
+                <button onclick="openContactModal()" class="nav-link">聯絡查詢</button>
                 <button onclick="openLoginModal()" class="nav-link">登入</button>
                 <button onclick="openSignupModal()" class="nav-link-primary">免費開始使用</button>
             </div>
@@ -392,7 +485,7 @@
     </div>
 
     <!-- ===== 主頁內容（體驗版） ===== -->
-    <div id="mainContent" class="main-content">
+    <div id="mainContent" class="main-content" data-tab="health"><div id="health-tab">
         <div id="adminHomeBar" class="hidden max-w-6xl mx-auto px-6 pt-3">
             <button onclick="openAdminPage()" class="px-4 py-1.5 bg-[#0f5132] text-white rounded-full text-sm">後台管理</button>
         </div>
@@ -587,72 +680,98 @@
         <div class="max-w-6xl mx-auto px-6 pb-8" id="faqSection">
             <div class="feature-section">
                 <h2 class="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-8">常見問題</h2>
-                <div class="max-w-3xl mx-auto">
-                    <div class="faq-item">
-                        <div class="question" onclick="toggleFaq(this)"><span>試用期結束後會自動收費嗎？</span><i class="fa-solid fa-chevron-down text-gray-400"></i></div>
-                        <div class="answer">不會自動扣款。新會員所有方案皆享 30 天免費試用。其後可選輕量版 $38／月、基礎版 $58／月或大家庭版 $78／月。試用期內提早繳費，到期日會由試用結束日再疊加，唔會食剩低嘅試用日。</div>
-                    </div>
-                    <div class="faq-item">
-                        <div class="question" onclick="toggleFaq(this)"><span>過期未付款，資料會保留多久？</span><i class="fa-solid fa-chevron-down text-gray-400"></i></div>
-                        <div class="answer">試用期或每月會籍到期後，帳戶資料會保留 30 天。另外，用戶誤刪的病歷或檔案會暫存於戶口回收桶內保留 30 天，期間可隨時還原；30 天後系統將自動清理。後台客服備份最多再保留 180 天。</div>
-                    </div>
-                    <div class="faq-item">
-                        <div class="question" onclick="toggleFaq(this)"><span>遲交月費還可以用嗎？</span><i class="fa-solid fa-chevron-down text-gray-400"></i></div>
-                        <div class="answer">到期後仍有 3 天寬限期可以登入使用。寬限期過後需付款才能繼續操作。資料仍會由到期日起計保留 30 天。</div>
-                    </div>
-                    <div class="faq-item">
-                        <div class="question" onclick="toggleFaq(this)"><span>誤刪病歷可以救回嗎？</span><i class="fa-solid fa-chevron-down text-gray-400"></i></div>
-                        <div class="answer">用戶誤刪的病歷或檔案將暫存於戶口回收桶內保留 30 天，期間可隨時還原；30 天後系統將自動清理。如有需要可聯絡我們由後台協助救援。</div>
-                    </div>
-                    <div class="faq-item">
-                        <div class="question" onclick="toggleFaq(this)"><span>有哪些付款方式？</span><i class="fa-solid fa-chevron-down text-gray-400"></i></div>
-                        <div class="answer">支援 PayMe（掃描 PayCode）及轉數快 FPS（識別碼入數）。付款後請上傳入數截圖，我們核對後會為你續期。</div>
-                    </div>
-                    <div class="faq-item">
-                        <div class="question" onclick="toggleFaq(this)"><span>可以一次過預繳多個月嗎？</span><i class="fa-solid fa-chevron-down text-gray-400"></i></div>
-                        <div class="answer">可以。請按你想續期的月數入數（例如兩個月即月費 × 2），上傳入數證明並註明預繳月數。我們核對後會一次過延長會籍。若想一次過交一年，直接選年費方案會更簡單。</div>
-                    </div>
-                    <div class="faq-item">
-                        <div class="question" onclick="toggleFaq(this)"><span>帶去見醫生可以用這裡的記錄嗎？</span><i class="fa-solid fa-chevron-down text-gray-400"></i></div>
-                        <div class="answer">請下載或出示你上載的診所原檔（化驗單、X光、PDF）。自己打字的摘要只供你備忘，並非醫療證明，醫生一般不會以此代替正式報告。</div>
-                    </div>
-                    <div class="faq-item">
-                        <div class="question" onclick="toggleFaq(this)"><span>可以隨時取消嗎？已付款會退款嗎？</span><i class="fa-solid fa-chevron-down text-gray-400"></i></div>
-                        <div class="answer">可以隨時停止續期，我們不會自動再收費。已繳付的該月費用一般不設退款。</div>
-                    </div>
-                    <div class="faq-item">
-                        <div class="question" onclick="toggleFaq(this)"><span>可以升級或轉換方案嗎？</span><i class="fa-solid fa-chevron-down text-gray-400"></i></div>
-                        <div class="answer">可以。續費時可自由改方案同加購隻數，金額即時重計：方案費 + 前 5 隻加購 ×$5 + 第 6 隻加購起 ×$10。已儲存嘅毛孩同病歷唔會刪除。</div>
-                    </div>
-                    <div class="faq-item">
-                        <div class="question" onclick="toggleFaq(this)"><span>大家庭版可以加幾多隻毛孩？</span><i class="fa-solid fa-chevron-down text-gray-400"></i></div>
-                        <div class="answer">大家庭版預設 3–5 隻。超過 5 隻可無限加購：每隻 +$5／月；第 11 隻起每隻 +$10／月（含高容量備份）。「＋新增毛孩」永遠可撳，到上限會引導加購。</div>
-                    </div>
-                    <div class="faq-item">
-                        <div class="question" onclick="toggleFaq(this)"><span>診所可以寫入病歷嗎？覆診會提醒嗎？</span><i class="fa-solid fa-chevron-down text-gray-400"></i></div>
-                        <div class="answer">合作診所用你提供嘅授權碼調閱後，可寫入看診筆記、疫苗證明同附件，標記為診所認證。若填咗下次覆診時間，主人端會自動建立覆診提醒。</div>
-                    </div>
-                    <div class="faq-item">
-                        <div class="question" onclick="toggleFaq(this)"><span>領養專區 6 個月跟進係點？</span><i class="fa-solid fa-chevron-down text-gray-400"></i></div>
-                        <div class="answer">經義工連結開通「新手領養愛心禮」後，義工可唯讀該毛孩健康紀錄 6 個月，睇唔到新主人電話住址。期滿系統自動關閉義工權限，完整保護私隱，之後可轉正價方案。</div>
-                    </div>
-                    <div class="faq-item">
-                        <div class="question" onclick="toggleFaq(this)"><span>如有查詢可以怎樣聯絡？</span><i class="fa-solid fa-chevron-down text-gray-400"></i></div>
-                        <div class="answer">請按頁面「查詢」或會員設定內的「查詢／留言」，留下姓名、電郵及內容。我們會於後台收到，並以電郵回覆。</div>
-                    </div>
-                </div>
+                <div class="max-w-3xl mx-auto" id="homeFaqList"></div>
             </div>
         </div>
 
         <div class="max-w-6xl mx-auto px-6 pb-6 text-center">
             <button onclick="openPricingModal()" class="px-6 py-2.5 border border-[#3da881] text-[#2d8f6f] rounded-full text-sm font-medium hover:bg-[#f0faf5]">查看方案與價格</button>
         </div>
-        <footer class="border-t bg-white/80">
-            <div class="max-w-6xl mx-auto px-6 py-6 flex flex-wrap items-center justify-between gap-3 text-sm text-gray-500">
-                <span>Paw Vault</span>
-                <button onclick="openClinicPartnerModal()" class="text-blue-700 font-medium hover:underline">機構／中途舍合作專區</button>
+
+        </div>
+    </div>
+
+
+    <!-- ===== 糧食評價獨立分頁 ===== -->
+    <div id="review-tab" class="review-page" hidden>
+        <section class="food-reviews">
+            <div class="max-w-6xl mx-auto px-6">
+                <div class="food-reviews-head">
+                    <h2>香港熱門貓糧速覽</h2>
+                    <p>呢頁唔影響病歷檔案。資料以乾物比整理，討論來自公開社群綜合，唔等於獸醫建議。</p>
+                </div>
+                <div class="food-toolbar">
+                    <input id="foodSearchInput" class="food-search" type="search" placeholder="搜尋品牌或產品名稱，例如 Orijen、巔峰、Sheba…" oninput="onFoodFilterChange()">
+                    <div class="food-species">
+                        <button type="button" class="food-chip active" id="foodSpeciesCat" onclick="setFoodSpecies('cat')">🐱 貓咪專區</button>
+                        <button type="button" class="food-chip soon" id="foodSpeciesDog" onclick="setFoodSpecies('dog')">🐶 狗狗專區（即將推出）</button>
+                    </div>
+                    <div class="food-tabbar" role="tablist">
+                        <button class="food-tab active" type="button" data-food-type="all" onclick="setFoodType('all', this)">全部</button>
+                        <button class="food-tab" type="button" data-food-type="kibble" onclick="setFoodType('kibble', this)">乾糧</button>
+                        <button class="food-tab" type="button" data-food-type="wet" onclick="setFoodType('wet', this)">濕糧/罐頭</button>
+                        <button class="food-tab" type="button" data-food-type="airdry" onclick="setFoodType('airdry', this)">風乾/凍乾</button>
+                    </div>
+                </div>
+                <div class="food-grid" id="foodReviewGrid"></div>
+                <button type="button" id="foodLoadMoreBtn" class="food-loadmore" onclick="loadMoreFoodCards()">載入更多產品</button>
             </div>
-        </footer>
+        </section>
+    </div>
+
+    <div id="foodReviewModal" class="modal" onclick="if(event.target===this)closeFoodReviewModal()">
+        <div class="food-modal-card" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-start gap-3">
+                <div>
+                    <h3 id="foodModalTitle">貓糧詳情</h3>
+                    <p id="foodModalSub" class="text-sm text-gray-500 mt-1"></p>
+                </div>
+                <button type="button" onclick="closeFoodReviewModal()" class="text-gray-400 text-xl leading-none">✕</button>
+            </div>
+            <span id="foodModalType" class="food-type" style="display:inline-block;margin-top:0.2rem;"></span>
+            <div class="food-modal-sec">
+                <div class="food-metrics" id="foodModalMetrics"></div>
+                <div id="foodModalExtra" class="food-submetrics" style="display:none;margin-top:0.5rem;"></div>
+            </div>
+            <div class="food-modal-sec">
+                <div class="food-lists">
+                    <div class="food-list pros"><h4>✓ 優點</h4><ul id="foodModalPros"></ul></div>
+                    <div class="food-list cons"><h4>✕ 缺點</h4><ul id="foodModalCons"></ul></div>
+                </div>
+                <div class="food-tags" id="foodModalTags" style="margin-top:0.7rem;"></div>
+            </div>
+            <div class="food-modal-sec">
+                <h4>產品完整成分表</h4>
+                <div id="foodModalIngredients" class="food-ing"></div>
+            </div>
+            <div class="food-modal-sec">
+                <h4>網絡真實討論輯錄 <span class="food-analysis-tag">近 3 個月討論提煉</span></h4>
+                <div id="foodModalComments"></div>
+                <p class="food-note">本頁網絡輿情每季由 AI 自動更新一次，僅供參考</p>
+            </div>
+            <div class="food-modal-sec">
+                <h4>奴才留言</h4>
+                <div id="foodUserComments"></div>
+                <form class="food-form mt-3" onsubmit="submitFoodUserReview(event)">
+                    <div class="grid grid-cols-2 gap-2 mb-2">
+                        <input id="foodReviewName" maxlength="20" placeholder="花名（例如：豆豆家長）">
+                        <select id="foodReviewStars">
+                            <option value="5">5 星</option>
+                            <option value="4">4 星</option>
+                            <option value="3">3 星</option>
+                            <option value="2">2 星</option>
+                            <option value="1">1 星</option>
+                        </select>
+                    </div>
+                    <textarea id="foodReviewText" maxlength="240" placeholder="寫低你家主子食完嘅真實體驗…"></textarea>
+                    <div class="flex items-center justify-end mt-2 flex-wrap gap-2">
+                        <span class="food-form-hint">寫評價需先登入 Paw Vault 帳號</span>
+                        <button type="submit">送出評價</button>
+                    </div>
+                </form>
+                <p class="food-disclaimer" style="border:0;padding-top:0.4rem;">本摘要由 AI 綜合公開討論區數據提煉，僅供參考。</p>
+            </div>
+        </div>
     </div>
 
     <!-- ===== 會員專區 ===== -->
@@ -711,13 +830,6 @@
                 <button type="button" onclick="openChangeEmailModal()" class="w-full py-2.5 border border-gray-200 rounded-2xl text-sm text-left px-4 flex items-center justify-between">電子郵件 <span class="text-gray-400">✏️</span></button>
                 <button type="button" onclick="openChangePasswordModal()" class="w-full py-2.5 border border-gray-200 rounded-2xl text-sm text-left px-4 flex items-center justify-between">密碼 <span class="text-gray-400">✏️</span></button>
                 <button type="button" onclick="openPaymentModal()" class="w-full py-2.5 bg-[#3da881] text-white rounded-2xl text-sm font-medium">續費 / 升級</button>
-            </div>
-            <div class="mt-4 p-4 rounded-2xl border border-gray-200 bg-white">
-                <p class="text-sm font-medium text-gray-700 mb-1">AI 收據辨識 Key（選填）</p>
-                <p class="text-xs text-gray-400 mb-2">喺 Google AI Studio 複製 API Key 貼呢度，只存在你呢部瀏覽器。</p>
-                <input id="geminiKeyInput" type="password" autocomplete="off" placeholder="AIza..." class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl text-sm mb-2">
-                <button type="button" onclick="saveGeminiKeyFromSettings()" class="w-full py-2 border border-[#3da881] text-[#2d8f6f] rounded-2xl text-sm">儲存 AI Key</button>
-                <p id="geminiKeyStatus" class="text-xs text-gray-500 mt-2"></p>
             </div>
             <button type="button" onclick="downloadAccountBackup()" class="w-full mt-4 py-2.5 border border-[#3da881] text-[#2d8f6f] rounded-2xl text-sm">一鍵打包備份所有資料</button>
         </div>
@@ -883,12 +995,11 @@
     <!-- 所有 Modal -->
     <!-- ============================================================ -->
 
-    <!-- 定價 Modal -->
-    <div id="pricingModal" class="modal">
-        <div class="modal-content modal-content-wide fade-in">
-            <div class="flex justify-between items-center mb-5">
+    <!-- 定價方案獨立分頁 -->
+    <div id="pricing-tab" class="app-page" hidden>
+        <div id="pricingModal" class="max-w-6xl mx-auto px-6 py-8">
+            <div class="mb-5">
                 <h2 id="pricingModalTitle" class="text-2xl font-bold text-gray-800">選擇適合你的方案</h2>
-                <i onclick="closePricingModal()" class="fa-solid fa-xmark text-2xl cursor-pointer text-gray-400 hover:text-gray-600"></i>
             </div>
             <p id="pricingTrialText" class="text-center text-sm text-gray-500 mb-4">30 天免費試用．原檔安全備份</p>
             <div id="purchasedPlanDisplay" style="display:none;" class="plan-purchased-info">
@@ -989,7 +1100,7 @@
                 <button id="btnStartPlan" class="btn-start mx-auto" onclick="goToPayment()">立即開始</button>
                 <p class="text-xs text-gray-400 mt-2" id="pricingHintText"></p>
             </div>
-            <button onclick="closePricingModal()" class="block mx-auto mt-4 px-6 py-1.5 border border-gray-300 rounded-full text-gray-500 text-sm hover:bg-gray-50 transition">返回</button>
+            <button onclick="goHome()" class="block mx-auto mt-4 px-6 py-1.5 border border-gray-300 rounded-full text-gray-500 text-sm hover:bg-gray-50 transition">返回主頁</button>
         </div>
     </div>
 
@@ -1125,71 +1236,24 @@
         </div>
     </div>
 
-    <!-- 常見問題 Modal -->
-    <div id="faqModal" class="modal">
-        <div class="modal-content modal-content-faq fade-in">
-            <div class="flex justify-between items-center mb-5">
-                <h2 class="text-2xl font-bold text-gray-800">常見問題</h2>
-                <i onclick="closeFaqModal()" class="fa-solid fa-xmark text-2xl cursor-pointer text-gray-400 hover:text-gray-600"></i>
+    <!-- 常見問題獨立分頁 -->
+    <div id="faq-tab" class="app-page" hidden>
+        <div class="max-w-3xl mx-auto px-6 py-10">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">常見問題</h2>
+            <p class="text-gray-500 mb-6">收費、資料保存同使用方式一次睇清。若仍有疑問可用聯絡查詢。</p>
+            <div id="modalFaqList"></div>
+            <div class="mt-6">
+                <button onclick="openContactModal()" class="px-5 py-2 rounded-full bg-[#2d8f6f] text-white text-sm font-semibold">聯絡查詢</button>
             </div>
-            <div class="faq-item">
-                <div class="question" onclick="toggleFaq(this)"><span>試用期結束後會自動收費嗎？</span><i class="fa-solid fa-chevron-down text-gray-400"></i></div>
-                <div class="answer">不會自動扣款。新會員所有方案皆享 30 天免費試用。試用期內提早繳費，到期日由試用結束日再疊加。</div>
-            </div>
-            <div class="faq-item">
-                <div class="question" onclick="toggleFaq(this)"><span>過期未付款，資料會保留多久？</span><i class="fa-solid fa-chevron-down text-gray-400"></i></div>
-                <div class="answer">試用期或每月會籍到期後，寵物資料與病歷會保留 30 天。30 天內付款即可繼續使用原有記錄。超過 30 天仍未付款，我們或會清除該帳戶資料。</div>
-            </div>
-            <div class="faq-item">
-                <div class="question" onclick="toggleFaq(this)"><span>遲交月費還可以用嗎？</span><i class="fa-solid fa-chevron-down text-gray-400"></i></div>
-                <div class="answer">到期後仍有 3 天寬限期可以登入使用。寬限期過後需付款才能繼續操作。資料仍會由到期日起計保留 30 天。</div>
-            </div>
-            <div class="faq-item">
-                <div class="question" onclick="toggleFaq(this)"><span>有哪些付款方式？</span><i class="fa-solid fa-chevron-down text-gray-400"></i></div>
-                <div class="answer">支援 PayMe（掃描 PayCode）及轉數快 FPS（識別碼入數）。付款後請上傳入數截圖，我們核對後會為你續期。</div>
-            </div>
-            <div class="faq-item">
-                <div class="question" onclick="toggleFaq(this)"><span>可以一次過預繳多個月嗎？</span><i class="fa-solid fa-chevron-down text-gray-400"></i></div>
-                <div class="answer">可以。請按你想續期的月數入數（例如兩個月即月費 × 2），上傳入數證明並註明預繳月數。我們核對後會一次過延長會籍。若想一次過交一年，直接選年費方案會更簡單。</div>
-            </div>
-            <div class="faq-item">
-                <div class="question" onclick="toggleFaq(this)"><span>可以隨時取消嗎？已付款會退款嗎？</span><i class="fa-solid fa-chevron-down text-gray-400"></i></div>
-                <div class="answer">可以隨時停止續期，我們不會自動再收費。已繳付的該月費用一般不設退款。</div>
-            </div>
-            <div class="faq-item">
-                <div class="question" onclick="toggleFaq(this)"><span>可以升級或轉換方案嗎？</span><i class="fa-solid fa-chevron-down text-gray-400"></i></div>
-                <div class="answer">續費時可自由改方案同加購隻數，金額即時重計。已儲存資料唔會刪除。</div>
-            </div>
-            <div class="faq-item">
-                <div class="question" onclick="toggleFaq(this)"><span>大家庭版可以加幾多隻毛孩？</span><i class="fa-solid fa-chevron-down text-gray-400"></i></div>
-                <div class="answer">超過 5 隻可加購：每隻 +$5／月；第 11 隻起每隻 +$10／月。</div>
-            </div>
-            <div class="faq-item">
-                <div class="question" onclick="toggleFaq(this)"><span>診所可以寫入病歷嗎？</span><i class="fa-solid fa-chevron-down text-gray-400"></i></div>
-                <div class="answer">合作診所用授權碼可寫入看診筆記與疫苗證明。填咗下次覆診時間，主人端會有提醒。</div>
-            </div>
-            <div class="faq-item">
-                <div class="question" onclick="toggleFaq(this)"><span>領養 6 個月跟進點處理私隱？</span><i class="fa-solid fa-chevron-down text-gray-400"></i></div>
-                <div class="answer">義工只可唯讀病歷 6 個月，睇唔到新主人聯絡資料；期滿自動關閉權限。</div>
-            </div>
-            <div class="faq-item">
-                <div class="question" onclick="toggleFaq(this)"><span>帶去見醫生可以用這裡的記錄嗎？</span><i class="fa-solid fa-chevron-down text-gray-400"></i></div>
-                <div class="answer">請下載或出示你上載的診所原檔（化驗單、X光、PDF）。自己打字的摘要只供你備忘，並非醫療證明，醫生一般不會以此代替正式報告。</div>
-            </div>
-            <div class="faq-item">
-                <div class="question" onclick="toggleFaq(this)"><span>如有查詢可以怎樣聯絡？</span><i class="fa-solid fa-chevron-down text-gray-400"></i></div>
-                <div class="answer">請按頁面「查詢」或會員設定內的「查詢／留言」，留下姓名、電郵及內容。我們會於後台收到，並以電郵回覆。</div>
-            </div>
-            <button onclick="closeFaqModal()" class="block mx-auto mt-4 px-6 py-1.5 border border-gray-300 rounded-full text-gray-500 text-sm hover:bg-gray-50 transition">關閉</button>
         </div>
     </div>
 
-    <!-- 診所合作申請 / 診所登入 -->
-    <div id="clinicPartnerModal" class="modal">
-        <div class="modal-content modal-content-wide fade-in">
+
+    <!-- 獸醫診所獨立分頁 -->
+    <div id="clinic-tab" class="app-page" hidden>
+        <div id="clinicPartnerModal" class="max-w-6xl mx-auto px-6 py-8">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-bold text-blue-900"><i class="fa-solid fa-hospital-user text-blue-600 mr-2"></i>獸醫診所專區</h2>
-                <i onclick="closeClinicPartnerModal()" class="fa-solid fa-xmark text-2xl cursor-pointer text-gray-400 hover:text-gray-600"></i>
             </div>
             <div class="flex gap-2 mb-4">
                 <button type="button" id="clinicTabApply" onclick="showClinicTab('apply')" class="px-4 py-1.5 rounded-full text-sm bg-blue-600 text-white">成為合作診所</button>
@@ -1290,13 +1354,42 @@
         </div>
     </div>
 
+
+    <footer id="siteFooter">
+        <div class="max-w-6xl mx-auto px-6 py-8">
+            <div class="founder-story">
+                <h3>網站的使用方法</h3>
+                <p>Paw Vault 的誕生，就是希望能幫每個奴才輕鬆記錄，好好保存每一次看診細節，讓毛孩的健康紀錄不再斷層。</p>
+                <p class="mt-3">無論帶毛孩睇多或少次醫生，我們因忙碌或懶惰，未有即時整理好收據、化驗單、疫苗紀錄與藥物明細。直到緊急需要時，才像偵探般在深處和手機相簿中焦急搜尋，耗費大量時間與心機，最終卻找不回關鍵的過往紀錄——既無法進行客觀格價，更無法將完整的病歷準確告知獸醫。</p>
+            </div>
+            <div class="mt-5 flex flex-wrap items-start justify-between gap-4">
+                <div>
+                    <div class="font-bold text-gray-800 mb-2">Paw Vault</div>
+                    <div class="footer-links">
+                        <button type="button" onclick="goHome()">主頁</button>
+                        <button type="button" id="footerPetsLink" style="display:none;" onclick="showMemberPets()">我的毛孩</button>
+                        <button type="button" onclick="showReviewTab()">糧食評價</button>
+                        <button type="button" onclick="showPricingPage()">定價方案</button>
+                        <button type="button" onclick="showClinicPage()">獸醫診所</button>
+                        <button type="button" onclick="showFaqPage()">常見問題</button>
+                        <button type="button" onclick="openContactModal()">聯絡我們</button>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="footer-copy">© 2026 Paw Vault. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
     <!-- 查詢 -->
     <div id="contactModal" class="modal">
         <div class="modal-content fade-in" style="max-width:440px;">
             <h3 class="text-xl font-bold text-[#2d8f6f] mb-4">查詢／留言</h3>
             <input id="contactName" type="text" placeholder="姓名 *" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm">
             <input id="contactEmail" type="email" placeholder="電郵 *" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-2.5 text-sm">
-            <textarea id="contactMessage" rows="4" placeholder="查詢內容 *" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-3 text-sm"></textarea>
+            <textarea id="contactMessage" rows="4" placeholder="查詢內容 *（至少 10 個字）" class="w-full px-4 py-2.5 border border-gray-200 rounded-2xl mb-1 text-sm"></textarea>
+            <p id="contactFormHint" class="text-xs text-gray-400 mb-3">請填寫有效電郵同具體查詢。同一瀏覽器 60 秒內只能送出一次。</p>
             <label class="block w-full py-2.5 px-4 border border-dashed border-gray-300 rounded-2xl text-sm text-gray-500 cursor-pointer mb-2">
                 可上傳 JPEG / PNG / PDF
                 <input id="contactFileInput" type="file" class="hidden" accept=".jpg,.jpeg,.png,.pdf" multiple onchange="onContactFilesChange(this)">
@@ -1831,34 +1924,14 @@
         // ================================================================
         function getGeminiApiKey() {
             try {
-                return localStorage.getItem('PAWVAULT_GEMINI_KEY')
-                    || localStorage.getItem('GEMINI_API_KEY')
-                    || '';
-            } catch (e) { return ''; }
+                localStorage.removeItem('PAWVAULT_GEMINI_KEY');
+                localStorage.removeItem('GEMINI_API_KEY');
+            } catch (e) {}
+            return '';
         }
-        var GEMINI_API_KEY = getGeminiApiKey();
-        function saveGeminiKeyFromSettings() {
-            var input = document.getElementById('geminiKeyInput');
-            var status = document.getElementById('geminiKeyStatus');
-            var key = String((input && input.value) || '').trim();
-            if (!key) {
-                try { localStorage.removeItem('PAWVAULT_GEMINI_KEY'); } catch (e) {}
-                GEMINI_API_KEY = '';
-                if (status) status.textContent = '已清除。之後會用原本文字辨識。';
-                return;
-            }
-            try { localStorage.setItem('PAWVAULT_GEMINI_KEY', key); } catch (e) {}
-            GEMINI_API_KEY = key;
-            if (status) status.textContent = '已儲存，可去上傳收據測試。';
-            showToast('已儲存 AI Key', 'success');
-        }
-        function fillGeminiKeyInput() {
-            var input = document.getElementById('geminiKeyInput');
-            var status = document.getElementById('geminiKeyStatus');
-            var key = getGeminiApiKey();
-            if (input && key && !input.value) input.placeholder = '已儲存（' + key.slice(0, 6) + '…）';
-            if (status && key) status.textContent = '已有儲存的 Key。';
-        }
+        var GEMINI_API_KEY = '';
+        function saveGeminiKeyFromSettings() { return; }
+        function fillGeminiKeyInput() { return; }
         const firebaseConfig = {
             apiKey: "AIzaSyCNExsDR5jTa2t9zp3lhiqF_8lV8vP9Mmk",
             authDomain: "paw-vault.firebaseapp.com",
@@ -2968,6 +3041,565 @@
             if (isLoggedIn) { showMemberAccount(); toggleNavDrawer(false); }
             else openLoginModal();
         }
+
+        var FOOD_PAGE_SIZE = 8;
+        var foodFilter = { species: 'cat', type: 'all', q: '', shown: 6 };
+        var currentFoodReviewId = null;
+        var FOOD_REVIEW_DATA = {
+            orijen: {
+                brand: 'Orijen 渴望', name: 'Cat & Kitten / Original Cat', species: 'cat', type: 'kibble', typeLabel: '乾糧',
+                protein: '~44%', fat: '~22%', carb: '~20%',
+                pros: ['動物成分高，鮮肉／內臟排前','蛋白高、碳水相對低','凍乾肝塗層，部分挑食貓肯食'],
+                cons: ['香港價錢高','轉糧太快易軟便','含豆類；腎病／老貓要問獸醫'],
+                tags: ['#高肉量天花板','#挑食都肯食','#轉糧易軟便','#荷包殺手'],
+                ingredients: '新鮮雞肉、生火雞、生全鯡魚、雞內臟（肝、心）、生全鱈魚、生火雞肝、新鮮蛋、脫水雞肉、脫水火雞、脫水鯖魚、脫水沙丁魚、脫水鯡魚、雞脂肪、紅扁豆、豌豆、綠扁豆、鷹嘴豆、扁豆纖維、花豆、海軍豆、豌豆澱粉、鱈魚油、海帶、南瓜、胡蘿蔔、蘋果、菊苣根、羽衣甘藍、菠菜、蔓越莓、藍莓、薑黃、牛磺酸、維他命及礦物質。',
+                comments: [
+                    {src:'公眾討論區奴才', stars:'★★★★☆', text:'主子食咗兩年，毛色真係亮咗，不過便便好臭，屋企細要開窗。'},
+                    {src:'寵物社群家長', stars:'★★★★★', text:'挑食怪第一次開袋就肯食，凍乾肝塗層好似有魔力。'},
+                    {src:'公眾討論區奴才', stars:'★★★☆☆', text:'轉糧第三日開始軟便，後來用七日過渡先穩陣。'},
+                    {src:'熱門論壇網友', stars:'★★★★☆', text:'成分係天花板，但開封之後要入密封桶，香港潮濕好快瞓。'},
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'5.4kg 最抵，不過腎病貓 vet 叫我唔好再食咁高蛋白。'},
+                    {src:'公眾討論區奴才', stars:'★★★☆☆', text:'有扁豆豌豆，純肉派會嫌；我家年輕貓體態倒係穩。'}
+                ]
+            },
+            core: {
+                brand: 'Wellness CORE', name: 'Grain-Free Original（火雞＋雞肉）', species: 'cat', type: 'kibble', typeLabel: '乾糧',
+                protein: '~50%', fat: '~20%', carb: '~18%',
+                pros: ['蛋白數字高，美國製、香港行貨穩','有益生菌塗層，部分貓便便較成型','室內貓／去毛球／消化易系列齊'],
+                cons: ['仍用豌豆／薯類','中高價，開封要密封','禽類或豆類敏感貓要小心'],
+                tags: ['#高蛋白日常糧','#室內貓有得揀','#益生菌加持','#豆類爭議'],
+                ingredients: '去骨火雞、去骨雞肉、火雞粉、雞粉、豌豆、鯡魚粉、雞脂肪、乾馬鈴薯、番茄渣、亞麻籽、天然雞肉風味、三文魚油、蔓越莓、菊苣根提取物、氯化膽鹼、牛磺酸、維他命 E、海帶、螯合礦物質、益生菌塗層。',
+                comments: [
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'由超市糧轉 CORE，兩星期掉毛少咗，頭幾日便便有啲軟。'},
+                    {src:'公眾討論區奴才', stars:'★★★★★', text:'系列夠齊，肥仔轉 Indoor 之後腰圍有收。'},
+                    {src:'熱門論壇網友', stars:'★★★☆☆', text:'蛋白高係好事，豌豆排好前，純肉派會嫌。'},
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'11lb 行貨最好買；有隻貓對雞敏感就要避開。'},
+                    {src:'公眾討論區奴才', stars:'★★★★☆', text:'益生菌塗層對軟便貓有幫助，但唔係人人有效。'},
+                    {src:'寵物社群家長', stars:'★★★☆☆', text:'開封一個月味道淡咗，要夾袋再入鐵罐。'}
+                ]
+            },
+            instinct: {
+                brand: 'Instinct 百利', name: 'Original Grain-Free Recipe with Real Chicken', species: 'cat', type: 'kibble', typeLabel: '乾糧',
+                protein: '~45%', fat: '~23%', carb: '~20%',
+                pros: ['凍乾塗層，適口性高','約 81% 動物成分，無穀無薯','部分配方有蒙脫土，轉糧期較易過關'],
+                cons: ['有豌豆、木薯，碳水唔算最低','脂肪偏高，易肥貓要控量','個別貓會嘔吐／敏感'],
+                tags: ['#適口性高','#凍乾塗層','#軟便過渡糧','#脂肪偏高要控量'],
+                ingredients: '雞肉、雞肉粉、火雞粉、油鯡魚粉、豌豆、雞脂肪、木薯、天然風味、番茄渣、蒙脫土、胡蘿蔔、蘋果、蔓越莓、氯化膽鹼、鹽、維他命、螯合礦物質、牛磺酸、凍乾鱈魚、南瓜籽、枯草桿菌發酵產物、迷迭香提取物。',
+                comments: [
+                    {src:'公眾討論區奴才', stars:'★★★★★', text:'開袋即食，以前要加凍干先肯低頭。'},
+                    {src:'寵物社群家長', stars:'★★★☆☆', text:'轉糧過渡期要慢，我家貓第三日吐咗，減半先無事。'},
+                    {src:'熱門論壇網友', stars:'★★★★☆', text:'蒙脫土對軟便貓幾友好，便秘嗰隻反而更乾。'},
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'三隻都食；脂肪偏高，肥妹要減量加濕糧。'},
+                    {src:'公眾討論區奴才', stars:'★★★★☆', text:'凍乾碎碎好香，但碗底粉塵多。'},
+                    {src:'寵物社群家長', stars:'★★★☆☆', text:'有豌豆木薯，同渴望比就冇咁極致。'}
+                ]
+            },
+            canagan: {
+                brand: 'Canagan 開樂', name: 'Free Range Chicken for Cats（走地雞）', species: 'cat', type: 'kibble', typeLabel: '乾糧',
+                protein: '~40%', fat: '~21%', carb: '~28%',
+                pros: ['無穀無豆，成分相對簡單','適口性穩，香港好買','有蔓越莓同草本，當日常糧好用'],
+                cons: ['甜薯／馬鈴薯成型，碳水偏高','蛋白唔及渴望／CORE','薯類或雞敏感貓要留意'],
+                tags: ['#無穀無豆','#日常好入口','#碳水偏高','#英國行貨易買'],
+                ingredients: '雞肉乾 (34.5%)、新鮮放養雞 (26%)、甜薯、馬鈴薯、雞脂肪 (4.2%)、雞蛋乾 (4%)、雞肉汁 (2.3%)、三文魚油 (1.2%)、礦物質、苜蓿、蔓越莓、MOS、FOS、蘋果、胡蘿蔔、菠菜、海藻、甘菊、薄荷、萬壽菊、茴香、胡蘆巴。',
+                comments: [
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'由皇家轉過嚟肯食，便便成型。'},
+                    {src:'公眾討論區奴才', stars:'★★★☆☆', text:'無豆係加分，但碳水偏高，肥貓我改配濕糧。'},
+                    {src:'熱門論壇網友', stars:'★★★★☆', text:'1.5kg 細包試味正確，兩隻都接受走地雞。'},
+                    {src:'公眾討論區奴才', stars:'★★★★☆', text:'日常糧好用，唔好同巔峰比成分。'},
+                    {src:'寵物社群家長', stars:'★★★☆☆', text:'有隻對薯類敏感，轉走之後皮膚先穩。'},
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'英國行貨好補貨，唔使等海淘。'}
+                ]
+            },
+            ziwi: {
+                brand: 'Ziwi Peak 巔峰', name: 'Air-Dried Beef／Mackerel & Lamb', species: 'cat', type: 'airdry', typeLabel: '風乾',
+                protein: '~44%', fat: '~35%', carb: '~5%', extra: '鯖魚羊配方乾物比：蛋白 ~51%　脂肪 ~28%　碳水 ~4–5%',
+                pros: ['約 96% 肉／內臟／骨／青口，碳水極低','消化率高，便便量少、毛質改善口碑多','可當主食、拌糧或獎勵'],
+                cons: ['香港最貴梯隊','餵多易軟便；要另外補水','高脂，胰臟敏感貓唔合適'],
+                tags: ['#風乾天花板','#碳水極低','#便便量少','#貴但份量細'],
+                ingredients: '牛肉配方：牛肉、牛心、牛腎、牛肚、牛肝、牛肺、紐西蘭綠唇貽貝、牛骨、卵磷脂、菊苣根菊粉、海帶、礦物質、鹽、混合生育酚、維他命、蛋氨酸、牛磺酸。鯖魚羊配方以整條鯖魚＋羊肉／內臟為主，同樣含綠唇貽貝。',
+                comments: [
+                    {src:'公眾討論區奴才', stars:'★★★★★', text:'便便量少到誇張，毛亦順咗；一公斤價已勸退。'},
+                    {src:'寵物社群家長', stars:'★★★☆☆', text:'當主食餵多咗第二日軟便，計返份量先正常。記得補水。'},
+                    {src:'熱門論壇網友', stars:'★★★★☆', text:'挑食貓當肉乾咬，我改做 toppers，荷包先頂得住。'},
+                    {src:'公眾討論區奴才', stars:'★★★★☆', text:'鯖魚羊味更重；胰腺炎病史就不要高脂牛肉。'},
+                    {src:'寵物社群家長', stars:'★★★★★', text:'化毛期掉毛明顯少，但要同乾糧混先夠飽。'},
+                    {src:'公眾討論區奴才', stars:'★★★☆☆', text:'開袋好香，連狗都偷食，要鎖高。'}
+                ]
+            },
+            acana: {
+                brand: 'Acana 愛肯拿', name: 'First Feast / Homestead Harvest', species: 'cat', type: 'kibble', typeLabel: '乾糧',
+                protein: '~40%', fat: '~18%', carb: '~26%',
+                pros: ['同渴望同一家，價錢親民啲','鮮肉感同適口性都不錯','香港好買，細袋易試'],
+                cons: ['豆類／纖維仍然有','蛋白唔及 Orijen','個別貓會口臭'],
+                tags: ['#渴望平價版','#適口性穩','#細袋好試','#豆類仍在'],
+                ingredients: '新鮮雞肉、雞肉粉、火雞粉、鷹嘴豆、雞肝、雞蛋、紅扁豆、雞脂肪、豌豆、綠扁豆、全鯡魚、魚油、苜蓿、南瓜、Squash、胡蘿蔔、蘋果、梨、海帶、蔓越莓、藍莓、薑黃、牛磺酸、維他命及礦物質。',
+                comments: [
+                    {src:'公眾討論區奴才', stars:'★★★★☆', text:'由渴望降級過嚟，主子照食，荷包鬆少少。'},
+                    {src:'寵物社群家長', stars:'★★★☆☆', text:'First Feast 幼貓味濃，成貓有時會食厭。'},
+                    {src:'熱門論壇網友', stars:'★★★★☆', text:'體態維持到，便便味比渴望細。'},
+                    {src:'寵物社群家長', stars:'★★★☆☆', text:'有扁豆，腎病小組唔建議當長期主糧。'},
+                    {src:'公眾討論區奴才', stars:'★★★★☆', text:'試味袋夠用兩個禮拜，決定買 4.5kg。'},
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'同 CORE 比入口更好，但掉毛改善冇渴望明顯。'}
+                ]
+            },
+            go: {
+                brand: 'Go! Solutions', name: 'Carnivore Grain-Free Chicken, Turkey + Duck', species: 'cat', type: 'kibble', typeLabel: '乾糧',
+                protein: '~50%', fat: '~20%', carb: '~16%',
+                pros: ['高蛋白無穀，適口性口碑好','粒細，幼貓成貓都易咬','香港有行貨'],
+                cons: ['豌豆扁豆排前','有貓食完口臭','開封後要快食完'],
+                tags: ['#高蛋白無穀','#粒細好咬','#扁豆爭議','#口臭留意'],
+                ingredients: '去骨雞肉、去骨火雞、去骨鴨、雞粉、火雞粉、鴨粉、豌豆、木薯、扁豆、鷹嘴豆、雞脂肪、三文魚油、南瓜、胡蘿蔔、蘋果、蔓越莓、藍莓、磷酸二鈣、氯化膽鹼、鹽、牛磺酸、維他命、益生菌。',
+                comments: [
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'粒細，沒牙老貓都咬得動。'},
+                    {src:'公眾討論區奴才', stars:'★★★☆☆', text:'食一個月口臭明顯，刷牙都遮唔到。'},
+                    {src:'熱門論壇網友', stars:'★★★★★', text:'挑食貓終於肯食乾糧，感謝凍乾碎。'},
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'蛋白高，年輕貓體態好；老貓我轉低磷。'},
+                    {src:'公眾討論區奴才', stars:'★★★☆☆', text:'加拿大製安心，但香港價錢同 CORE 差唔多。'},
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'便便成型，掉毛一般，當日常糧可以。'}
+                ]
+            },
+            now: {
+                brand: 'NOW Fresh', name: 'Grain-Free Adult Cat Turkey, Salmon & Duck', species: 'cat', type: 'kibble', typeLabel: '乾糧',
+                protein: '~34%', fat: '~20%', carb: '~32%',
+                pros: ['無穀無副產品粉，味道唔重','敏感腸胃貓有人話穩','粒中細'],
+                cons: ['蛋白中等，運動量高貓未必夠','薯類／豌豆成型碳水偏高','部分貓嫌淡'],
+                tags: ['#溫和日常糧','#敏感腸胃','#碳水偏高','#味道清淡'],
+                ingredients: '去骨火雞、豌豆、馬鈴薯、全蛋、亞麻籽、芥花油、三文魚、鴨肉、天然風味、蘋果、南瓜、香蕉、藍莓、蔓越莓、黑加侖、甘藷、苜蓿、胡蘿蔔、豌豆纖維、氯化膽鹼、牛磺酸、維他命及礦物質。',
+                comments: [
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'由超市糧轉過嚟皮膚紅疹少咗。'},
+                    {src:'公眾討論區奴才', stars:'★★★☆☆', text:'味道淡，我家要拌濕糧先清碗。'},
+                    {src:'熱門論壇網友', stars:'★★★★☆', text:'便便好穩，適合腸胃敏感。'},
+                    {src:'寵物社群家長', stars:'★★★☆☆', text:'蛋白一般，瘦骨仙食一個月都未見長肉。'},
+                    {src:'公眾討論區奴才', stars:'★★★★☆', text:'加拿大糧，行貨細袋好試。'},
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'當過渡糧好用，之後先升去 CORE。'}
+                ]
+            },
+            royalwet: {
+                brand: 'Royal Canin 皇家', name: 'Instinctive / Intense Beauty 成貓濕糧', species: 'cat', type: 'wet', typeLabel: '濕糧/罐頭',
+                protein: '~58%', fat: '~14%', carb: '~15%',
+                pros: ['香港最易買，診所都有','適口性極高，病後開胃常用','水分夠，對少飲水貓友善'],
+                cons: ['穀物／副產品多，成分派不買','長期單一濕糧營養爭議','鋁盒／袋裝貴過乾糧'],
+                tags: ['#開胃神器','#超易買','#成分派不買','#補水之選'],
+                ingredients: '肉類及動物副產品、穀類、植物蛋白提取物、礦物質、糖、油酯、酵母。不同口味（肉汁／啫喱）比例略有不同。',
+                comments: [
+                    {src:'公眾討論區奴才', stars:'★★★★☆', text:'住院返嚟 vet 指定呢款，真係肯食。'},
+                    {src:'寵物社群家長', stars:'★★★☆☆', text:'成分看到穀同副產品，我只當開胃唔當主食。'},
+                    {src:'熱門論壇網友', stars:'★★★★★', text:'挑食到絕，只有皇家肉汁袋救到。'},
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'補水一流，結晶體史貓 vet 叫加濕糧就用它。'},
+                    {src:'公眾討論區奴才', stars:'★★★☆☆', text:'長期食會胖，要計卡路里。'},
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'超市成日減價，屯貨先抵。'}
+                ]
+            },
+            sheba: {
+                brand: 'Sheba 金罐／鮮饗', name: 'Perfect Portions / 成貓鮮食盒', species: 'cat', type: 'wet', typeLabel: '濕糧/罐頭',
+                protein: '~55%', fat: '~20%', carb: '~12%',
+                pros: ['小盒新鮮，適口性高','超市街坊店都有','可當獎勵或拌糧'],
+                cons: ['當主食要睇完整營養標示','醬汁糖分／膠凝劑爭議','長期開支不低'],
+                tags: ['#超市好買','#適口性高','#小盒方便','#主食要慎選'],
+                ingredients: '肉類及肉類副產品（雞、吞拿魚視口味）、湯汁、膠凝劑、礦物質、牛磺酸、維他命。口味系列差異大，買前睇罐面「完整營養」字樣。',
+                comments: [
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'金罐一開，隔離屋貓都叫。'},
+                    {src:'公眾討論區奴才', stars:'★★★☆☆', text:'當零食可以，當主食我唔夠膽，成分一般。'},
+                    {src:'熱門論壇網友', stars:'★★★★☆', text:'小盒唔使冷藏隔餐，夏天好方便。'},
+                    {src:'寵物社群家長', stars:'★★★★★', text:'病後完全唔食，只有 Sheba 慕斯救返。'},
+                    {src:'公眾討論區奴才', stars:'★★★☆☆', text:'醬汁多，肥胖貓要倒走一半汁。'},
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'百佳減價 3 盒 $20 先抵，原價痛。'}
+                ]
+            },
+            tiki: {
+                brand: 'Tiki Cat', name: 'After Dark Chicken & Liver', species: 'cat', type: 'wet', typeLabel: '濕糧/罐頭',
+                protein: '~80%', fat: '~13%', carb: '~2%',
+                pros: ['高肉低碳水，成分短而清楚','補水同適口性都強','無穀無卡拉膠配方較多'],
+                cons: ['香港價錢高，細罐不飽','脂肪偏低，有貓會嫌不夠香','買行貨要睇批次'],
+                tags: ['#高肉濕糧','#成分短','#補水','#細罐價高'],
+                ingredients: '雞肉濃湯、雞肉、雞肝、雞心、雞胗、磷酸三鈣、氯化鉀、氯化膽鹼、鹽、牛磺酸、維他命及礦物質。',
+                comments: [
+                    {src:'公眾討論區奴才', stars:'★★★★★', text:'開罐全係肉塊， vis 完安心好多。'},
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'After Dark 肝味重，愛內臟嗰隻瘋狂。'},
+                    {src:'熱門論壇網友', stars:'★★★☆☆', text:'太清淡，我家要加凍乾粉先肯清罐。'},
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'低卡高水，減肥貓好合適。'},
+                    {src:'公眾討論區奴才', stars:'★★★★☆', text:'同 Weruva 齊名，香港有時缺貨。'},
+                    {src:'寵物社群家長', stars:'★★★★★', text:'乾物蛋白誇張，配少量風乾就完美。'}
+                ]
+            },
+            applaws: {
+                brand: 'Applaws 愛普士', name: 'Tuna Fillet in Broth 吞拿魚湯罐', species: 'cat', type: 'wet', typeLabel: '濕糧/罐頭',
+                protein: '~78%', fat: '~6%', carb: '~3%',
+                pros: ['成分極短，多數得魚同湯','適口性高','可當補水小食'],
+                cons: ['多數係補充食而非完整主食','長期淨食魚罐有硫胺酶／汞疑慮','湯多肉少投訴偶見'],
+                tags: ['#成分超短','#補水小食','#非完整主食','#魚罐輪替'],
+                ingredients: '吞拿魚片、魚湯。部分口味加蝦、芝士或南瓜。礦物質及維他命視「完整營養」款而定。',
+                comments: [
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'開罐全係魚肉， vis 完滿意。'},
+                    {src:'公眾討論區奴才', stars:'★★★☆☆', text:'唔係 complete， vet 話唔可以只食呢款。'},
+                    {src:'熱門論壇網友', stars:'★★★★★', text:'飲水少嗰隻，呢罐湯會舔清。'},
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'同 Cosma、Schesir 輪住開，減少重金屬風險。'},
+                    {src:'公眾討論區奴才', stars:'★★★☆☆', text:'有時湯多過肉，要睇批次。'},
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'旅行便當一流，唔使碗。'}
+                ]
+            },
+            stella: {
+                brand: 'Stella & Chewy\'s', name: 'Freeze-Dried Raw Chick, Chick, Chick', species: 'cat', type: 'airdry', typeLabel: '風乾/凍乾',
+                protein: '~47%', fat: '~29%', carb: '~8%',
+                pros: ['凍乾生食概念，復水後適口性高','成分以肉、骨、內臟為主','可當主食或 toppers'],
+                cons: ['香港貴，復水麻煩','處理生食要衛生','高脂，胰臟敏感要避開'],
+                tags: ['#凍乾生食','#復水先食','#topper之選','#貴'],
+                ingredients: '雞肉連骨、雞肝、雞胗、南瓜籽、磷酸鉀、鹽、三文魚油、牛磺酸、混合生育酚、維他命 E、菊苣根、維他命及礦物質。',
+                comments: [
+                    {src:'寵物社群家長', stars:'★★★★★', text:'復水之後似真雞肉，挑食貓低頭。'},
+                    {src:'公眾討論區奴才', stars:'★★★☆☆', text:'唔復水當零食會渴，記得備水。'},
+                    {src:'熱門論壇網友', stars:'★★★★☆', text:'同巔峰二選一，凍乾香過風乾。'},
+                    {src:'寵物社群家長', stars:'★★★☆☆', text:'粉塵多，敏感鼻嘅人要小心倒。'},
+                    {src:'公眾討論區奴才', stars:'★★★★☆', text:'當 toppers 最抵，當主食荷包痛。'},
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'出牙幼貓咬凍乾塊當玩具兼進食。'}
+                ]
+            },
+            felinenatural: {
+                brand: 'F9 Feline Natural', name: 'Chicken & Lamb Feast 凍乾', species: 'cat', type: 'airdry', typeLabel: '風乾/凍乾',
+                protein: '~51%', fat: '~32%', carb: '~5%',
+                pros: ['紐西蘭綠唇貽貝配方，關節口碑','凍乾同主食罐都有','肉量高、碳水低'],
+                cons: ['價錢接近巔峰','凍乾要復水','羊味有貓抗拒'],
+                tags: ['#紐西蘭','#綠唇貽貝','#凍乾主食','#高脂'],
+                ingredients: '雞肉、羊肉、雞心、羊腎、羊肝、羊血、亞麻籽片、紐西蘭綠唇貽貝、磷酸氫鈣、海帶、牛磺酸、維他命 E、鋅、鎂、錳、銅、碘、鈷、硒。',
+                comments: [
+                    {src:'公眾討論區奴才', stars:'★★★★☆', text:'同巔峰同級，羊味我家貓更鍾意。'},
+                    {src:'寵物社群家長', stars:'★★★★★', text:'綠唇貽貝，老貓跳上櫃又靈活咗（可能心理作用）。'},
+                    {src:'熱門論壇網友', stars:'★★★☆☆', text:'復水比例要準，太乾會噎。'},
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'主食罐方便過凍乾，出差就帶罐。'},
+                    {src:'公眾討論區奴才', stars:'★★★☆☆', text:'高脂，胰腺炎貓 vet 即禁。'},
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'成分乾淨，價錢痛但用得少。'}
+                ]
+            },
+            mush: {
+                brand: 'MUSH Hong Kong', name: '凍乾貓糧', species: 'cat', type: 'airdry', typeLabel: '風乾/凍乾',
+                protein: '~48%', fat: '~28%', carb: '~6%',
+                pros: ['香港品牌，凍乾復水方便','肉量高、適口性口碑好','本地補貨相對容易'],
+                cons: ['價錢屬中高','配方資訊要自己睇袋','部分貓要慢慢加量'],
+                tags: ['#香港凍乾','#復水主食','#適口性高','#中高價'],
+                ingredients: '雞肉、雞心、雞肝、雞胗、骨粉、紐西蘭綠唇貽貝、亞麻籽、海帶、牛磺酸、維他命及礦物質（實際批次以包裝為準）。',
+                comments: [
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'本地牌復水味道香，挑食貓肯食。'},
+                    {src:'公眾討論區奴才', stars:'★★★★☆', text:'同海淘凍乾比，補貨快好多。'},
+                    {src:'熱門論壇網友', stars:'★★★☆☆', text:'開袋粉塵幾多，倒落碗要輕手。'},
+                    {src:'寵物社群家長', stars:'★★★★★', text:'當 toppers 最抵，主食就混少少乾糧。'},
+                    {src:'公眾討論區奴才', stars:'★★★☆☆', text:'份量要秤，餵多即軟便。'},
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'Husky logo 好認，朋友介紹先開始用。'}
+                ]
+            },
+            openfarm: {
+                brand: 'Open Farm', name: '凍乾脫水生肉貓糧', species: 'cat', type: 'airdry', typeLabel: '風乾/凍乾',
+                protein: '~46%', fat: '~30%', carb: '~8%',
+                pros: ['溯源透明，農場故事清楚','凍乾生肉適口性高','無穀配方為主'],
+                cons: ['香港價錢高','復水步驟要慣','個別口味缺貨'],
+                tags: ['#溯源透明','#凍乾生肉','#無穀','#價高'],
+                ingredients: '人類級肉類（雞／牛視口味）、內臟、骨、南瓜、胡蘿蔔、蘋果、亞麻籽、海帶、酵母、混合生育酚、維他命及礦物質。',
+                comments: [
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'包裝農舍 logo 好印象，成分睇落乾淨。'},
+                    {src:'公眾討論區奴才', stars:'★★★★★', text:'復水之後肉香，比普通乾糧香一個級。'},
+                    {src:'熱門論壇網友', stars:'★★★☆☆', text:'袋細食得快，CP 值一般。'},
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'同 Primal 輪住用，腸胃都穩。'},
+                    {src:'公眾討論區奴才', stars:'★★★★☆', text:'透明供應鏈係賣點，香港行貨有限。'},
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'當 toppers 最合理，當主食太燒錢。'}
+                ]
+            },
+            primal: {
+                brand: 'Primal', name: 'Raw Frozen / Freeze-Dried Nuggets', species: 'cat', type: 'airdry', typeLabel: '風乾/凍乾',
+                protein: '~49%', fat: '~30%', carb: '~7%',
+                pros: ['生食老牌， nugget 好量','凍乾同急凍都有','內臟骨比例完整'],
+                cons: ['急凍款要雪櫃位','香港難買齊口味','處理衛生要求高'],
+                tags: ['#生食老牌','#nuggets','#高肉','#雪櫃要位'],
+                ingredients: '雞肉（或牛／鴨視口味）、雞骨、雞肝、有機蔬菜、有機水果、鱈魚油、維他命 E、錳蛋白鹽、鋅蛋白鹽、銅蛋白鹽。',
+                comments: [
+                    {src:'公眾討論區奴才', stars:'★★★★☆', text:'急凍 nugget 方便分餐，解凍要前一晚。'},
+                    {src:'寵物社群家長', stars:'★★★★★', text:'老牌信得過，便便味細過乾糧。'},
+                    {src:'熱門論壇網友', stars:'★★★☆☆', text:'香港雪櫃細，只敢買凍乾。'},
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'同 Open Farm 比，Primal 更「生食」。'},
+                    {src:'公眾討論區奴才', stars:'★★★☆☆', text:'處理生食要洗手，屋企有小孩要小心。'},
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'復水 nugget 幼貓都咬得動。'}
+                ]
+            },
+            purpose: {
+                brand: 'Purpose 普斯', name: '凍乾脫水貓糧', species: 'cat', type: 'airdry', typeLabel: '風乾/凍乾',
+                protein: '~50%', fat: '~27%', carb: '~6%',
+                pros: ['亞洲區好買','凍乾塊完整，適口性高','可主食可零食'],
+                cons: ['香港售價中高','高脂要控量','口味偏好兩極'],
+                tags: ['#亞洲凍乾','#適口性高','#可當零食','#高脂'],
+                ingredients: '雞肉、雞心、雞肝、雞骨架、營養補充預混料、牛磺酸、維他命及礦物質（以包裝標示為準）。',
+                comments: [
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'黑白 logo 好認，開袋肉香。'},
+                    {src:'公眾討論區奴才', stars:'★★★★★', text:'挑食貓當餅乾咬，頂癮。'},
+                    {src:'熱門論壇網友', stars:'★★★☆☆', text:'當主食要計水，否則便便偏乾。'},
+                    {src:'寵物社群家長', stars:'★★★★☆', text:'同 MUSH 二選一，Purpose 塊更大。'},
+                    {src:'公眾討論區奴才', stars:'★★★★☆', text:'出差當旅途糧方便，唔使罐。'},
+                    {src:'寵物社群家長', stars:'★★★☆☆', text:'價錢同 F9 差唔多，先試細袋。'}
+                ]
+            }
+        };
+
+
+        function hideAppPages() {
+            ['review-tab', 'faq-tab', 'clinic-tab', 'pricing-tab'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (!el) return;
+                el.hidden = true;
+                el.classList.remove('active');
+            });
+        }
+        function showAppPage(id) {
+            if (typeof closeAllModals === 'function') closeAllModals();
+            hideAppPages();
+            var home = document.getElementById('mainContent');
+            if (home) home.classList.add('hidden');
+            var md = document.getElementById('memberDashboard');
+            if (md) md.classList.remove('show');
+            var ad = document.getElementById('adminDashboard');
+            if (ad) ad.classList.add('hidden');
+            var cw = document.getElementById('clinicWorkbench');
+            if (cw) cw.classList.add('hidden');
+            var page = document.getElementById(id);
+            if (page) { page.hidden = false; page.classList.add('active'); }
+            setAppHash(id);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (typeof toggleNavDrawer === 'function') toggleNavDrawer(false);
+        }
+        function setAppHash(id) {
+            var h = '#' + (id || 'health-tab');
+            if (location.hash !== h) {
+                try { history.replaceState(null, '', h); } catch (e) { location.hash = h; }
+            }
+        }
+        function applyHashRoute() {
+            var h = String(location.hash || '').replace(/^#/, '');
+            if (h === 'pricing-tab' || h === 'pricing') { showPricingPage(); return; }
+            if (h === 'review-tab' || h === 'reviews' || h === 'food') { showReviewTab(); return; }
+            if (h === 'faq-tab' || h === 'faq') { showFaqPage(); return; }
+            if (h === 'clinic-tab' || h === 'clinic') { showClinicPage(); return; }
+            if (h === 'health-tab' || h === 'home' || h === '') { showHealthTab(); }
+        }
+        function showFaqPage() {
+            showAppPage('faq-tab');
+            if (typeof renderSharedFaq === 'function') renderSharedFaq();
+        }
+        function showClinicPage() {
+            showAppPage('clinic-tab');
+        }
+        function showPricingPage(showPlanCards) {
+            showAppPage('pricing-tab');
+            if (typeof hydratePricingPage === 'function') hydratePricingPage(showPlanCards);
+        }
+        function hideReviewTab() {
+            var page = document.getElementById('review-tab');
+            if (page) { page.classList.remove('active'); page.hidden = true; }
+        }
+        function showHealthTab() {
+            hideAppPages();
+            var home = document.getElementById('mainContent');
+            if (home) home.classList.remove('hidden');
+            var health = document.getElementById('health-tab');
+            if (health) health.style.display = '';
+            setAppHash('health-tab');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        function showReviewTab() {
+            showAppPage('review-tab');
+            foodFilter.shown = FOOD_PAGE_SIZE;
+            renderFoodReviewCards();
+        }
+        function scrollToFoodReviews() { showReviewTab(); }
+        function setFoodSpecies(species) {
+            if (species === 'dog') {
+                foodFilter.species = 'dog';
+                document.getElementById('foodSpeciesCat').classList.remove('active');
+                document.getElementById('foodSpeciesDog').classList.add('active');
+                foodFilter.shown = FOOD_PAGE_SIZE;
+                renderFoodReviewCards();
+                return;
+            }
+            foodFilter.species = 'cat';
+            document.getElementById('foodSpeciesCat').classList.add('active');
+            document.getElementById('foodSpeciesDog').classList.remove('active');
+            foodFilter.shown = FOOD_PAGE_SIZE;
+            renderFoodReviewCards();
+        }
+        function setFoodType(type, btn) {
+            foodFilter.type = type;
+            foodFilter.shown = FOOD_PAGE_SIZE;
+            document.querySelectorAll('.food-tab').forEach(function(t){ t.classList.remove('active'); });
+            if (btn) btn.classList.add('active');
+            renderFoodReviewCards();
+        }
+        function onFoodFilterChange() {
+            var input = document.getElementById('foodSearchInput');
+            foodFilter.q = ((input && input.value) || '').trim().toLowerCase();
+            foodFilter.shown = FOOD_PAGE_SIZE;
+            renderFoodReviewCards();
+        }
+        function filterFoodCards(type, btn) { setFoodType(type, btn); }
+        function getFilteredFoodIds() {
+            var q = foodFilter.q;
+            return Object.keys(FOOD_REVIEW_DATA).filter(function(id){
+                var d = FOOD_REVIEW_DATA[id];
+                if (foodFilter.species !== d.species) return false;
+                if (foodFilter.type !== 'all' && d.type !== foodFilter.type) return false;
+                if (!q) return true;
+                return (d.brand + ' ' + d.name).toLowerCase().indexOf(q) !== -1;
+            });
+        }
+        var FOOD_LOGO_SRC = {
+            orijen: 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20240%2090%22%3E%3Ctext%20x%3D%22120%22%20y%3D%2252%22%20text-anchor%3D%22middle%22%20font-family%3D%22Georgia%2CTimes%20New%20Roman%2Cserif%22%20font-size%3D%2242%22%20font-style%3D%22italic%22%20font-weight%3D%22700%22%20fill%3D%22%23c4161c%22%3EOrijen%3C/text%3E%3C/svg%3E',
+            core: 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20240%2090%22%3E%3Ctext%20x%3D%22120%22%20y%3D%2236%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2Csans-serif%22%20font-size%3D%2214%22%20letter-spacing%3D%223%22%20fill%3D%22%232f5d3a%22%3EWELLNESS%3C/text%3E%3Ctext%20x%3D%22120%22%20y%3D%2266%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2Csans-serif%22%20font-size%3D%2230%22%20font-weight%3D%22800%22%20fill%3D%22%232f5d3a%22%3ECORE%3C/text%3E%3C/svg%3E',
+            instinct: 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20200%20200%22%3E%3Crect%20width%3D%22200%22%20height%3D%22200%22%20rx%3D%228%22%20fill%3D%22%23e36b1e%22/%3E%3Ctext%20x%3D%22100%22%20y%3D%22100%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-size%3D%2220%22%20font-weight%3D%22700%22%20fill%3D%22%23fff%22%3EInstinct%3C/text%3E%3C/svg%3E',
+            canagan: 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20240%2090%22%3E%3Ctext%20x%3D%22120%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20font-family%3D%22Georgia%2CTimes%20New%20Roman%2Cserif%22%20font-size%3D%2234%22%20font-style%3D%22normal%22%20font-weight%3D%22700%22%20fill%3D%22%231f3b2e%22%3ECanagan%3C/text%3E%3C/svg%3E',
+            ziwi: 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20240%2090%22%3E%3Ctext%20x%3D%22120%22%20y%3D%2242%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22800%22%20fill%3D%22%23111%22%3EZIWI%3C/text%3E%3Ctext%20x%3D%22120%22%20y%3D%2266%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2Csans-serif%22%20font-size%3D%2212%22%20letter-spacing%3D%224%22%20fill%3D%22%23111%22%3EPEAK%3C/text%3E%3C/svg%3E',
+            acana: 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20240%2090%22%3E%3Ctext%20x%3D%22120%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20font-family%3D%22Georgia%2CTimes%20New%20Roman%2Cserif%22%20font-size%3D%2236%22%20font-style%3D%22italic%22%20font-weight%3D%22700%22%20fill%3D%22%237a3b1e%22%3EACANA%3C/text%3E%3C/svg%3E',
+            go: 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20240%2090%22%3E%3Ctext%20x%3D%22120%22%20y%3D%2258%22%20text-anchor%3D%22middle%22%20font-family%3D%22Georgia%2CTimes%20New%20Roman%2Cserif%22%20font-size%3D%2240%22%20font-style%3D%22normal%22%20font-weight%3D%22700%22%20fill%3D%22%232d8f6f%22%3EGo%21%3C/text%3E%3C/svg%3E',
+            now: 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20240%2090%22%3E%3Ctext%20x%3D%22120%22%20y%3D%2240%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2Csans-serif%22%20font-size%3D%2228%22%20font-weight%3D%22800%22%20fill%3D%22%234f6f4a%22%3ENOW%3C/text%3E%3Ctext%20x%3D%22120%22%20y%3D%2266%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2Csans-serif%22%20font-size%3D%2214%22%20letter-spacing%3D%223%22%20fill%3D%22%234f6f4a%22%3EFRESH%3C/text%3E%3C/svg%3E',
+            royalcanin: 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20240%2090%22%3E%3Ctext%20x%3D%22120%22%20y%3D%2234%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2Csans-serif%22%20font-size%3D%2212%22%20fill%3D%22%23c4161c%22%3E%E2%97%8F%20%E2%97%8F%20%E2%97%8F%20%E2%97%8F%20%E2%97%8F%3C/text%3E%3Ctext%20x%3D%22120%22%20y%3D%2262%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22800%22%20fill%3D%22%23c4161c%22%3EROYAL%20CANIN%3C/text%3E%3C/svg%3E',
+            sheba: 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20240%2090%22%3E%3Ctext%20x%3D%22120%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20font-family%3D%22Georgia%2CTimes%20New%20Roman%2Cserif%22%20font-size%3D%2238%22%20font-style%3D%22italic%22%20font-weight%3D%22700%22%20fill%3D%22%237a1f2b%22%3ESheba%3C/text%3E%3C/svg%3E',
+            tiki: 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20240%2090%22%3E%3Ctext%20x%3D%22120%22%20y%3D%2240%22%20text-anchor%3D%22middle%22%20font-family%3D%22Georgia%2Cserif%22%20font-size%3D%2226%22%20fill%3D%22%231f3b2e%22%3ETiki%3C/text%3E%3Ctext%20x%3D%22120%22%20y%3D%2266%22%20text-anchor%3D%22middle%22%20font-family%3D%22Georgia%2Cserif%22%20font-size%3D%2220%22%20fill%3D%22%231f3b2e%22%3ECat%3C/text%3E%3C/svg%3E',
+            applaws: 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20240%2090%22%3E%3Ctext%20x%3D%22120%22%20y%3D%2255%22%20text-anchor%3D%22middle%22%20font-family%3D%22Georgia%2CTimes%20New%20Roman%2Cserif%22%20font-size%3D%2232%22%20font-style%3D%22normal%22%20font-weight%3D%22700%22%20fill%3D%22%232d6a4f%22%3Eapplaws%3C/text%3E%3C/svg%3E',
+            stella: 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20240%2090%22%3E%3Ctext%20x%3D%22120%22%20y%3D%2240%22%20text-anchor%3D%22middle%22%20font-family%3D%22Georgia%2Cserif%22%20font-size%3D%2222%22%20fill%3D%22%238a3b24%22%3EStella%3C/text%3E%3Ctext%20x%3D%22120%22%20y%3D%2264%22%20text-anchor%3D%22middle%22%20font-family%3D%22Georgia%2Cserif%22%20font-size%3D%2216%22%20fill%3D%22%238a3b24%22%3E%26amp%3B%20Chewy%27s%3C/text%3E%3C/svg%3E',
+            felinenatural: 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20200%20200%22%3E%3Crect%20width%3D%22200%22%20height%3D%22200%22%20rx%3D%228%22%20fill%3D%22%23f08a24%22/%3E%3Ctext%20x%3D%22100%22%20y%3D%2284%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-size%3D%2220%22%20font-weight%3D%22700%22%20fill%3D%22%23163a72%22%3EFeline%3C/text%3E%3Ctext%20x%3D%22100%22%20y%3D%22106%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-size%3D%2220%22%20font-weight%3D%22700%22%20fill%3D%22%23163a72%22%3ENatural%3C/text%3E%3C/svg%3E',
+            mush: 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20200%20200%22%3E%3Crect%20width%3D%22200%22%20height%3D%22200%22%20rx%3D%228%22%20fill%3D%22%23f15a24%22/%3E%3Ctext%20x%3D%22100%22%20y%3D%22100%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-size%3D%2220%22%20font-weight%3D%22700%22%20fill%3D%22%23fff%22%3EMUSH%3C/text%3E%3C/svg%3E',
+            openfarm: 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20200%20200%22%3E%3Crect%20width%3D%22200%22%20height%3D%22200%22%20rx%3D%228%22%20fill%3D%22%232f8f3a%22/%3E%3Ctext%20x%3D%22100%22%20y%3D%2284%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-size%3D%2220%22%20font-weight%3D%22700%22%20fill%3D%22%23fff%22%3EOPEN%3C/text%3E%3Ctext%20x%3D%22100%22%20y%3D%22106%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-size%3D%2220%22%20font-weight%3D%22700%22%20fill%3D%22%23fff%22%3EFARM%3C/text%3E%3C/svg%3E',
+            primal: 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20200%20200%22%3E%3Crect%20width%3D%22200%22%20height%3D%22200%22%20fill%3D%22%23fff%22/%3E%3Cellipse%20cx%3D%22100%22%20cy%3D%22100%22%20rx%3D%2278%22%20ry%3D%2250%22%20fill%3D%22none%22%20stroke%3D%22%236b3a2a%22%20stroke-width%3D%224%22/%3E%3Ctext%20x%3D%22100%22%20y%3D%22108%22%20text-anchor%3D%22middle%22%20font-family%3D%22Georgia%2Cserif%22%20font-size%3D%2226%22%20fill%3D%22%236b3a2a%22%3EPRIMAL%3C/text%3E%3C/svg%3E',
+            purpose: 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20240%2090%22%3E%3Ctext%20x%3D%2218%22%20y%3D%2255%22%20font-family%3D%22Arial%2Csans-serif%22%20font-size%3D%2228%22%20font-weight%3D%22800%22%20fill%3D%22%23111%22%3EPURPOSE%3C/text%3E%3C/svg%3E',
+            royalwet: 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20240%2090%22%3E%3Ctext%20x%3D%22120%22%20y%3D%2234%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2Csans-serif%22%20font-size%3D%2212%22%20fill%3D%22%23c4161c%22%3E%E2%97%8F%20%E2%97%8F%20%E2%97%8F%20%E2%97%8F%20%E2%97%8F%3C/text%3E%3Ctext%20x%3D%22120%22%20y%3D%2262%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2Csans-serif%22%20font-size%3D%2216%22%20font-weight%3D%22800%22%20fill%3D%22%23c4161c%22%3EROYAL%20CANIN%3C/text%3E%3C/svg%3E'
+        };
+        var FOOD_TILE_THEME = {
+            orijen: { bg:'#2f4a3c', fg:'#f3efe4', mark:'ORIJEN' },
+            core: { bg:'#5b7a4a', fg:'#f7f3ea', mark:'CORE' },
+            instinct: { bg:'#e36b1e', fg:'#fff', mark:'Instinct' },
+            canagan: { bg:'#1f3b2e', fg:'#f4efe4', mark:'Canagan' },
+            ziwi: { bg:'#1c1c1c', fg:'#f5efe4', mark:'ZIWI' },
+            acana: { bg:'#7a4a2b', fg:'#f7f1e6', mark:'ACANA' },
+            go: { bg:'#2d8f6f', fg:'#fff', mark:'Go!' },
+            now: { bg:'#4f6f4a', fg:'#f6f1e6', mark:'NOW' },
+            royalwet: { bg:'#1d4f7a', fg:'#fff', mark:'Royal<br>Canin' },
+            sheba: { bg:'#7a1f2b', fg:'#f7e7c7', mark:'SHEBA' },
+            tiki: { bg:'#f3ead8', fg:'#1f3b2e', mark:'Tiki Cat' },
+            applaws: { bg:'#e8f0ea', fg:'#1f5132', mark:'Applaws' },
+            stella: { bg:'#8a3b24', fg:'#f7f1e6', mark:'Stella<br>&amp; Chewy' },
+            felinenatural: { bg:'#f08a24', fg:'#163a72', mark:'Feline<br>Natural' },
+            mush: { bg:'#f15a24', fg:'#fff', mark:'MUSH' },
+            openfarm: { bg:'#2f8f3a', fg:'#fff', mark:'OPEN<br>FARM' },
+            primal: { bg:'#f4efe6', fg:'#6b3a2a', mark:'PRIMAL' },
+            purpose: { bg:'#111111', fg:'#fff', mark:'PURPOSE' }
+        };
+        function foodTileTheme(id, d) {
+            var t = FOOD_TILE_THEME[id] || {};
+            return { bg: t.bg || '#2d8f6f', fg: t.fg || '#fff', mark: t.mark || d.brand };
+        }
+        function renderFoodReviewCards() {
+            var grid = document.getElementById('foodReviewGrid');
+            var more = document.getElementById('foodLoadMoreBtn');
+            if (!grid) return;
+            if (foodFilter.species === 'dog') {
+                grid.innerHTML = '<div class="food-empty" style="grid-column:1/-1">🐶 狗狗專區即將推出<br><span class="food-note">而家先開放貓咪糧評價，狗糧資料籌備中。</span></div>';
+                if (more) more.style.display = 'none';
+                return;
+            }
+            var ids = getFilteredFoodIds();
+            if (!ids.length) {
+                grid.innerHTML = '<div class="food-empty" style="grid-column:1/-1">搵唔到符合條件嘅產品，試下改關鍵字或篩選。</div>';
+                if (more) more.style.display = 'none';
+                return;
+            }
+            var visible = ids.slice(0, foodFilter.shown);
+            grid.innerHTML = visible.map(function(id){
+                var d = FOOD_REVIEW_DATA[id];
+                var th = foodTileTheme(id, d);
+                var shortType = d.type === 'wet' ? '濕糧' : (d.type === 'airdry' ? '風乾/凍乾' : '乾糧');
+                return '<button type="button" class="food-tile" data-food-id="'+id+'" onclick="openFoodReviewModal(\''+id+'\')">'
+                    + '<div class="food-logo-frame"><img src="'+(FOOD_LOGO_SRC[id]||'')+'" alt="'+d.brand+' logo"></div>'
+                    + '<div class="food-tile-brand">'+d.brand+'</div>'
+                    + '<div class="food-tile-name">'+d.name+'</div>'
+                    + '<span class="food-type">'+shortType+'</span>'
+                    + '</button>';
+            }).join('');
+            if (more) more.style.display = visible.length < ids.length ? 'block' : 'none';
+        }
+        function loadMoreFoodCards() {
+            foodFilter.shown += FOOD_PAGE_SIZE;
+            renderFoodReviewCards();
+        }
+        function getFoodUserReviews(id) {
+            try { return JSON.parse(localStorage.getItem('pawvault_food_reviews_'+id) || '[]'); }
+            catch(e) { return []; }
+        }
+        function saveFoodUserReviews(id, list) {
+            localStorage.setItem('pawvault_food_reviews_'+id, JSON.stringify(list));
+        }
+        function openFoodReviewModal(id) {
+            currentFoodReviewId = id;
+            var d = FOOD_REVIEW_DATA[id];
+            if (!d) return;
+            document.getElementById('foodModalTitle').textContent = d.brand;
+            document.getElementById('foodModalSub').textContent = d.name;
+            var typeEl = document.getElementById('foodModalType');
+            if (typeEl) typeEl.textContent = d.typeLabel;
+            document.getElementById('foodModalMetrics').innerHTML =
+                '<div class="food-metric"><b>'+d.protein+'</b><span>乾物蛋白</span></div>'
+                + '<div class="food-metric"><b>'+d.fat+'</b><span>乾物脂肪</span></div>'
+                + '<div class="food-metric"><b>'+d.carb+'</b><span>估算碳水</span></div>';
+            var extra = document.getElementById('foodModalExtra');
+            if (extra) {
+                if (d.extra) { extra.style.display = ''; extra.textContent = d.extra; }
+                else { extra.style.display = 'none'; extra.textContent = ''; }
+            }
+            document.getElementById('foodModalPros').innerHTML = d.pros.map(function(x){ return '<li>'+x+'</li>'; }).join('');
+            document.getElementById('foodModalCons').innerHTML = d.cons.map(function(x){ return '<li>'+x+'</li>'; }).join('');
+            document.getElementById('foodModalTags').innerHTML = d.tags.map(function(t){ return '<span>'+t+'</span>'; }).join('');
+            document.getElementById('foodModalIngredients').textContent = d.ingredients;
+            document.getElementById('foodModalComments').innerHTML = d.comments.map(function(c){
+                return '<div class="food-comment"><div class="meta">'+c.src+' <span class="food-stars">'+c.stars+'</span> <span class="food-analysis-tag">近 3 個月討論提煉</span></div><p>'+c.text+'</p></div>';
+            }).join('');
+            renderFoodUserComments();
+            var modal = document.getElementById('foodReviewModal');
+            if (modal) modal.classList.add('show');
+        }
+        function renderFoodUserComments() {
+            var wrap = document.getElementById('foodUserComments');
+            if (!wrap || !currentFoodReviewId) return;
+            var list = getFoodUserReviews(currentFoodReviewId);
+            if (!list.length) {
+                wrap.innerHTML = '<p class="text-xs text-gray-400">未有奴才留言，登入後可以寫低你家主子體驗。</p>';
+                return;
+            }
+            wrap.innerHTML = list.map(function(c){
+                return '<div class="food-comment"><div class="meta">奴才 · '+c.name+' <span class="food-stars">'+'★'.repeat(c.stars)+'☆'.repeat(5-c.stars)+'</span></div><p>'+c.text+'</p></div>';
+            }).join('');
+        }
+        function submitFoodUserReview(ev) {
+            ev.preventDefault();
+            if (!window.isLoggedIn) {
+                if (typeof showToast === 'function') showToast('寫評價需先登入 Paw Vault 帳號');
+                else alert('寫評價需先登入 Paw Vault 帳號');
+                if (typeof openLoginModal === 'function') openLoginModal();
+                return;
+            }
+            if (!currentFoodReviewId) return;
+            var name = (document.getElementById('foodReviewName').value || '').trim();
+            if (!name && window.currentUser && currentUser.name) name = currentUser.name;
+            if (!name) name = 'Paw Vault 會員';
+            var stars = parseInt(document.getElementById('foodReviewStars').value, 10) || 5;
+            var textv = (document.getElementById('foodReviewText').value || '').trim();
+            if (!textv) {
+                if (typeof showToast === 'function') showToast('請先寫低體驗再送出');
+                return;
+            }
+            var list = getFoodUserReviews(currentFoodReviewId);
+            list.unshift({ name: name, stars: stars, text: textv, at: Date.now() });
+            saveFoodUserReviews(currentFoodReviewId, list);
+            document.getElementById('foodReviewText').value = '';
+            renderFoodUserComments();
+            if (typeof showToast === 'function') showToast('已新增你的評價');
+        }
+        function closeFoodReviewModal() {
+            var modal = document.getElementById('foodReviewModal');
+            if (modal) modal.classList.remove('show');
+        }
+
         function scrollToPetsSection() {
             var el = document.getElementById('view-pets') || document.getElementById('demoExperienceWrap');
             if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -2981,8 +3613,10 @@
                     '<button type="button" onclick="toggleNavDrawer(false);showMemberPets();">我的毛孩</button>' +
                     '<button type="button" onclick="toggleNavDrawer(false);showMemberAccount();">帳戶設定</button>' +
                     '<button type="button" onclick="toggleNavDrawer(false);openClinicPartnerModal()">獸醫診所專區</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);scrollToFoodReviews()">糧食評價</button>' +
                     '<button type="button" onclick="toggleNavDrawer(false);openPricingModal()">定價方案</button>' +
                     '<button type="button" onclick="toggleNavDrawer(false);openFaqModal()">常見問題</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);openContactModal()">聯絡查詢</button>' +
                     adminBtn +
                     '<button type="button" onclick="toggleNavDrawer(false);handleLogout()">登出</button>';
             } else {
@@ -2990,8 +3624,10 @@
                     '<button type="button" onclick="toggleNavDrawer(false);openLoginModal()">登入／會員專區</button>' +
                     '<button type="button" onclick="toggleNavDrawer(false);document.getElementById(\'demoExperienceWrap\')&&document.getElementById(\'demoExperienceWrap\').scrollIntoView({behavior:\'smooth\'});">我的毛孩</button>' +
                     '<button type="button" onclick="toggleNavDrawer(false);openClinicPartnerModal()">獸醫診所專區</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);scrollToFoodReviews()">糧食評價</button>' +
                     '<button type="button" onclick="toggleNavDrawer(false);openPricingModal()">定價方案</button>' +
                     '<button type="button" onclick="toggleNavDrawer(false);openFaqModal()">常見問題</button>' +
+                    '<button type="button" onclick="toggleNavDrawer(false);openContactModal()">聯絡查詢</button>' +
                     '<button type="button" onclick="toggleNavDrawer(false);openSignupModal()">免費開始使用</button>';
             }
         }
@@ -3027,7 +3663,7 @@
             selectedPetId = null;
             memberSelectedPetId = null;
             
-            db.collection('users').doc(userId).collection('pets').get().then(function(snapshot) {
+            db.collection('users').doc(userId).collection('pets').get({ source: 'server' }).catch(function(){ return db.collection('users').doc(userId).collection('pets').get(); }).then(function(snapshot) {
                 if (snapshot.empty) {
                     pets = [];
                     petReports = {};
@@ -3039,11 +3675,12 @@
                     return;
                 }
                 var petPromises = [];
+                var incoming = [];
                 snapshot.forEach(function(doc) {
                     var petData = doc.data();
                     petData.id = doc.id;
                     if (petData.is_deleted || petData.isDeleted) return;
-                    pets.push(petData);
+                    incoming.push(petData);
                     var promise = db.collection('users').doc(userId).collection('pets').doc(doc.id).collection('reports').get().then(function(reportSnapshot) {
                         var reports = [];
                         reportSnapshot.forEach(function(reportDoc) {
@@ -3056,7 +3693,9 @@
                     });
                     petPromises.push(promise);
                 });
+                pets = uniqueByPetId(incoming);
                 Promise.all(petPromises).then(function() {
+                    pets = uniqueByPetId(pets);
                     runTrashCleanup(userId);
                     if (pets.length > 0 && !selectedPetId) {
                         selectedPetId = pets[0].id;
@@ -3343,6 +3982,7 @@
             var cw = document.getElementById('clinicWorkbench');
             if (cw) cw.classList.add('hidden');
             document.getElementById('mainContent').classList.remove('hidden');
+            if (typeof hideAppPages === 'function') hideAppPages();
             document.querySelectorAll('.modal.show').forEach(function(m) { m.classList.remove('show'); });
             showToast('返回主頁');
         }
@@ -3473,6 +4113,9 @@
                 currentUser.uid = user.uid;
                 currentUser.email = user.email || 'petlover@email.com';
                 currentUser.name = user.displayName || '寵物主人';
+                if (typeof fetchUserProfile === 'function') {
+                    fetchUserProfile(user.uid).catch(function(){});
+                }
                 document.getElementById('memberName').textContent = currentUser.name;
                 document.getElementById('memberEmail').textContent = currentUser.email;
 
@@ -3892,14 +4535,8 @@
             }
         }
 
-        function openClinicPartnerModal() {
-            var m = document.getElementById('clinicPartnerModal');
-            if (m) m.classList.add('show');
-        }
-        function closeClinicPartnerModal() {
-            var m = document.getElementById('clinicPartnerModal');
-            if (m) m.classList.remove('show');
-        }
+        function openClinicPartnerModal() { showClinicPage(); }
+        function closeClinicPartnerModal() { goHome(); }
         function submitClinicApp() {
             var name = (document.getElementById('clinicAppName') && document.getElementById('clinicAppName').value.trim()) || '';
             var email = (document.getElementById('clinicAppEmail') && document.getElementById('clinicAppEmail').value.trim()) || '';
@@ -3947,8 +4584,10 @@
             if (isLoggedIn) {
                 navRight.innerHTML = `
                     <button onclick="openClinicPartnerModal()" class="nav-link-b2b">獸醫診所專區</button>
+                    <button onclick="scrollToFoodReviews()" class="nav-link">糧食評價</button>
                     <button onclick="openPricingModal()" class="nav-link">定價方案</button>
                     <button onclick="openFaqModal()" class="nav-link">常見問題</button>
+                    <button onclick="openContactModal()" class="nav-link">聯絡查詢</button>
                     <div class="user-dropdown">
                         <button onclick="toggleUserDropdown()" class="nav-link flex items-center gap-1">
                             ${currentUser.name || '會員'} <i class="fa-solid fa-chevron-down text-[0.6rem]"></i>
@@ -3965,13 +4604,17 @@
             } else {
                 navRight.innerHTML = `
                     <button onclick="openClinicPartnerModal()" class="nav-link-b2b">獸醫診所專區</button>
+                    <button onclick="scrollToFoodReviews()" class="nav-link">糧食評價</button>
                     <button onclick="openPricingModal()" class="nav-link">定價方案</button>
                     <button onclick="openFaqModal()" class="nav-link">常見問題</button>
+                    <button onclick="openContactModal()" class="nav-link">聯絡查詢</button>
                     <button onclick="openLoginModal()" class="nav-link">登入</button>
                     <button onclick="openSignupModal()" class="nav-link-primary">免費開始使用</button>
                 `;
             }
             fillNavDrawer();
+            var fp = document.getElementById('footerPetsLink');
+            if (fp) fp.style.display = isLoggedIn ? '' : 'none';
         }
 
         function toggleUserDropdown() {
@@ -4064,7 +4707,18 @@
             var name = document.getElementById('contactName').value.trim();
             var email = document.getElementById('contactEmail').value.trim();
             var message = document.getElementById('contactMessage').value.trim();
-            if (!name || !email || !message) { alert('請填寫姓名、電郵及查詢內容'); return; }
+            var emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+            if (!name) { alert('請填寫姓名'); return; }
+            if (!emailOk) { alert('請輸入有效電郵地址'); return; }
+            if (!message || message.length < 10) { alert('查詢內容不可空白，請至少輸入 10 個字'); return; }
+            var lastAt = 0;
+            try { lastAt = parseInt(sessionStorage.getItem('PAWVAULT_CONTACT_LAST') || '0', 10) || 0; } catch (e) {}
+            if (lastAt && Date.now() - lastAt < 60000) {
+                var wait = Math.ceil((60000 - (Date.now() - lastAt)) / 1000);
+                alert('發送過於頻密，請 ' + wait + ' 秒後再試');
+                return;
+            }
+            try { sessionStorage.setItem('PAWVAULT_CONTACT_LAST', String(Date.now())); } catch (e) {}
             db.collection('inquiries').add({
                 name: name,
                 email: email,
@@ -4087,13 +4741,37 @@
             });
         }
 
-        function openFaqModal() {
-            document.getElementById('faqModal').classList.add('show');
+
+        var PAWVAULT_FAQ = [
+            { q: '試用期結束後會自動收費嗎？', a: '不會自動扣款。新會員所有方案皆享 30 天免費試用。其後可選輕量版 $38／月、基礎版 $58／月或大家庭版 $78／月。試用期內提早繳費，到期日會由試用結束日再疊加，唔會食剩低嘅試用日。' },
+            { q: '過期未付款，資料會保留多久？', a: '試用期或每月會籍到期後，帳戶資料會保留 30 天。另外，用戶誤刪的病歷或檔案會暫存於戶口回收桶內保留 30 天，期間可隨時還原；30 天後系統將自動清理。後台客服備份最多再保留 180 天。' },
+            { q: '遲交月費還可以用嗎？', a: '到期後仍有 3 天寬限期可以登入使用。寬限期過後需付款才能繼續操作。資料仍會由到期日起計保留 30 天。' },
+            { q: '誤刪病歷可以救回嗎？', a: '用戶誤刪的病歷或檔案將暫存於戶口回收桶內保留 30 天，期間可隨時還原；30 天後系統將自動清理。如有需要可聯絡我們由後台協助救援。' },
+            { q: '有哪些付款方式？', a: '支援 PayMe（掃描 PayCode）及轉數快 FPS（識別碼入數）。付款後請上傳入數截圖，我們核對後會為你續期。' },
+            { q: '可以一次過預繳多個月嗎？', a: '可以。請按你想續期的月數入數（例如兩個月即月費 × 2），上傳入數證明並註明預繳月數。我們核對後會一次過延長會籍。若想一次過交一年，直接選年費方案會更簡單。' },
+            { q: '帶去見醫生可以用這裡的記錄嗎？', a: '請下載或出示你上載的診所原檔（化驗單、X光、PDF）。自己打字的摘要只供你備忘，並非醫療證明，醫生一般不會以此代替正式報告。' },
+            { q: '可以隨時取消嗎？已付款會退款嗎？', a: '可以隨時停止續期，我們不會自動再收費。已繳付的該月費用一般不設退款。' },
+            { q: '可以升級或轉換方案嗎？', a: '可以。續費時可自由改方案同加購隻數，金額即時重計：方案費 + 前 5 隻加購 ×$5 + 第 6 隻加購起 ×$10。已儲存嘅毛孩同病歷唔會刪除。' },
+            { q: '大家庭版可以加幾多隻毛孩？', a: '大家庭版預設 3–5 隻。超過 5 隻可無限加購：每隻 +$5／月；第 11 隻起每隻 +$10／月（含高容量備份）。「＋新增毛孩」永遠可撳，到上限會引導加購。' },
+            { q: '領養專區 6 個月跟進係點？', a: '經義工連結開通「新手領養愛心禮」後，義工可唯讀該毛孩健康紀錄 6 個月，睇唔到新主人電話住址。期滿系統自動關閉義工權限，完整保護私隱，之後可轉正價方案。' },
+            { q: '如有查詢可以怎樣聯絡？', a: '請按頂部「聯絡查詢」或頁尾按鈕，留下姓名、電郵及內容。我們會於後台收到，並以電郵回覆。' }
+        ];
+        function faqItemHtml(item) {
+            return '<div class="faq-item"><div class="question" onclick="toggleFaq(this)"><span>' + item.q + '</span><i class="fa-solid fa-chevron-down text-gray-400"></i></div><div class="answer">' + item.a + '</div></div>';
+        }
+        function renderSharedFaq() {
+            var list = (PAWVAULT_FAQ || []).slice();
+            var html = list.map(faqItemHtml).join('');
+            ['homeFaqList', 'modalFaqList'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (!el) return;
+                el.innerHTML = '';
+                el.innerHTML = html;
+            });
         }
 
-        function closeFaqModal() {
-            document.getElementById('faqModal').classList.remove('show');
-        }
+        function openFaqModal() { showFaqPage(); }
+        function closeFaqModal() { goHome(); }
 
         function toggleFaq(el) {
             var answer = el.nextElementSibling;
@@ -4110,6 +4788,88 @@
         // ================================================================
         // 登入處理
         // ================================================================
+        function authStateStore(remember) {
+            return remember ? localStorage : sessionStorage;
+        }
+        function persistUserState(remember) {
+            var payload = JSON.stringify({
+                uid: currentUser && currentUser.uid || '',
+                email: currentUser && currentUser.email || '',
+                name: currentUser && currentUser.name || '',
+                plan: currentPlan || '',
+                petCount: (typeof pets !== 'undefined' && pets) ? pets.length : 0,
+                hasPaid: !!hasPaid,
+                extraPets: extraPetsPurchased || 0,
+                ts: Date.now()
+            });
+            try {
+                if (remember) {
+                    localStorage.setItem('PAWVAULT_REMEMBER', '1');
+                    localStorage.setItem('PAWVAULT_USER_STATE', payload);
+                    sessionStorage.removeItem('PAWVAULT_USER_STATE');
+                } else {
+                    localStorage.setItem('PAWVAULT_REMEMBER', '0');
+                    sessionStorage.setItem('PAWVAULT_USER_STATE', payload);
+                    localStorage.removeItem('PAWVAULT_USER_STATE');
+                }
+            } catch (e) {}
+        }
+        function clearPersistedUserState() {
+            try {
+                localStorage.removeItem('PAWVAULT_USER_STATE');
+                sessionStorage.removeItem('PAWVAULT_USER_STATE');
+            } catch (e) {}
+        }
+        function applyUserProfileDoc(data) {
+            if (!data) return;
+            hasPaid = data.hasPaid === true;
+            if (data.membershipStatus === 'trial' || data.membershipStatus === 'pending_review') {
+                hasPaid = false; isTrialActive = true;
+            } else if (data.membershipStatus === 'expired') {
+                hasPaid = false; isTrialActive = false;
+            } else if (data.membershipStatus === 'active') {
+                hasPaid = true; isTrialActive = false;
+            }
+            userUsedPromoCode = String(data.promoCode || '').toUpperCase();
+            if (data.plan) currentPlan = normalizePlanKey(data.plan);
+            extraPetsPurchased = data.extraPets || 0;
+            extraPetPending = data.extraPetPending === true;
+            memberMaxPetsOverride = data.maxPets || null;
+            usedStorageBytes = data.usedStorageBytes || 0;
+            if (data.name) currentUser.name = data.name;
+            var nameEl = document.getElementById('memberName');
+            if (nameEl) nameEl.textContent = currentUser.name;
+            planStartDate = parseTrialDate(data.planStartDate);
+            planEndDate = parseTrialDate(data.planEndDate);
+            memberPendingPlan = data.pendingPlan || null;
+            memberPendingPlanAt = parseTrialDate(data.pendingPlanEffectiveAt);
+            paymentStatus = data.paymentStatus || null;
+            if (data.isTrialActive === true) isTrialActive = true;
+            if (data.trialEndDate) trialEndDate = parseTrialDate(data.trialEndDate);
+            if (data.trialStartDate) trialStartDate = parseTrialDate(data.trialStartDate);
+        }
+        function fetchUserProfile(uid) {
+            uid = uid || (currentUser && currentUser.uid) || (auth.currentUser && auth.currentUser.uid);
+            if (!uid || typeof db === 'undefined') return Promise.resolve(null);
+            var ref = db.collection('users').doc(uid);
+            var read = function(src) {
+                return src ? ref.get({ source: src }) : ref.get();
+            };
+            return read('server').catch(function() { return read(); }).then(function(doc) {
+                if (doc && doc.exists) {
+                    applyUserProfileDoc(doc.data());
+                    var petCountEl = document.getElementById('memberPetCount');
+                    if (petCountEl) petCountEl.textContent = '同步中…';
+                }
+                if (typeof loadUserData === 'function') loadUserData(uid);
+                if (typeof updatePlanDisplay === 'function') updatePlanDisplay();
+                if (typeof updateMembershipStatusCard === 'function') updateMembershipStatusCard();
+                if (typeof updateNav === 'function') updateNav();
+                var remember = (localStorage.getItem('PAWVAULT_REMEMBER') === '1');
+                persistUserState(remember);
+                return doc && doc.exists ? doc.data() : null;
+            });
+        }
         function handleLoginSubmit() {
             var email = document.getElementById('loginEmail').value.trim();
             var password = document.getElementById('loginPassword').value.trim();
@@ -4121,13 +4881,25 @@
                 alert('請輸入密碼');
                 return;
             }
-            if (document.getElementById('loginRememberMe').checked) {
+            var remember = !!(document.getElementById('loginRememberMe') && document.getElementById('loginRememberMe').checked);
+            if (remember) {
                 localStorage.setItem('rememberedEmail', email);
+                localStorage.setItem('PAWVAULT_REMEMBER', '1');
             } else {
                 localStorage.removeItem('rememberedEmail');
+                localStorage.setItem('PAWVAULT_REMEMBER', '0');
+                localStorage.removeItem('PAWVAULT_USER_STATE');
             }
             sessionStorage.removeItem('guestMode');
-            auth.signInWithEmailAndPassword(email, password)
+            var persistence = (firebase.auth && firebase.auth.Auth && firebase.auth.Auth.Persistence)
+                ? (remember ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION)
+                : null;
+            var persistP = (persistence && auth.setPersistence)
+                ? auth.setPersistence(persistence)
+                : Promise.resolve();
+            persistP.then(function() {
+                return auth.signInWithEmailAndPassword(email, password);
+            })
                 .then(function(userCredential) {
                     var user = userCredential.user;
                     currentUser.uid = user.uid;
@@ -4135,8 +4907,12 @@
                     currentUser.name = user.displayName || '寵物主人';
                     document.getElementById('memberName').textContent = currentUser.name;
                     document.getElementById('memberEmail').textContent = currentUser.email;
-                    closeLoginModal();
-                    showToast('登入成功！', 'success');
+                    isLoggedIn = true;
+                    return fetchUserProfile(user.uid).then(function() {
+                        persistUserState(remember);
+                        closeLoginModal();
+                        showToast('登入成功！已同步最新方案與毛孩數量', 'success');
+                    });
                 })
                 .catch(function(error) {
                     if (error.code === 'auth/user-not-found') {
@@ -4728,11 +5504,32 @@
             bringAttachmentPreviewFront();
         }
 
+
+        function uniqueByPetId(list) {
+            var seen = {};
+            return (list || []).filter(function(p) {
+                var id = p && p.id;
+                if (!id || seen[id]) return false;
+                seen[id] = true;
+                return true;
+            });
+        }
+        function clearNode(el) {
+            if (!el) return;
+            el.innerHTML = '';
+        }
+        function renderPets(demo) {
+            if (demo) renderDemoPets();
+            else renderMemberPets();
+        }
         function renderMemberPets() {
             updateMemberPetCapacityUI();
+            pets = uniqueByPetId(pets);
             applySavedPetOrder(false);
+            pets = uniqueByPetId(pets);
             var container = document.getElementById('memberPetList');
             if (!container) return;
+            clearNode(container);
             if (!pets.length) {
                 container.innerHTML =
                     '<div class="col-span-full text-center py-8 text-gray-400 text-sm">還沒有毛孩，點擊「新增寵物」</div>';
@@ -4775,6 +5572,8 @@
         function renderMemberPetFilters() {
             var box = document.getElementById('memberPetFilters');
             if (!box) return;
+            clearNode(box);
+            pets = uniqueByPetId(pets);
             var cur = !memberSelectedPetId || memberSelectedPetId === 'all' ? 'all' : memberSelectedPetId;
             var html = '<option value="all">全部毛孩（全部病歷）</option>';
             pets.forEach(function(pet) {
@@ -8405,6 +9204,7 @@
             window.pendingOpenAdmin = false;
             if (typeof closeAllModals === 'function') closeAllModals();
             document.getElementById('mainContent').classList.add('hidden');
+            if (typeof hideAppPages === 'function') hideAppPages();
             var ad = document.getElementById('adminDashboard');
             if (ad) ad.classList.add('hidden');
             var cw = document.getElementById('clinicWorkbench');
@@ -8420,6 +9220,7 @@
             window.pendingOpenAdmin = false;
             if (typeof closeAllModals === 'function') closeAllModals();
             document.getElementById('mainContent').classList.add('hidden');
+            if (typeof hideAppPages === 'function') hideAppPages();
             var ad = document.getElementById('adminDashboard');
             if (ad) ad.classList.add('hidden');
             var cw = document.getElementById('clinicWorkbench');
@@ -8469,6 +9270,8 @@
         }
 
         function handleLogout() {
+            if (typeof clearPersistedUserState === "function") clearPersistedUserState();
+
             sessionStorage.setItem('guestMode', 'true');
             auth.signOut().then(function() {
                 isLoggedIn = false;
@@ -10004,9 +10807,11 @@
         // ================================================================
         // 定價 Modal
         // ================================================================
-        function openPricingModal(showPlanCards) {
+        function hydratePricingPage(showPlanCards) {
             showPlanCards = (showPlanCards !== undefined) ? showPlanCards : true;
-            document.getElementById('pricingModal').classList.add('show');
+            var page = document.getElementById('pricing-tab');
+            var box = document.getElementById('pricingModal');
+            if (!box) return;
 
             var titleEl = document.getElementById('pricingModalTitle');
 
@@ -10054,7 +10859,13 @@
             selectPricingCard(selectedPricingPlan);
         }
 
-        function closePricingModal() { document.getElementById('pricingModal').classList.remove('show'); }
+        function closePricingModal() {
+            var page = document.getElementById('pricing-tab');
+            if (page) { page.hidden = true; page.classList.remove('active'); }
+        }
+        function openPricingModal(showPlanCards) {
+            showPricingPage(showPlanCards);
+        }
 
         // ================================================================
         // 體驗模式函數（示範體驗）
@@ -10064,6 +10875,8 @@
         function renderDemoPetFilters() {
             var bar = document.getElementById('demoPetFilterBar');
             if (!bar) return;
+            clearNode(bar);
+            demoPets = uniqueByPetId(demoPets);
             var cur = !demoSelectedPetId || demoSelectedPetId === 'all' ? 'all' : demoSelectedPetId;
             var html = '<option value="all">全部毛孩（全部病歷）</option>';
             demoPets.forEach(function(pet) {
@@ -10076,7 +10889,10 @@
         function renderDemoPets() {
             var container = document.getElementById('petList');
             if (!container) return;
+            demoPets = uniqueByPetId(demoPets);
             applySavedPetOrder(true);
+            demoPets = uniqueByPetId(demoPets);
+            clearNode(container);
             renderDemoPetFilters();
             
             if (demoPets.length === 0) {
@@ -11026,7 +11842,12 @@
         // ================================================================
         // 啟動
         // ================================================================
+        window.addEventListener('hashchange', function() {
+            if (typeof applyHashRoute === 'function') applyHashRoute();
+        });
         window.onload = function() {
+            if (typeof renderSharedFaq === "function") renderSharedFaq();
+            if (typeof applyHashRoute === 'function' && location.hash) applyHashRoute();
             registerPawVaultPwa();
             consumeShareTargetInbox();
             if (/share-target=1/.test(location.search || '')) {
